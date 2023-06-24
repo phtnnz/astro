@@ -31,8 +31,9 @@ global DEFAULT_NINA_DIR
 DEFAULT_NINA_DIR = buf.value.replace("\\", "/") + "/N.I.N.A"
 global DEFAULT_TARGETS_DIR
 DEFAULT_TARGETS_DIR = DEFAULT_NINA_DIR + "/Targets/tmp"
-global DEFAULT_TEMPLATE
+global DEFAULT_TEMPLATE, DEFAULT_TARGET
 DEFAULT_TEMPLATE = "NEW v4.json"
+DEFAULT_TARGET = "Target NEO v1.json"
 
 global DEFAULT_FILTER_NAMES
 DEFAULT_FILTER_NAMES = [ "L", "R", "G", "B", "Ha", "OIII", "SII"]
@@ -482,7 +483,7 @@ def main(argv):
     if args.target_template:
         target_template = args.target_template
     else:
-        target_template = "Target NEO v1.json"
+        target_template = DEFAULT_TARGET
     print(arg.prog+":", "processing target template", target_template)
     if args.sequence_template:
         sequence_template = args.sequence_template
