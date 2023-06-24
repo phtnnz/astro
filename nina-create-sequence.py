@@ -54,6 +54,7 @@ class NINABase:
     max_level = 0           # -l N
     targets_only = False    # -t
     prefix_target = False   # -p
+    no_output = False       # -n
 
 
     def __init__(self):
@@ -438,6 +439,7 @@ def main(argv):
     arg.add_argument("-l", "--level", type=int, help="limit recursion depth")
     arg.add_argument("-t", "--targets-only", action="store_true", help="create separate targets only")
     arg.add_argument("-p", "--prefix-target", action="store_true", help="prefix all target names with YYYY-MM-DD NNN")
+    arg.add_argument("-n", "--no-output", action="store_true", help="dry run, don't create output files")
     arg.add_argument("filename", nargs="+", help="CSV target data list")
    
     args = arg.parse_args()
@@ -446,6 +448,7 @@ def main(argv):
     NINABase.max_level = args.level if args.level else 0
     NINABase.targets_only = args.targets_only
     NINABase.prefix_target = args.prefix_target
+    NINABase.no_output = args.no_output
 
     if args.target_template:
         target_template = args.target_template
