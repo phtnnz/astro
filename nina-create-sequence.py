@@ -1,6 +1,16 @@
 #!/usr/bin/python
 
+# ChangeLog
+# Version 0.1 / 2023-06-24
+#     Added -n option, read filter name from CSV
+
+
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
+
+global VERSION, AUTHOR
+VERSION = "0.1 / 2023-06-24"
+AUTHOR  = "Martin Junius"
+
 
 import sys
 import argparse
@@ -9,6 +19,7 @@ import csv
 import datetime
 import copy
 import ctypes.wintypes
+
 
 # Windows hack to get path of Documents folder, which might reside on other drives than C:
 CSIDL_PERSONAL = 5       # My Documents
@@ -20,7 +31,11 @@ global DEFAULT_NINA_DIR
 DEFAULT_NINA_DIR = buf.value.replace("\\", "/") + "/N.I.N.A"
 global DEFAULT_TARGETS_DIR
 DEFAULT_TARGETS_DIR = DEFAULT_NINA_DIR + "/Targets/tmp"
+global DEFAULT_TEMPLATE
+DEFAULT_TEMPLATE = "NEW v4.json"
 
+global DEFAULT_FILTER_NAMES
+DEFAULT_FILTER_NAMES = [ "L", "R", "G", "B", "Ha", "OIII", "SII"]
 # print("N.I.N.A dir =", DEFAULT_NINA_DIR)
 # print("N.I.N.A targets dir =", DEFAULT_TARGETS_DIR)
 
@@ -375,19 +390,32 @@ class NINASequence(NINABase):
                 time_NA  = time_utc.astimezone(tz_NA)
                 ra  = row["RAm"].replace(" ", ":").replace("+", "")
                 dec = row["DECm"].replace(" ", ":").replace("+", "")
+                # use RA/DEC if RAm/DECm are empty
+                if ra=="":
+                    ra  = row["RA"].replace(" ", ":").replace("+", "")
+                if dec=="":
+                    dec = row["Dec."].replace(" ", ":").replace("+", "")
                 exp = float(row["Exposure time"])
                 number = int(row["No images"])
+                filter = "L"
+                if "filter" in row.keys():
+                    filter = row["filter"]
+                    for fn in DEFAULT_FILTER_NAMES:
+                        if filter.startswith(fn):
+                            filter = fn
+                            break
+
                 name = "{} {:03d} {}".format(time_NA.date(), seq, target).replace("/", "").replace(":", "")
                 # use target sequence titel as the target name (FITS header!), too
                 if NINABase.prefix_target:
                     target = name
 
-                print("NINASequence(process_csv):", "#", seq, "target =", target, "RA =", ra, "DEC =", dec)
-                print("NINASequence(process_csv):", "UT =", time_utc, 
-                                                          "/ local date =", time_NA.date(), "time =", time_NA.time())
+                print("NINASequence(process_csv):", "#{:03d} target={} RA={} DEC={}".format(seq, target, ra, dec))
+                print("NINASequence(process_csv):", "     UT={} / local {} {}".format(time_utc, time_NA.date(), time_NA.time()))
+                print("NINASequence(process_csv):", "     {:d}x{:.1f}s filter={}".format(number, exp, filter))
 
                 # default for filter and binning
-                data = TargetData(name, target, ra, dec, time_NA.time(), number, exp)
+                data = TargetData(name, target, ra, dec, time_NA.time(), number, exp, filter)
 
                 # create deep copy of target object, update with data read from CSV
                 target_new = copy.deepcopy(target_tmpl)
@@ -396,8 +424,9 @@ class NINASequence(NINABase):
                 ### write separate targets
                 if NINABase.targets_only:
                     output_path = destdir + "/" + name + ".json"
-                    print("NINASequence(process_csv):", "writing JSON target", output_path)
-                    target_new.write_json(output_path)
+                    if not NINABase.no_output:
+                        print("NINASequence(process_csv):", "writing JSON target", output_path)
+                        target_new.write_json(output_path)
 
                 ### append to main sequence targets
                 else:
@@ -430,7 +459,7 @@ def main(argv):
     arg = argparse.ArgumentParser(
         prog        = "nina-create-sequence",
         description = "Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV",
-        epilog      = "")
+        epilog      = "Version: " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
     arg.add_argument("-T", "--target-template", help="base N.I.N.A target template .json file")
     arg.add_argument("-S", "--sequence-template", help="base N.I.N.A sequence .json file")
@@ -458,7 +487,7 @@ def main(argv):
     if args.sequence_template:
         sequence_template = args.sequence_template
     else:
-        sequence_template = "Empty.json"
+        sequence_template = DEFAULT_TEMPLATE
     print(arg.prog+":", "processing sequence template", sequence_template)
     if args.destination_dir:
         destination_dir = args.destination_dir
@@ -486,8 +515,9 @@ def main(argv):
 
     if not NINABase.targets_only:
         output_path = destination_dir + "/" + output
-        print(arg.prog+":", "writing JSON sequence", output_path)
-        sequence.write_json(output_path)
+        if not NINABase.no_output:
+            print(arg.prog+":", "writing JSON sequence", output_path)
+            sequence.write_json(output_path)
 
 
    
