@@ -2,6 +2,7 @@
 
 Python scripts for creating N.I.N.A JSON sequences and targets, from object data in CSV format and N.I.N.A templates
 
+
 ```
 usage: nina-create-sequence [-h] [-v] [-T TARGET_TEMPLATE] [-S SEQUENCE_TEMPLATE] [-D DESTINATION_DIR] [-o OUTPUT] [-l LEVEL] [-t] [-p] [-n]
                             filename [filename ...]

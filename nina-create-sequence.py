@@ -2,7 +2,10 @@
 
 # ChangeLog
 # Version 0.1 / 2023-06-24
-#     Added -n option, read filter name from CSV
+#       Added -n option, read filter name from CSV
+# Version 0.2 /
+#       Use new target template "Target NEO v2.json"
+#       Use new base template "NEW v4 nautical dawn.json"
 
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
@@ -27,13 +30,13 @@ SHGFP_TYPE_CURRENT = 0   # Get current, not default value
 buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
 ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
 
-global DEFAULT_NINA_DIR
+global DEFAULT_NINA_DIR, DEFAULT_TARGETS_DIR
 DEFAULT_NINA_DIR = buf.value.replace("\\", "/") + "/N.I.N.A"
-global DEFAULT_TARGETS_DIR
 DEFAULT_TARGETS_DIR = DEFAULT_NINA_DIR + "/Targets/tmp"
+
 global DEFAULT_TEMPLATE, DEFAULT_TARGET
-DEFAULT_TEMPLATE = "NEW v4.json"
-DEFAULT_TARGET = "Target NEO v1.json"
+DEFAULT_TEMPLATE = "NEW v4 nautical dawn.json"
+DEFAULT_TARGET = "Target NEO v2.json"
 
 global DEFAULT_FILTER_NAMES
 DEFAULT_FILTER_NAMES = [ "L", "R", "G", "B", "Ha", "OIII", "SII"]
