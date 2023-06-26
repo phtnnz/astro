@@ -16,7 +16,7 @@
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
 global VERSION, AUTHOR
-VERSION = "0.1 / 2023-06-24"
+VERSION = "0.2 / 2023-06-26"
 AUTHOR  = "Martin Junius"
 
 
