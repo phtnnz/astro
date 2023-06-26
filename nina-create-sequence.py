@@ -3,10 +3,15 @@
 # ChangeLog
 # Version 0.1 / 2023-06-24
 #       Added -n option, read filter name from CSV
-# Version 0.2 /
+# Version 0.2 / 2023-06-26
 #       Use new target template "Target NEO v2.json"
-#       Use new base template "NEW v4 nautical dawn.json"
+#       Use new base template "NEW v4 nautical.json"
+#       Works with nautical dusk/dawn time, too, see caveat below
 
+# TODO:
+# - Handling of the various time providers, which must occur only *once* in the sequence and 
+#   be referenced "$ref" = ID for further occurances, currently a hack which only works with
+#   the current target template!
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
@@ -35,7 +40,7 @@ DEFAULT_NINA_DIR = buf.value.replace("\\", "/") + "/N.I.N.A"
 DEFAULT_TARGETS_DIR = DEFAULT_NINA_DIR + "/Targets/tmp"
 
 global DEFAULT_TEMPLATE, DEFAULT_TARGET
-DEFAULT_TEMPLATE = "NEW v4 nautical dawn.json"
+DEFAULT_TEMPLATE = "NEW v4 nautical.json"
 DEFAULT_TARGET = "Target NEO v2.json"
 
 global DEFAULT_FILTER_NAMES
