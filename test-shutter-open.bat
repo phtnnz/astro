@@ -1,4 +1,8 @@
 @echo off
+rem
+rem Wrapper for Python script: runs a Python script with the same basename in the same directory as the .bat file
+rem
+
 rem Search for Python 3.11 or launcher
 set PYTHON=NONE
 set PY=NONE
@@ -15,4 +19,4 @@ echo PY="%PY%"
 echo SCRIPT="%SCRIPT%"
 echo ARGS=%*
 
-"%CWD%"\test.py
+"%SCRIPT%" %*
