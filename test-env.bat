@@ -1,0 +1,13 @@
+@echo off
+rem Search for Python 3.11 or launcher
+set PYTHON=NONE
+set PY=NONE
+if exist "C:\Program Files\Python311\python.exe" (set PYTHON=C:\Program Files\Python311\python.exe)
+if exist "%LOCALAPPDATA%\Programs\Python\Python311\python.exe" (set PYTHON=%LOCALAPPDATA%\Programs\Python\Python311\python.exe)
+if exist "C:\Windows\py.exe" (set PY=C:\Windows\py.exe)
+if exist "%LOCALAPPDATA%\Programs\Python\Launcher\py.exe" (set PYTHON=%LOCALAPPDATA%\Programs\Python\Launcher\py.exe)
+
+echo PYTHON="%PYTHON%"
+echo PY="%PY%"
+
+%CD%\test.py -e 99
