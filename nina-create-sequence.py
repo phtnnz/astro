@@ -7,6 +7,8 @@
 #       Use new target template "Target NEO v2.json"
 #       Use new base template "NEW v4 nautical.json"
 #       Works with nautical dusk/dawn time, too, see caveat below
+# Version 0.3 / 2023-07-01
+#       Added -N option, append number of frames to target name
 
 # TODO:
 # - Handling of the various time providers, which must occur only *once* in the sequence and 
@@ -79,6 +81,7 @@ class NINABase:
     targets_only = False    # -t
     prefix_target = False   # -p
     no_output = False       # -n
+    add_number = False      # -N
 
 
     def __init__(self):
@@ -395,7 +398,7 @@ class NINASequence(NINABase):
                 time_utc = datetime.datetime.fromisoformat(row["Observation date"].replace(" ", "-") + "T" + 
                                                            row["Time UT"] + ":00+00:00")
                 # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
-                # convert to UTC+2
+                # convert to Namibian time zone = UTC+2
                 time_NA  = time_utc.astimezone(tz_NA)
                 ra  = row["RAm"].replace(" ", ":").replace("+", "")
                 dec = row["DECm"].replace(" ", ":").replace("+", "")
@@ -415,6 +418,9 @@ class NINASequence(NINABase):
                             break
 
                 name = "{} {:03d} {}".format(time_NA.date(), seq, target).replace("/", "").replace(":", "")
+                # 
+                if NINABase.add_number:
+                    name += " (n{:03d})".format(number)
                 # use target sequence titel as the target name (FITS header!), too
                 if NINABase.prefix_target:
                     target = name
@@ -478,6 +484,7 @@ def main(argv):
     arg.add_argument("-t", "--targets-only", action="store_true", help="create separate targets only")
     arg.add_argument("-p", "--prefix-target", action="store_true", help="prefix all target names with YYYY-MM-DD NNN")
     arg.add_argument("-n", "--no-output", action="store_true", help="dry run, don't create output files")
+    arg.add_argument("-N", "--add-number", action="store_true", help="add number of frames (nNNN) to target name")
     arg.add_argument("filename", nargs="+", help="CSV target data list")
    
     args = arg.parse_args()
@@ -487,6 +494,7 @@ def main(argv):
     NINABase.targets_only = args.targets_only
     NINABase.prefix_target = args.prefix_target
     NINABase.no_output = args.no_output
+    NINABase.add_number = args.add_number
 
     if args.target_template:
         target_template = args.target_template
