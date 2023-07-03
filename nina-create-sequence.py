@@ -9,6 +9,10 @@
 #       Works with nautical dusk/dawn time, too, see caveat below
 # Version 0.3 / 2023-07-01
 #       Added -N option, append number of frames to target name
+# Version 0.4 / 2023-07-03
+#       New target template "./NINA-Templates-IAS/Base NEO nautical.json"
+#       New base template "./NINA-Templates-IAS/Base NEO nautical.json"
+#       Removed -l option
 
 # TODO:
 # - Handling of the various time providers, which must occur only *once* in the sequence and 
@@ -18,7 +22,7 @@
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
 global VERSION, AUTHOR
-VERSION = "0.3 / 2023-07-01"
+VERSION = "0.4 / 2023-07-03"
 AUTHOR  = "Martin Junius"
 
 
@@ -42,8 +46,8 @@ DEFAULT_NINA_DIR = buf.value.replace("\\", "/") + "/N.I.N.A"
 DEFAULT_TARGETS_DIR = DEFAULT_NINA_DIR + "/Targets/tmp"
 
 global DEFAULT_TEMPLATE, DEFAULT_TARGET
-DEFAULT_TEMPLATE = "NEW v4 nautical.json"
-DEFAULT_TARGET = "Target NEO v2.json"
+DEFAULT_TEMPLATE = "./NINA-Templates-IAS/Base NEO nautical.json"
+DEFAULT_TARGET = "./NINA-Templates-IAS/Target NEO.json"
 
 global DEFAULT_FILTER_NAMES
 DEFAULT_FILTER_NAMES = [ "L", "R", "G", "B", "Ha", "OIII", "SII"]
