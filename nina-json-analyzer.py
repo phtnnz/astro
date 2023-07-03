@@ -18,7 +18,7 @@ class NINATemplate:
     def read_json(self, file):
         with open(file, 'r') as f:
             data = json.load(f)
-        self.process_data(data)
+        self.obj = data
 
 
     def write_json(self, file):
@@ -83,87 +83,8 @@ class NINATemplate:
         self.print_parent(obj, indent)
 
 
-    def process_data(self, obj):
-        self.obj = obj
-
-        self.print_obj(obj, ">", 1)
-        return
-    
-        # NEW NAME --> obj["Name"]
-        self.name = self.obj["Name"]
-        print("NINATargetTemplate(process_data):", "name =", self.name)
-
-        self.target = self.obj["Target"]
-        self.process_target()
-        
-        items = self.obj["Items"]
-#        print_container(self.items, ">")
-
-        for i in items["$values"]:
-#      print("type =", item1["$type"])
-            if "Name" in i:
-#         print("  name =", item1["Name"])
-                if i["Name"].startswith("CONTAINER START"):
-                    self.start = i["Items"]
-                if i["Name"].startswith("CONTAINER IMAGING"):
-                    self.imaging = i["Items"]
-        self.process_start()
-        self.process_imaging()
-
-
-    def process_target(self):
-        # NEW TARGET --> target["TargetName"]
-        self.targetname = self.target["TargetName"]
-        print("NINATargetTemplate(process_target):", "targetname =", self.targetname)
-        self.coord      = self.target["InputCoordinates"]
-
-        # NEW COORD --> coord["..."]
-        ra_hh = self.coord["RAHours"]
-        ra_mm = self.coord["RAMinutes"]
-        ra_ss = self.coord["RASeconds"]
-        #dec_neg = self.coord["NegativeDec"]
-        dec_dd = self.coord["DecDegrees"]
-        dec_mm = self.coord["DecMinutes"]
-        dec_ss = self.coord["DecSeconds"]
-
-        ra  = "{:02d}:{:02d}:{:04.1f}".format(ra_hh, ra_mm, ra_ss)
-        dec = "{:02d}:{:02d}:{:04.1f}".format(dec_dd, dec_mm, dec_ss)
-        print("NINATargetTemplate(process_target):", "RA =", ra, ", DEC =", dec)
-
-
-    def process_start(self):
-        for i in self.start["$values"]:
-#      print(indent, "type =", i["$type"])
-            if "WaitForTime" in i["$type"]:
-                # NEW TIME --> waitfortime["..."]
-                self.waitfortime = i
-                time_hh = i["Hours"]
-                time_mm = i["Minutes"]
-                time_ss = i["Seconds"]
-                time = "{:02}:{:02}:{:02}".format(time_hh, time_mm, time_ss)
-                print("NINATargetTemplate(process_start):", "WaitForTime =", time)
-
-
-    def process_imaging(self):
-        for i in self.imaging["$values"]:
-#      print(indent, "type =", i["$type"])
-            if "SmartExposure" in i["$type"]:
-                # NEW NUMBER OF EXPOSURES --> conditions0["Iterations"]
-                self.conditions0 = i["Conditions"]["$values"][0]
-                print("NINATargetTemplate(process_imaging):", "number =", self.conditions0["Iterations"])
-
-                items = i["Items"]
-                for i2 in items["$values"]:
-                    if "SwitchFilter" in i2["$type"]:
-                        # NEW FILTER --> filter["_name"]
-                        self.filter = i2["Filter"]
-                        print("NINATargetTemplate(process_imaging):", "filter =", self.filter["_name"])
-                    if "TakeExposure"  in i2["$type"]:
-                        # NEW EXPOSURETIME --> exposure["ExposureTime"]
-                        # NEW BINNING --> exposure["Binning"]["X|Y"]
-                        self.exposure = i2
-                        binning  = "{}x{}".format(i2["Binning"]["X"], i2["Binning"]["X"])
-                        print("NINATargetTemplate(process_imaging):", "exposure =", self.exposure["ExposureTime"], ", binning =", binning)
+    def process_data(self):
+        self.print_obj(self.obj, ">", 1)
 
 
 
@@ -190,6 +111,7 @@ def main(argv):
     for f in args.filename:
         print(arg.prog+":", "processing JSON file", f)
         nina.read_json(f)
+        nina.process_data()
 
    
    

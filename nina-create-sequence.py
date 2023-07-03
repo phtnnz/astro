@@ -1,6 +1,30 @@
 #!/usr/bin/python
 
+# ChangeLog
+# Version 0.1 / 2023-06-24
+#       Added -n option, read filter name from CSV
+# Version 0.2 / 2023-06-26
+#       Use new target template "Target NEO v2.json"
+#       Use new base template "NEW v4 nautical.json"
+#       Works with nautical dusk/dawn time, too, see caveat below
+# Version 0.3 / 2023-07-01
+#       Added -N option, append number of frames to target name
+# Version 0.4 / 2023-07-03
+#       New target template "./NINA-Templates-IAS/Base NEO nautical.json"
+#       New base template "./NINA-Templates-IAS/Base NEO nautical.json"
+#       Removed -l option
+
+# TODO:
+# - Handling of the various time providers, which must occur only *once* in the sequence and 
+#   be referenced "$ref" = ID for further occurances, currently a hack which only works with
+#   the current target template!
+
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
+
+global VERSION, AUTHOR
+VERSION = "0.4 / 2023-07-03"
+AUTHOR  = "Martin Junius"
+
 
 import sys
 import argparse
@@ -10,17 +34,23 @@ import datetime
 import copy
 import ctypes.wintypes
 
+
 # Windows hack to get path of Documents folder, which might reside on other drives than C:
 CSIDL_PERSONAL = 5       # My Documents
 SHGFP_TYPE_CURRENT = 0   # Get current, not default value
 buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
 ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
 
-global DEFAULT_NINA_DIR
+global DEFAULT_NINA_DIR, DEFAULT_TARGETS_DIR
 DEFAULT_NINA_DIR = buf.value.replace("\\", "/") + "/N.I.N.A"
-global DEFAULT_TARGETS_DIR
 DEFAULT_TARGETS_DIR = DEFAULT_NINA_DIR + "/Targets/tmp"
 
+global DEFAULT_TEMPLATE, DEFAULT_TARGET
+DEFAULT_TEMPLATE = "./NINA-Templates-IAS/Base NEO nautical.json"
+DEFAULT_TARGET = "./NINA-Templates-IAS/Target NEO.json"
+
+global DEFAULT_FILTER_NAMES
+DEFAULT_FILTER_NAMES = [ "L", "R", "G", "B", "Ha", "OIII", "SII"]
 # print("N.I.N.A dir =", DEFAULT_NINA_DIR)
 # print("N.I.N.A targets dir =", DEFAULT_TARGETS_DIR)
 
@@ -51,9 +81,10 @@ class NINABase:
     """Base class for NINASequence and NINATarget"""
 
     verbose  = False        # -v
-    max_level = 0           # -l N
     targets_only = False    # -t
     prefix_target = False   # -p
+    no_output = False       # -n
+    add_number = False      # -N
 
 
     def __init__(self):
@@ -91,10 +122,6 @@ class NINABase:
 
 
     def traverse_obj(self, obj, indent, level, func):
-        # recursion depth
-        if NINABase.max_level > 0 and level > NINABase.max_level:
-            return
-
         if NINABase.verbose:
             print(indent, "KEYS =", ", ".join(obj.keys()))
 
@@ -370,23 +397,39 @@ class NINASequence(NINABase):
                 time_utc = datetime.datetime.fromisoformat(row["Observation date"].replace(" ", "-") + "T" + 
                                                            row["Time UT"] + ":00+00:00")
                 # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
-                # convert to UTC+2
+                # convert to Namibian time zone = UTC+2
                 time_NA  = time_utc.astimezone(tz_NA)
                 ra  = row["RAm"].replace(" ", ":").replace("+", "")
                 dec = row["DECm"].replace(" ", ":").replace("+", "")
+                # use RA/DEC if RAm/DECm are empty
+                if ra=="":
+                    ra  = row["RA"].replace(" ", ":").replace("+", "")
+                if dec=="":
+                    dec = row["Dec."].replace(" ", ":").replace("+", "")
                 exp = float(row["Exposure time"])
                 number = int(row["No images"])
+                filter = "L"
+                if "filter" in row.keys():
+                    filter = row["filter"]
+                    for fn in DEFAULT_FILTER_NAMES:
+                        if filter.startswith(fn):
+                            filter = fn
+                            break
+
                 name = "{} {:03d} {}".format(time_NA.date(), seq, target).replace("/", "").replace(":", "")
+                # 
+                if NINABase.add_number:
+                    name += " (n{:03d})".format(number)
                 # use target sequence titel as the target name (FITS header!), too
                 if NINABase.prefix_target:
                     target = name
 
-                print("NINASequence(process_csv):", "#", seq, "target =", target, "RA =", ra, "DEC =", dec)
-                print("NINASequence(process_csv):", "UT =", time_utc, 
-                                                          "/ local date =", time_NA.date(), "time =", time_NA.time())
+                print("NINASequence(process_csv):", "#{:03d} target={} RA={} DEC={}".format(seq, target, ra, dec))
+                print("NINASequence(process_csv):", "     UT={} / local {} {}".format(time_utc, time_NA.date(), time_NA.time()))
+                print("NINASequence(process_csv):", "     {:d}x{:.1f}s filter={}".format(number, exp, filter))
 
                 # default for filter and binning
-                data = TargetData(name, target, ra, dec, time_NA.time(), number, exp)
+                data = TargetData(name, target, ra, dec, time_NA.time(), number, exp, filter)
 
                 # create deep copy of target object, update with data read from CSV
                 target_new = copy.deepcopy(target_tmpl)
@@ -395,8 +438,9 @@ class NINASequence(NINABase):
                 ### write separate targets
                 if NINABase.targets_only:
                     output_path = destdir + "/" + name + ".json"
-                    print("NINASequence(process_csv):", "writing JSON target", output_path)
-                    target_new.write_json(output_path)
+                    if not NINABase.no_output:
+                        print("NINASequence(process_csv):", "writing JSON target", output_path)
+                        target_new.write_json(output_path)
 
                 ### append to main sequence targets
                 else:
@@ -429,33 +473,35 @@ def main(argv):
     arg = argparse.ArgumentParser(
         prog        = "nina-create-sequence",
         description = "Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV",
-        epilog      = "")
+        epilog      = "Version: " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
     arg.add_argument("-T", "--target-template", help="base N.I.N.A target template .json file")
     arg.add_argument("-S", "--sequence-template", help="base N.I.N.A sequence .json file")
     arg.add_argument("-D", "--destination-dir", help="output dir for created targets/sequence")
-    arg.add_argument("-o", "--output", help="output .json file, default NEW-YYYY-MM-DD")
-    arg.add_argument("-l", "--level", type=int, help="limit recursion depth")
+    arg.add_argument("-o", "--output", help="output .json file, default NEO-YYYY-MM-DD")
     arg.add_argument("-t", "--targets-only", action="store_true", help="create separate targets only")
     arg.add_argument("-p", "--prefix-target", action="store_true", help="prefix all target names with YYYY-MM-DD NNN")
+    arg.add_argument("-n", "--no-output", action="store_true", help="dry run, don't create output files")
+    arg.add_argument("-N", "--add-number", action="store_true", help="add number of frames (nNNN) to target name")
     arg.add_argument("filename", nargs="+", help="CSV target data list")
    
     args = arg.parse_args()
 
     NINABase.verbose = args.verbose
-    NINABase.max_level = args.level if args.level else 0
     NINABase.targets_only = args.targets_only
     NINABase.prefix_target = args.prefix_target
+    NINABase.no_output = args.no_output
+    NINABase.add_number = args.add_number
 
     if args.target_template:
         target_template = args.target_template
     else:
-        target_template = "Target NEO v1.json"
+        target_template = DEFAULT_TARGET
     print(arg.prog+":", "processing target template", target_template)
     if args.sequence_template:
         sequence_template = args.sequence_template
     else:
-        sequence_template = "Empty.json"
+        sequence_template = DEFAULT_TEMPLATE
     print(arg.prog+":", "processing sequence template", sequence_template)
     if args.destination_dir:
         destination_dir = args.destination_dir
@@ -483,8 +529,9 @@ def main(argv):
 
     if not NINABase.targets_only:
         output_path = destination_dir + "/" + output
-        print(arg.prog+":", "writing JSON sequence", output_path)
-        sequence.write_json(output_path)
+        if not NINABase.no_output:
+            print(arg.prog+":", "writing JSON sequence", output_path)
+            sequence.write_json(output_path)
 
 
    
