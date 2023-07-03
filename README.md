@@ -35,7 +35,7 @@ options:
   -N, --add-number      add number of frames (nNNN) to target name
 
 Version: 0.4 / 2023-07-03 / Martin Junius
-´´´
+
 
 ## test-shutter-open
 For Hakos remote observatories roll-off roof control only, tests whether the roof aka "shutter" is in state "open".
