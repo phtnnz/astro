@@ -11,12 +11,13 @@ if exist "%LOCALAPPDATA%\Programs\Python\Python311\python.exe" (set PYTHON=%LOCA
 if exist "C:\Windows\py.exe" (set PY=C:\Windows\py.exe)
 if exist "%LOCALAPPDATA%\Programs\Python\Launcher\py.exe" (set PYTHON=%LOCALAPPDATA%\Programs\Python\Launcher\py.exe)
 
+rem echo PYTHON="%PYTHON%"
+rem echo PY="%PY%"
+
 set CWD=%~dp0
 set SCRIPT=%~dpn0.py
 echo CWD="%CWD%"
-echo PYTHON="%PYTHON%"
-echo PY="%PY%"
-echo SCRIPT="%SCRIPT%"
+echo SCRIPT="%SCRIPT%" %*
 echo ARGS=%*
 
 "%SCRIPT%" %*

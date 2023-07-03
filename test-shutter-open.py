@@ -3,8 +3,10 @@
 # ChangeLog
 # Version 0.1 / 2023-06-26
 #       First version, test shutter status with Hakos API
-# Version 0.2 / 2023-06-26
+# Version 0.2 / 2023-07-01
 #       Updated help text
+# Version 0.3 / 2023-07-03
+#       Commented debug messages
 
 import os
 import sys
@@ -13,7 +15,7 @@ import json
 import requests
 
 global VERSION, AUTHOR
-VERSION = "0.2 / 2023-07-01"
+VERSION = "0.3 / 2023-07-03"
 AUTHOR  = "Martin Junius"
 
 global CONFIG
@@ -58,7 +60,7 @@ class Config:
 def main():
     arg = argparse.ArgumentParser(
         prog        = "test-shutter-open",
-        description = "Test Hakos shutter (roof) status: returns exit code 0, if open",
+        description = "Test Hakos shutter (roof) status: returns exit code 0, if open, else 1",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
 
@@ -72,9 +74,9 @@ def main():
         sys.exit(1)
     
     appdata = appdata.replace("\\", "/")
-    print(arg.prog+":", "appdata =", appdata)
+    # print(arg.prog+":", "appdata =", appdata)
     config = appdata + "/" + CONFIG
-    print(arg.prog+":", "config =", config)
+    # print(arg.prog+":", "config =", config)
 
     cf = Config(config)
     cf.read_json()
