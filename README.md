@@ -51,3 +51,5 @@ options:
 
 Version 0.3 / 2023-07-03 / Martin Junius
 ```
+
+Use the batch file wrapper test-shutter-open.bat with full path in N.I.N.A's "External Script" instruction, eg D:\Some\Where\test-shutter-open.bat
