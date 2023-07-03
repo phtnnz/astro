@@ -77,7 +77,6 @@ class NINABase:
     """Base class for NINASequence and NINATarget"""
 
     verbose  = False        # -v
-    max_level = 0           # -l N
     targets_only = False    # -t
     prefix_target = False   # -p
     no_output = False       # -n
@@ -119,10 +118,6 @@ class NINABase:
 
 
     def traverse_obj(self, obj, indent, level, func):
-        # recursion depth
-        if NINABase.max_level > 0 and level > NINABase.max_level:
-            return
-
         if NINABase.verbose:
             print(indent, "KEYS =", ", ".join(obj.keys()))
 
@@ -479,8 +474,7 @@ def main(argv):
     arg.add_argument("-T", "--target-template", help="base N.I.N.A target template .json file")
     arg.add_argument("-S", "--sequence-template", help="base N.I.N.A sequence .json file")
     arg.add_argument("-D", "--destination-dir", help="output dir for created targets/sequence")
-    arg.add_argument("-o", "--output", help="output .json file, default NEW-YYYY-MM-DD")
-    arg.add_argument("-l", "--level", type=int, help="limit recursion depth")
+    arg.add_argument("-o", "--output", help="output .json file, default NEO-YYYY-MM-DD")
     arg.add_argument("-t", "--targets-only", action="store_true", help="create separate targets only")
     arg.add_argument("-p", "--prefix-target", action="store_true", help="prefix all target names with YYYY-MM-DD NNN")
     arg.add_argument("-n", "--no-output", action="store_true", help="dry run, don't create output files")
@@ -490,7 +484,6 @@ def main(argv):
     args = arg.parse_args()
 
     NINABase.verbose = args.verbose
-    NINABase.max_level = args.level if args.level else 0
     NINABase.targets_only = args.targets_only
     NINABase.prefix_target = args.prefix_target
     NINABase.no_output = args.no_output
