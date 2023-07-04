@@ -323,6 +323,8 @@ class NINASequence(NINABase):
         self.targets_id   = None
         self.end_id       = None
 
+        # This dictionary holds the ids of the various time SelectedProvider{}, to be replaced with reference
+        # on further occurences
         self.provider_dict = {}
 
         NINABase.__init__(self)
