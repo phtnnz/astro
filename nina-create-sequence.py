@@ -308,24 +308,6 @@ class NINATarget(NINABase):
         self.obj["IsExpanded"] = flag
 
 
-    def get_waitfortime_provider(self):
-        return self.waitfortime["SelectedProvider"]["$id"]
-    
-    def set_waitfortime_provider(self, id):
-        if NINABase.verbose:
-            print("NINATarget(set_waitfortime_provider):", "id =", id)
-        self.waitfortime["SelectedProvider"] = { "$ref": id }
-
-
-    def get_timecondition_provider(self):
-        return self.timecondition["SelectedProvider"]["$id"]
-    
-    def set_timecondition_provider(self, id):
-        if NINABase.verbose:
-            print("NINATarget(set_timecondition_provider):", "id =", id)
-        self.timecondition["SelectedProvider"] = { "$ref": id }
-
-
 
 
 class NINASequence(NINABase):
@@ -380,8 +362,6 @@ class NINASequence(NINABase):
 
     def process_csv(self, target_tmpl, file, destdir):
         tz_NA = datetime.timezone(datetime.timedelta(hours=2, minutes=0))
-        waitfortime_provider = None
-        timecondition_provider = None
 
         with open(file, newline='') as f:
             reader = csv.DictReader(f)
@@ -448,23 +428,15 @@ class NINASequence(NINABase):
                     target_new.add_parent(self.targets_id)
                     # collapse view
                     target_new.set_expanded(False)
-                    # update SelectedProvider references
-                    # if waitfortime_provider:
-                    #     target_new.set_waitfortime_provider(waitfortime_provider)
-                    # else:
-                    #     waitfortime_provider = target_new.get_waitfortime_provider()
-                    # if timecondition_provider:
-                    #     target_new.set_timecondition_provider(timecondition_provider)
-                    # else:
-                    #     timecondition_provider = target_new.get_timecondition_provider()
-
                     self.append_target(target_new)
 
                 ##DELETE ME##
                 ##break
-        # Process Provider {...}
-        print("processing SelectedProvider{...}")
+
+        # update all SelectedProvider {...} with references
         self.traverse(NINABase.process_provider, self.provider_dict)
+
+
 
 
 def main(argv):
