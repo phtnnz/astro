@@ -31,14 +31,14 @@ class NINATemplate:
             print(indent, name, "=", obj[name])
 
 
-    def print_items(self, obj, indent, level):
-        if "Items" in obj:
+    def print_list(self, obj, key, indent, level):
+        if key in obj:
             if OPT_L>0 and level > OPT_L:
-                print(indent, "Container with items [...]")
+                print(indent, "Container with ", key, "[...]")
                 return
 
-            print("\n" + indent, "Container with items")
-            items = obj["Items"]
+            print("\n" + indent, "Container with", key)
+            items = obj[key]
             self.print_keys(items, indent)
 #            self.print_attr(items, "$id", indent+" >")
 #            self.print_attr(items, "$type", indent+" >")
@@ -79,7 +79,9 @@ class NINATemplate:
 #        self.print_attr(obj, "$id", indent)
 #        self.print_attr(obj, "$type", indent)
         self.print_attr(obj, "Name", indent)
-        self.print_items(obj, indent, level+1)
+        self.print_list(obj, "Items", indent, level+1)
+        self.print_list(obj, "Triggers", indent, level+1)
+        self.print_list(obj, "Conditions", indent, level+1)
         self.print_parent(obj, indent)
 
 
