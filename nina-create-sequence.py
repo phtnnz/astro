@@ -173,6 +173,7 @@ class NINATarget(NINABase):
         # [1] Exposure loop
         self.container_items = None
         self.container_conditions = None
+        self.container_triggers = None
 
         NINABase.__init__(self)
 
@@ -224,16 +225,19 @@ class NINATarget(NINABase):
         
         items = self.obj["Items"]
 
-        self.container_items = []
+        self.container_items      = []
         self.container_conditions = []
+        self.container_triggers   = []
         for item in items["$values"]:
             type = item["$type"]
             # print("type =", type)
             if "Container.SequentialContainer" in type:
                 self.container_items.append(item["Items"]["$values"])
                 self.container_conditions.append(item["Conditions"]["$values"])
-        self.__process_container_0()
-        self.__process_container_1()
+                self.container_triggers.append(item["Triggers"]["$values"])
+        # self.__process_container_0()
+        # self.__process_container_1()
+        self.__process_container_list()
 
 
     def __process_target(self):
@@ -257,46 +261,39 @@ class NINATarget(NINABase):
             print("NINATarget(process_target):", "RA =", ra, ", DEC =", dec)
 
 
-    def __process_container_0(self):
-        for item in self.container_items[0]:
-            if "WaitForTime" in item["$type"]:
-                self.waitfortime = item
-                time_hh = item["Hours"]
-                time_mm = item["Minutes"]
-                time_ss = item["Seconds"]
-                time = "{:02}:{:02}:{:02}".format(time_hh, time_mm, time_ss)
-                if NINABase.verbose:
-                    print("NINATarget(process_waitfortime):", "WaitForTime =", time)
+    def __process_container_list(self):
+        for container in self.container_items + self.container_conditions + self.container_triggers:
+            for item in container:
+                print(item)
+                if "WaitForTime" in item["$type"]:
+                    self.waitfortime = item
+                    time_hh = item["Hours"]
+                    time_mm = item["Minutes"]
+                    time_ss = item["Seconds"]
+                    time = "{:02}:{:02}:{:02}".format(time_hh, time_mm, time_ss)
+                    if NINABase.verbose:
+                        print("NINATarget(process_waitfortime):", "WaitForTime =", time)
 
-        for item in self.container_conditions[0]:
-            pass
-            # if "XXX" in item["$type"]:
-            #     self.waitfortime = item
+                if "SmartExposure" in item["$type"]:
+                    # NEW NUMBER OF EXPOSURES --> conditions0["Iterations"]
+                    self.conditions0 = item["Conditions"]["$values"][0]
+                    if NINABase.verbose:
+                        print("NINATarget(process_imaging):", "number =", self.conditions0["Iterations"])
 
+                    items = item["Items"]
+                    for item2 in items["$values"]:
+                        if "SwitchFilter" in item2["$type"]:
+                            self.filter = item2["Filter"]
+                            if NINABase.verbose:
+                                print("NINATarget(process_imaging):", "filter =", self.filter["_name"])
+                        if "TakeExposure"  in item2["$type"]:
+                            self.exposure = item2
+                            binning  = "{}x{}".format(item2["Binning"]["X"], item2["Binning"]["X"])
+                            if NINABase.verbose:
+                                print("NINATarget(process_imaging):", "exposure =", self.exposure["ExposureTime"], ", binning =", binning)
 
-    def __process_container_1(self):
-        for item in self.container_items[1]:
-            if "SmartExposure" in item["$type"]:
-                # NEW NUMBER OF EXPOSURES --> conditions0["Iterations"]
-                self.conditions0 = item["Conditions"]["$values"][0]
-                if NINABase.verbose:
-                    print("NINATarget(process_imaging):", "number =", self.conditions0["Iterations"])
-
-                items = item["Items"]
-                for item2 in items["$values"]:
-                    if "SwitchFilter" in item2["$type"]:
-                        self.filter = item2["Filter"]
-                        if NINABase.verbose:
-                            print("NINATarget(process_imaging):", "filter =", self.filter["_name"])
-                    if "TakeExposure"  in item2["$type"]:
-                        self.exposure = item2
-                        binning  = "{}x{}".format(item2["Binning"]["X"], item2["Binning"]["X"])
-                        if NINABase.verbose:
-                            print("NINATarget(process_imaging):", "exposure =", self.exposure["ExposureTime"], ", binning =", binning)
-
-        for item in self.container_conditions[1]:
-            if "TimeCondition" in item["$type"]:
-                self.timecondition = item
+                if "TimeCondition" in item["$type"]:
+                    self.timecondition = item
 
 
     def add_parent(self, id):
