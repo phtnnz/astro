@@ -102,31 +102,16 @@ class NINABase:
             json.dump(self.obj, f, indent = 2)
 
 
-    def traverse(self, func=None):
-        self.traverse_obj(self.obj, ">", 1, func)
+    def traverse(self, func=None, param=None):
+        self.traverse_obj(self.obj, ">", 1, func, param)
 
 
-    def set_prefix(self, prefix):
-        self.id_prefix = prefix
-
-
-    def add_prefix_to_id(self, obj, indent):
-        # change "$id" and "$ref"
-        self.__add_prefix(obj, "$id")
-        self.__add_prefix(obj, "$ref")
-
-
-    def __add_prefix(self, obj, key):
-        if key in obj:
-            obj[key] = str(self.id_prefix*1000 + int(obj[key]))
-
-
-    def traverse_obj(self, obj, indent, level, func):
+    def traverse_obj(self, obj, indent, level, func=None, param=None):
         if NINABase.verbose:
             print(indent, "KEYS =", ", ".join(obj.keys()))
 
         if func:
-            func(self, obj, indent + " >")
+            func(self, obj, indent + ">", param)
 
         for k, val in obj.items():
             if k=="$id" or k=="$type" or k=="$ref" or k=="Name":
@@ -144,6 +129,28 @@ class NINABase:
                     self.traverse_obj(val1, indent + " >", level + 1, func)
             else:
                 """rest"""
+
+
+    def set_prefix(self, prefix):
+        self.id_prefix = prefix
+
+
+    def add_prefix_to_id(self, obj, indent, param=None):
+        # change "$id" and "$ref"
+        self.__add_prefix(obj, "$id")
+        self.__add_prefix(obj, "$ref")
+
+
+    def __add_prefix(self, obj, key):
+        if key in obj:
+            obj[key] = str(self.id_prefix*1000 + int(obj[key]))
+
+
+    def process_provider(self, obj, indent, param=None):
+        # search for Provider {...} and changed additional occurences to reference
+        self.print_attr(obj, "SelectedProvider", "")
+        if "SelectedProvider" in obj.keys():
+            prov = obj["SelectedProvider"]
 
 
     def print_attr(self, obj, name, indent):
@@ -243,8 +250,6 @@ class NINATarget(NINABase):
     def __process_target(self):
         # NEW TARGET --> target["TargetName"]
         self.targetname = self.target["TargetName"]
-        if NINABase.verbose:
-            print("NINATarget(process_target):", "targetname =", self.targetname)
         self.coord      = self.target["InputCoordinates"]
 
         ra_hh = self.coord["RAHours"]
@@ -255,11 +260,6 @@ class NINATarget(NINABase):
         dec_mm = self.coord["DecMinutes"]
         dec_ss = self.coord["DecSeconds"]
 
-        ra  = "{:02d}:{:02d}:{:04.1f}".format(ra_hh, ra_mm, ra_ss)
-        dec = "{:02d}:{:02d}:{:04.1f}".format(dec_dd, dec_mm, dec_ss)
-        if NINABase.verbose:
-            print("NINATarget(process_target):", "RA =", ra, ", DEC =", dec)
-
 
     def __process_container_list(self):
         for container in self.container_items + self.container_conditions + self.container_triggers:
@@ -267,30 +267,17 @@ class NINATarget(NINABase):
                 print(item)
                 if "WaitForTime" in item["$type"]:
                     self.waitfortime = item
-                    time_hh = item["Hours"]
-                    time_mm = item["Minutes"]
-                    time_ss = item["Seconds"]
-                    time = "{:02}:{:02}:{:02}".format(time_hh, time_mm, time_ss)
-                    if NINABase.verbose:
-                        print("NINATarget(process_waitfortime):", "WaitForTime =", time)
 
                 if "SmartExposure" in item["$type"]:
                     # NEW NUMBER OF EXPOSURES --> conditions0["Iterations"]
                     self.conditions0 = item["Conditions"]["$values"][0]
-                    if NINABase.verbose:
-                        print("NINATarget(process_imaging):", "number =", self.conditions0["Iterations"])
 
                     items = item["Items"]
                     for item2 in items["$values"]:
                         if "SwitchFilter" in item2["$type"]:
                             self.filter = item2["Filter"]
-                            if NINABase.verbose:
-                                print("NINATarget(process_imaging):", "filter =", self.filter["_name"])
                         if "TakeExposure"  in item2["$type"]:
                             self.exposure = item2
-                            binning  = "{}x{}".format(item2["Binning"]["X"], item2["Binning"]["X"])
-                            if NINABase.verbose:
-                                print("NINATarget(process_imaging):", "exposure =", self.exposure["ExposureTime"], ", binning =", binning)
 
                 if "TimeCondition" in item["$type"]:
                     self.timecondition = item
@@ -462,8 +449,9 @@ class NINASequence(NINABase):
 
                 ##DELETE ME##
                 ##break
-
-
+        # Process Provider {...}
+        print("processing SelectedProvider{...}")
+        self.traverse(NINABase.process_provider)
 
 
 def main(argv):
