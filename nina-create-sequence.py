@@ -13,16 +13,13 @@
 #       New target template "./NINA-Templates-IAS/Base NEO nautical.json"
 #       New base template "./NINA-Templates-IAS/Base NEO nautical.json"
 #       Removed -l option
-
-# TODO:
-# - Handling of the various time providers, which must occur only *once* in the sequence and 
-#   be referenced "$ref" = ID for further occurances, currently a hack which only works with
-#   the current target template!
+# Version 1.0 / 2023-07-04
+#       Cleaner handling of SelectedProvider references in completed sequence
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
 global VERSION, AUTHOR
-VERSION = "0.4 / 2023-07-03"
+VERSION = "1.0 / 2023-07-04"
 AUTHOR  = "Martin Junius"
 
 
@@ -120,13 +117,13 @@ class NINABase:
 
             if type(val) is dict:
                 """dict"""
-                self.traverse_obj(val, indent + " >", level + 1, func)
+                self.traverse_obj(val, indent + " >", level + 1, func, param)
             elif type(val) is str:
                 """str"""
             elif type(obj[k]) is list:
                 """list"""
                 for val1 in val:
-                    self.traverse_obj(val1, indent + " >", level + 1, func)
+                    self.traverse_obj(val1, indent + " >", level + 1, func, param)
             else:
                 """rest"""
 
@@ -146,11 +143,25 @@ class NINABase:
             obj[key] = str(self.id_prefix*1000 + int(obj[key]))
 
 
-    def process_provider(self, obj, indent, param=None):
+    def process_provider(self, obj, indent, dict):
         # search for Provider {...} and changed additional occurences to reference
-        self.print_attr(obj, "SelectedProvider", "")
+        if NINABase.verbose:
+            self.print_attr(obj, "SelectedProvider", "")
         if "SelectedProvider" in obj.keys():
             prov = obj["SelectedProvider"]
+            if "$type" in prov.keys():
+                type = prov["$type"]
+                id   = prov["$id"]
+                if type in dict.keys():
+                    # already exists
+                    ref = dict[type]
+                    obj["SelectedProvider"] = { "$ref": ref }
+
+                else:
+                    # 1st time occurence, don't touch
+                    dict[type] = id
+        if NINABase.verbose:
+            self.print_attr(obj, "SelectedProvider", "")
 
 
     def print_attr(self, obj, name, indent):
@@ -330,6 +341,8 @@ class NINASequence(NINABase):
         self.targets_id   = None
         self.end_id       = None
 
+        self.provider_dict = {}
+
         NINABase.__init__(self)
 
 
@@ -436,14 +449,14 @@ class NINASequence(NINABase):
                     # collapse view
                     target_new.set_expanded(False)
                     # update SelectedProvider references
-                    if waitfortime_provider:
-                        target_new.set_waitfortime_provider(waitfortime_provider)
-                    else:
-                        waitfortime_provider = target_new.get_waitfortime_provider()
-                    if timecondition_provider:
-                        target_new.set_timecondition_provider(timecondition_provider)
-                    else:
-                        timecondition_provider = target_new.get_timecondition_provider()
+                    # if waitfortime_provider:
+                    #     target_new.set_waitfortime_provider(waitfortime_provider)
+                    # else:
+                    #     waitfortime_provider = target_new.get_waitfortime_provider()
+                    # if timecondition_provider:
+                    #     target_new.set_timecondition_provider(timecondition_provider)
+                    # else:
+                    #     timecondition_provider = target_new.get_timecondition_provider()
 
                     self.append_target(target_new)
 
@@ -451,7 +464,7 @@ class NINASequence(NINABase):
                 ##break
         # Process Provider {...}
         print("processing SelectedProvider{...}")
-        self.traverse(NINABase.process_provider)
+        self.traverse(NINABase.process_provider, self.provider_dict)
 
 
 def main(argv):
