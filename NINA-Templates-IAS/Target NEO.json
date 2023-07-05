@@ -10,11 +10,11 @@
     "InputCoordinates": {
       "$id": "3",
       "$type": "NINA.Astrometry.InputCoordinates, NINA.Astrometry",
-      "RAHours": 10,
+      "RAHours": 0,
       "RAMinutes": 0,
       "RASeconds": 0.0,
-      "NegativeDec": true,
-      "DecDegrees": -20,
+      "NegativeDec": false,
+      "DecDegrees": 0,
       "DecMinutes": 0,
       "DecSeconds": 0.0
     }
@@ -62,7 +62,7 @@
       {
         "$id": "9",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 0.3 / 2023-07-02 / Martin Junius",
+        "Text": "Version 0.4 / 2023-07-05 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -137,11 +137,11 @@
               "Coordinates": {
                 "$id": "19",
                 "$type": "NINA.Astrometry.InputCoordinates, NINA.Astrometry",
-                "RAHours": 10,
+                "RAHours": 0,
                 "RAMinutes": 0,
                 "RASeconds": 0.0,
-                "NegativeDec": true,
-                "DecDegrees": -20,
+                "NegativeDec": false,
+                "DecDegrees": 0,
                 "DecMinutes": 0,
                 "DecSeconds": 0.0
               },
@@ -159,24 +159,24 @@
               },
               "ErrorBehavior": 0,
               "Attempts": 1
+            },
+            {
+              "$id": "21",
+              "$type": "NINA.Sequencer.SequenceItem.Guider.StartGuiding, NINA.Sequencer",
+              "ForceCalibration": false,
+              "Parent": {
+                "$ref": "10"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
             }
           ]
         },
         "Triggers": {
-          "$id": "21",
+          "$id": "22",
           "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System",
           "$values": []
         },
-        "Parent": {
-          "$ref": "1"
-        },
-        "ErrorBehavior": 0,
-        "Attempts": 1
-      },
-      {
-        "$id": "22",
-        "$type": "NINA.Sequencer.SequenceItem.Guider.StartGuiding, NINA.Sequencer",
-        "ForceCalibration": false,
         "Parent": {
           "$ref": "1"
         },
@@ -200,7 +200,7 @@
               "Hours": 6,
               "Minutes": 44,
               "MinutesOffset": 0,
-              "Seconds": 7,
+              "Seconds": 13,
               "SelectedProvider": {
                 "$id": "26",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.NauticalDawnProvider, NINA.Sequencer"
@@ -219,11 +219,11 @@
                 "Coordinates": {
                   "$id": "29",
                   "$type": "NINA.Astrometry.InputCoordinates, NINA.Astrometry",
-                  "RAHours": 10,
+                  "RAHours": 0,
                   "RAMinutes": 0,
                   "RASeconds": 0.0,
-                  "NegativeDec": true,
-                  "DecDegrees": -20,
+                  "NegativeDec": false,
+                  "DecDegrees": 0,
                   "DecMinutes": 0,
                   "DecSeconds": 0.0
                 },
@@ -552,7 +552,57 @@
       },
       {
         "$id": "69",
-        "$type": "NINA.Sequencer.SequenceItem.Guider.StopGuiding, NINA.Sequencer",
+        "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
+        "Strategy": {
+          "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+        },
+        "Name": "CONTAINER [2] - can contain External Script",
+        "Conditions": {
+          "$id": "70",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System",
+          "$values": []
+        },
+        "IsExpanded": true,
+        "Items": {
+          "$id": "71",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System",
+          "$values": [
+            {
+              "$id": "72",
+              "$type": "NINA.Sequencer.SequenceItem.Guider.StopGuiding, NINA.Sequencer",
+              "Parent": {
+                "$ref": "69"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            },
+            {
+              "$id": "73",
+              "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
+              "Text": "Create TARGET.ready flag",
+              "Parent": {
+                "$ref": "69"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            },
+            {
+              "$id": "74",
+              "$type": "NINA.Sequencer.SequenceItem.Utility.ExternalScript, NINA.Sequencer",
+              "Script": "\"D:\\Users\\remote\\Documents\\Scripts\\nina-flag-ready.bat\" \"TARGET\"",
+              "Parent": {
+                "$ref": "69"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            }
+          ]
+        },
+        "Triggers": {
+          "$id": "75",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System",
+          "$values": []
+        },
         "Parent": {
           "$ref": "1"
         },
@@ -562,7 +612,7 @@
     ]
   },
   "Triggers": {
-    "$id": "70",
+    "$id": "76",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System",
     "$values": []
   },
