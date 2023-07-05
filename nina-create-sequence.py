@@ -235,10 +235,8 @@ class NINATarget(NINABase):
 
         # Update target for External Script
         if self.script_w_target:
-            print("update_target_data:", self.script_w_target)
             script = self.script_w_target["Script"]
             self.script_w_target["Script"] = script.replace("\"TARGET\"", "\"{}\"".format(data.targetname))
-            print("update_target_data:", self.script_w_target)
 
 
 
@@ -248,13 +246,15 @@ class NINATarget(NINABase):
             print("NINATarget(process_data):", "name =", self.name)
 
         self.target = self.obj["Target"]
-        self.__process_target()
-        
+        self.targetname = self.target["TargetName"]
+        self.coord = self.target["InputCoordinates"]
+
         items = self.obj["Items"]
 
         self.container_items      = []
         self.container_conditions = []
         self.container_triggers   = []
+
         for item in items["$values"]:
             type = item["$type"]
             # print("type =", type)
@@ -262,21 +262,13 @@ class NINATarget(NINABase):
                 self.container_items.append(item["Items"]["$values"])
                 self.container_conditions.append(item["Conditions"]["$values"])
                 self.container_triggers.append(item["Triggers"]["$values"])
-        # self.__process_container_0()
-        # self.__process_container_1()
+
         self.__process_container_list()
-
-
-    def __process_target(self):
-        # NEW TARGET --> target["TargetName"]
-        self.targetname = self.target["TargetName"]
-        self.coord      = self.target["InputCoordinates"]
 
 
     def __process_container_list(self):
         for container in self.container_items + self.container_conditions + self.container_triggers:
             for item in container:
-                # print(item)
                 if "WaitForTime" in item["$type"]:
                     self.waitfortime = item
 
