@@ -2,6 +2,10 @@
 rem
 rem Flag exposure series as ready by creating TARGET.ready file in N.I.N.A data directory
 rem
+rem usage: nina-flag-ready.bat "TARGET"
+rem
+rem "TARGET" must not contain / or :
+rem
 
 rem Search for data directory
 set NINADATA=NONE
@@ -14,5 +18,5 @@ set TARGET=%1
 echo CWD="%CWD%"
 echo NINDATA="%NINADATA%"
 echo TARGET="%TARGET%"
-@echo on
-echo %TARGET% - ready. > %NINADATA%\%TARGET%.ready
+rem @echo on
+echo Target %TARGET% - ready. > %NINADATA%\%TARGET%.ready
