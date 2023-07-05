@@ -52,4 +52,10 @@ options:
 Version 0.3 / 2023-07-03 / Martin Junius
 ```
 
-Use the batch file wrapper test-shutter-open.bat with full path in N.I.N.A's "External Script" instruction, eg D:\Some\Where\test-shutter-open.bat
+## N.I.N.A External Script
+Use the batch file wrappers with full path in N.I.N.A's "External Script" instruction
+
+```
+"D:\Users\remote\Documents\Scripts\test-shutter-open.bat"
+"D:\Users\remote\Documents\Scripts\nina-flag-ready.bat" "TARGET"
+```
