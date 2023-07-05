@@ -186,6 +186,7 @@ class NINATarget(NINABase):
         self.exposure    = None
         self.binning     = None
         self.timecondition = None
+        self.script_w_target = None
         # instance variables created by process_data(), referencing the inner containers
         # [0] Preparation (Slew, AF, WaitForTime)
         # [1] Exposure loop
@@ -232,6 +233,14 @@ class NINATarget(NINABase):
             self.exposure["Binning"]["X"] = data.binning
             self.exposure["Binning"]["Y"] = data.binning
 
+        # Update target for External Script
+        if self.script_w_target:
+            print("update_target_data:", self.script_w_target)
+            script = self.script_w_target["Script"]
+            self.script_w_target["Script"] = script.replace("\"TARGET\"", "\"{}\"".format(data.targetname))
+            print("update_target_data:", self.script_w_target)
+
+
 
     def process_data(self):
         self.name = self.obj["Name"]
@@ -263,19 +272,11 @@ class NINATarget(NINABase):
         self.targetname = self.target["TargetName"]
         self.coord      = self.target["InputCoordinates"]
 
-        ra_hh = self.coord["RAHours"]
-        ra_mm = self.coord["RAMinutes"]
-        ra_ss = self.coord["RASeconds"]
-        #dec_neg = self.coord["NegativeDec"]
-        dec_dd = self.coord["DecDegrees"]
-        dec_mm = self.coord["DecMinutes"]
-        dec_ss = self.coord["DecSeconds"]
-
 
     def __process_container_list(self):
         for container in self.container_items + self.container_conditions + self.container_triggers:
             for item in container:
-                print(item)
+                # print(item)
                 if "WaitForTime" in item["$type"]:
                     self.waitfortime = item
 
@@ -292,6 +293,9 @@ class NINATarget(NINABase):
 
                 if "TimeCondition" in item["$type"]:
                     self.timecondition = item
+
+                if "ExternalScript" in item["$type"]:
+                    self.script_w_target = item
 
 
     def add_parent(self, id):
