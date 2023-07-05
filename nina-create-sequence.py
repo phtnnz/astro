@@ -15,11 +15,13 @@
 #       Removed -l option
 # Version 1.0 / 2023-07-04
 #       Cleaner handling of SelectedProvider references in completed sequence
+#       Process External Script with TARGET
+#       General clean-up
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
 global VERSION, AUTHOR
-VERSION = "1.0 / 2023-07-04"
+VERSION = "1.0 / 2023-07-05"
 AUTHOR  = "Martin Junius"
 
 
