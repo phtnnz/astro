@@ -58,3 +58,25 @@ Use the batch files/wrappers with full path in N.I.N.A's "External Script" instr
 "D:\Users\remote\Documents\Scripts\test-shutter-open.bat"
 "D:\Users\remote\Documents\Scripts\nina-flag-ready.bat" "TARGET"
 ```
+
+## astro-countsubs
+Count sub frames in directory structure and compute total exposure time. Relies on YYYY-MM-DD sub-directories and FITS filenames containing filter name and exposure time.
+
+```
+usage: astro-countsubs [-h] [-v] [-x EXCLUDE] [-f FILTER] dirname
+
+Traverse directory and count N.I.N.A subs
+
+positional arguments:
+  dirname               directory name
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         debug messages
+  -x EXCLUDE, --exclude EXCLUDE
+                        exclude filter, e.g. Ha,SII
+  -f FILTER, --filter FILTER
+                        filter list, e.g. L,R,G.B
+
+Version: 0.1 / 2023-07-07 / Martin Junius
+```
