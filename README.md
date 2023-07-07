@@ -10,8 +10,7 @@ The directory NINA-Templates-IAS/ contains the necessary N.I.N.A templates.
 Currently used for the M49, the IAS Remote Telescope
 
 ```
-usage: nina-create-sequence [-h] [-v] [-T TARGET_TEMPLATE] [-S SEQUENCE_TEMPLATE] [-D DESTINATION_DIR] [-o OUTPUT] [-t] [-p] [-n] [-N]
-                            filename [filename ...]
+usage: nina-create-sequence [-h] [-v] [-T TARGET_TEMPLATE] [-S SEQUENCE_TEMPLATE] [-D DESTINATION_DIR] [-o OUTPUT] [-t] [-p] [-n] [-N] filename [filename ...]
 
 Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV
 
@@ -34,7 +33,7 @@ options:
   -n, --no-output       dry run, don't create output files
   -N, --add-number      add number of frames (nNNN) to target name
 
-Version: 0.4 / 2023-07-03 / Martin Junius
+Version: 1.0 / 2023-07-05 / Martin Junius
 ```
 
 ## test-shutter-open
@@ -43,7 +42,7 @@ For Hakos remote observatories roll-off roof control only, tests whether the roo
 ```
 usage: test-shutter-open [-h] [-v]
 
-Test Hakos shutter (roof) status: returns exit code 0 if open, else 1
+Test Hakos shutter (roof) status: returns exit code 0, if open, else 1
 
 options:
   -h, --help     show this help message and exit
