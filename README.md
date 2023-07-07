@@ -43,7 +43,7 @@ For Hakos remote observatories roll-off roof control only, tests whether the roo
 ```
 usage: test-shutter-open [-h] [-v]
 
-Test Hakos shutter (roof) status: returns exit code 0, if open, else 1
+Test Hakos shutter (roof) status: returns exit code 0 if open, else 1
 
 options:
   -h, --help     show this help message and exit
@@ -53,7 +53,7 @@ Version 0.3 / 2023-07-03 / Martin Junius
 ```
 
 ## N.I.N.A External Script
-Use the batch file wrappers with full path in N.I.N.A's "External Script" instruction
+Use the batch files/wrappers with full path in N.I.N.A's "External Script" instruction
 
 ```
 "D:\Users\remote\Documents\Scripts\test-shutter-open.bat"
