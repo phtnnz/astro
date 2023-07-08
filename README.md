@@ -2,6 +2,8 @@
 
 Python scripts for creating N.I.N.A JSON sequences and targets, from object data in CSV format and N.I.N.A templates
 
+(See the most recent working* branch for bleeding edge code)
+
 ## nina-create-sequence
 Builds a complete N.I.N.A sequence for the observation night, using a base template (with empty Sequence Target Area) and a target template (repeated for every single object), from a CSV list of targets exported by NEO Planner.
 
@@ -79,4 +81,34 @@ options:
                         filter list, e.g. L,R,G.B
 
 Version: 0.1 / 2023-07-07 / Martin Junius
+```
+
+## nina-zip-ready-data
+Automatically archive N.I.N.A exposure when a target sequence has been completed,
+relying on the .ready flags created by nina-flag-ready.bat run as an External Script
+from within N.I.N.A
+- Search TARGET.ready files in DATADIR
+- Look for corresponding TARGET.7z archive in ZIPDIR
+- If exists, skip
+- If not, run 7z.exe to archive TARGET data subdir in DATA to TARGET.7z in ZIPDIR
+- Loop continuously
+
+```
+usage: nina-zip-ready-data [-h] [-v] [-D DATA_DIR] [-Z ZIP_DIR] [-t TIME_INTERVAL] [-z ZIP_PROG]
+
+Zip target data in N.I.N.A data directory marked as ready
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         debug messages
+  -D DATA_DIR, --data-dir DATA_DIR
+                        N.I.N.A data directory
+  -Z ZIP_DIR, --zip-dir ZIP_DIR
+                        directory for zip (.7z) files
+  -t TIME_INTERVAL, --time-interval TIME_INTERVAL
+                        time interval for checking data directory (default 60s)
+  -z ZIP_PROG, --zip-prog ZIP_PROG
+                        full path of 7-zip.exe (default "c:\Program Files-Zipz.exe")
+
+Version 0.1 / 2023-07-08 / Martin Junius
 ```
