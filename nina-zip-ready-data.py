@@ -88,7 +88,7 @@ def main():
         while True:
             scan_data_dir(DATADIR, ZIPDIR)
             if OPT_V:
-                print("Waiting ... ({:d}s)".format(TIMER))
+                print("Waiting ... ({:d}s, Ctrl-C to interrupt)".format(TIMER))
             time.sleep(TIMER)
     except:
         print("Terminating ...")
