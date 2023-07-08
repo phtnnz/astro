@@ -10,8 +10,7 @@ The directory NINA-Templates-IAS/ contains the necessary N.I.N.A templates.
 Currently used for the M49, the IAS Remote Telescope
 
 ```
-usage: nina-create-sequence [-h] [-v] [-T TARGET_TEMPLATE] [-S SEQUENCE_TEMPLATE] [-D DESTINATION_DIR] [-o OUTPUT] [-t] [-p] [-n] [-N]
-                            filename [filename ...]
+usage: nina-create-sequence [-h] [-v] [-T TARGET_TEMPLATE] [-S SEQUENCE_TEMPLATE] [-D DESTINATION_DIR] [-o OUTPUT] [-t] [-p] [-n] [-N] filename [filename ...]
 
 Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV
 
@@ -34,8 +33,8 @@ options:
   -n, --no-output       dry run, don't create output files
   -N, --add-number      add number of frames (nNNN) to target name
 
-Version: 0.4 / 2023-07-03 / Martin Junius
-´´´
+Version: 1.0 / 2023-07-05 / Martin Junius
+```
 
 ## test-shutter-open
 For Hakos remote observatories roll-off roof control only, tests whether the roof aka "shutter" is in state "open".
@@ -50,4 +49,34 @@ options:
   -v, --verbose  debug messages
 
 Version 0.3 / 2023-07-03 / Martin Junius
-´´´
+```
+
+## N.I.N.A External Script
+Use the batch files/wrappers with full path in N.I.N.A's "External Script" instruction
+
+```
+"D:\Users\remote\Documents\Scripts\test-shutter-open.bat"
+"D:\Users\remote\Documents\Scripts\nina-flag-ready.bat" "TARGET"
+```
+
+## astro-countsubs
+Count sub frames in directory structure and compute total exposure time. Relies on YYYY-MM-DD sub-directories and FITS filenames containing filter name and exposure time.
+
+```
+usage: astro-countsubs [-h] [-v] [-x EXCLUDE] [-f FILTER] dirname
+
+Traverse directory and count N.I.N.A subs
+
+positional arguments:
+  dirname               directory name
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         debug messages
+  -x EXCLUDE, --exclude EXCLUDE
+                        exclude filter, e.g. Ha,SII
+  -f FILTER, --filter FILTER
+                        filter list, e.g. L,R,G.B
+
+Version: 0.1 / 2023-07-07 / Martin Junius
+```

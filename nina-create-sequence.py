@@ -13,16 +13,15 @@
 #       New target template "./NINA-Templates-IAS/Base NEO nautical.json"
 #       New base template "./NINA-Templates-IAS/Base NEO nautical.json"
 #       Removed -l option
-
-# TODO:
-# - Handling of the various time providers, which must occur only *once* in the sequence and 
-#   be referenced "$ref" = ID for further occurances, currently a hack which only works with
-#   the current target template!
+# Version 1.0 / 2023-07-04
+#       Cleaner handling of SelectedProvider references in completed sequence
+#       Process External Script with TARGET
+#       General clean-up
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
 global VERSION, AUTHOR
-VERSION = "0.4 / 2023-07-03"
+VERSION = "1.0 / 2023-07-05"
 AUTHOR  = "Martin Junius"
 
 
@@ -102,15 +101,40 @@ class NINABase:
             json.dump(self.obj, f, indent = 2)
 
 
-    def traverse(self, func=None):
-        self.traverse_obj(self.obj, ">", 1, func)
+    def traverse(self, func=None, param=None):
+        self.traverse_obj(self.obj, ">", 1, func, param)
+
+
+    def traverse_obj(self, obj, indent, level, func=None, param=None):
+        if NINABase.verbose:
+            print(indent, "KEYS =", ", ".join(obj.keys()))
+
+        if func:
+            func(self, obj, indent + ">", param)
+
+        for k, val in obj.items():
+            if k=="$id" or k=="$type" or k=="$ref" or k=="Name":
+                if NINABase.verbose:
+                    self.print_attr(obj, k, indent+" >")
+
+            if type(val) is dict:
+                """dict"""
+                self.traverse_obj(val, indent + " >", level + 1, func, param)
+            elif type(val) is str:
+                """str"""
+            elif type(obj[k]) is list:
+                """list"""
+                for val1 in val:
+                    self.traverse_obj(val1, indent + " >", level + 1, func, param)
+            else:
+                """rest"""
 
 
     def set_prefix(self, prefix):
         self.id_prefix = prefix
 
 
-    def add_prefix_to_id(self, obj, indent):
+    def add_prefix_to_id(self, obj, indent, param=None):
         # change "$id" and "$ref"
         self.__add_prefix(obj, "$id")
         self.__add_prefix(obj, "$ref")
@@ -121,29 +145,25 @@ class NINABase:
             obj[key] = str(self.id_prefix*1000 + int(obj[key]))
 
 
-    def traverse_obj(self, obj, indent, level, func):
+    def process_provider(self, obj, indent, dict):
+        # search for Provider {...} and changed additional occurences to reference
         if NINABase.verbose:
-            print(indent, "KEYS =", ", ".join(obj.keys()))
+            self.print_attr(obj, "SelectedProvider", "")
+        if "SelectedProvider" in obj.keys():
+            prov = obj["SelectedProvider"]
+            if "$type" in prov.keys():
+                type = prov["$type"]
+                id   = prov["$id"]
+                if type in dict.keys():
+                    # already exists
+                    ref = dict[type]
+                    obj["SelectedProvider"] = { "$ref": ref }
 
-        if func:
-            func(self, obj, indent + " >")
-
-        for k, val in obj.items():
-            if k=="$id" or k=="$type" or k=="$ref" or k=="Name":
-                if NINABase.verbose:
-                    self.print_attr(obj, k, indent+" >")
-
-            if type(val) is dict:
-                """dict"""
-                self.traverse_obj(val, indent + " >", level + 1, func)
-            elif type(val) is str:
-                """str"""
-            elif type(obj[k]) is list:
-                """list"""
-                for val1 in val:
-                    self.traverse_obj(val1, indent + " >", level + 1, func)
-            else:
-                """rest"""
+                else:
+                    # 1st time occurence, don't touch
+                    dict[type] = id
+        if NINABase.verbose:
+            self.print_attr(obj, "SelectedProvider", "")
 
 
     def print_attr(self, obj, name, indent):
@@ -168,11 +188,13 @@ class NINATarget(NINABase):
         self.exposure    = None
         self.binning     = None
         self.timecondition = None
+        self.script_w_target = None
         # instance variables created by process_data(), referencing the inner containers
         # [0] Preparation (Slew, AF, WaitForTime)
         # [1] Exposure loop
         self.container_items = None
         self.container_conditions = None
+        self.container_triggers = None
 
         NINABase.__init__(self)
 
@@ -213,6 +235,12 @@ class NINATarget(NINABase):
             self.exposure["Binning"]["X"] = data.binning
             self.exposure["Binning"]["Y"] = data.binning
 
+        # Update target for External Script
+        if self.script_w_target:
+            script = self.script_w_target["Script"]
+            self.script_w_target["Script"] = script.replace("\"TARGET\"", "\"{}\"".format(data.targetname))
+
+
 
     def process_data(self):
         self.name = self.obj["Name"]
@@ -220,83 +248,48 @@ class NINATarget(NINABase):
             print("NINATarget(process_data):", "name =", self.name)
 
         self.target = self.obj["Target"]
-        self.__process_target()
-        
+        self.targetname = self.target["TargetName"]
+        self.coord = self.target["InputCoordinates"]
+
         items = self.obj["Items"]
 
-        self.container_items = []
+        self.container_items      = []
         self.container_conditions = []
+        self.container_triggers   = []
+
         for item in items["$values"]:
             type = item["$type"]
             # print("type =", type)
             if "Container.SequentialContainer" in type:
                 self.container_items.append(item["Items"]["$values"])
                 self.container_conditions.append(item["Conditions"]["$values"])
-        self.__process_container_0()
-        self.__process_container_1()
+                self.container_triggers.append(item["Triggers"]["$values"])
+
+        self.__process_container_list()
 
 
-    def __process_target(self):
-        # NEW TARGET --> target["TargetName"]
-        self.targetname = self.target["TargetName"]
-        if NINABase.verbose:
-            print("NINATarget(process_target):", "targetname =", self.targetname)
-        self.coord      = self.target["InputCoordinates"]
+    def __process_container_list(self):
+        for container in self.container_items + self.container_conditions + self.container_triggers:
+            for item in container:
+                if "WaitForTime" in item["$type"]:
+                    self.waitfortime = item
 
-        ra_hh = self.coord["RAHours"]
-        ra_mm = self.coord["RAMinutes"]
-        ra_ss = self.coord["RASeconds"]
-        #dec_neg = self.coord["NegativeDec"]
-        dec_dd = self.coord["DecDegrees"]
-        dec_mm = self.coord["DecMinutes"]
-        dec_ss = self.coord["DecSeconds"]
+                if "SmartExposure" in item["$type"]:
+                    # NEW NUMBER OF EXPOSURES --> conditions0["Iterations"]
+                    self.conditions0 = item["Conditions"]["$values"][0]
 
-        ra  = "{:02d}:{:02d}:{:04.1f}".format(ra_hh, ra_mm, ra_ss)
-        dec = "{:02d}:{:02d}:{:04.1f}".format(dec_dd, dec_mm, dec_ss)
-        if NINABase.verbose:
-            print("NINATarget(process_target):", "RA =", ra, ", DEC =", dec)
+                    items = item["Items"]
+                    for item2 in items["$values"]:
+                        if "SwitchFilter" in item2["$type"]:
+                            self.filter = item2["Filter"]
+                        if "TakeExposure"  in item2["$type"]:
+                            self.exposure = item2
 
+                if "TimeCondition" in item["$type"]:
+                    self.timecondition = item
 
-    def __process_container_0(self):
-        for item in self.container_items[0]:
-            if "WaitForTime" in item["$type"]:
-                self.waitfortime = item
-                time_hh = item["Hours"]
-                time_mm = item["Minutes"]
-                time_ss = item["Seconds"]
-                time = "{:02}:{:02}:{:02}".format(time_hh, time_mm, time_ss)
-                if NINABase.verbose:
-                    print("NINATarget(process_waitfortime):", "WaitForTime =", time)
-
-        for item in self.container_conditions[0]:
-            pass
-            # if "XXX" in item["$type"]:
-            #     self.waitfortime = item
-
-
-    def __process_container_1(self):
-        for item in self.container_items[1]:
-            if "SmartExposure" in item["$type"]:
-                # NEW NUMBER OF EXPOSURES --> conditions0["Iterations"]
-                self.conditions0 = item["Conditions"]["$values"][0]
-                if NINABase.verbose:
-                    print("NINATarget(process_imaging):", "number =", self.conditions0["Iterations"])
-
-                items = item["Items"]
-                for item2 in items["$values"]:
-                    if "SwitchFilter" in item2["$type"]:
-                        self.filter = item2["Filter"]
-                        if NINABase.verbose:
-                            print("NINATarget(process_imaging):", "filter =", self.filter["_name"])
-                    if "TakeExposure"  in item2["$type"]:
-                        self.exposure = item2
-                        binning  = "{}x{}".format(item2["Binning"]["X"], item2["Binning"]["X"])
-                        if NINABase.verbose:
-                            print("NINATarget(process_imaging):", "exposure =", self.exposure["ExposureTime"], ", binning =", binning)
-
-        for item in self.container_conditions[1]:
-            if "TimeCondition" in item["$type"]:
-                self.timecondition = item
+                if "ExternalScript" in item["$type"]:
+                    self.script_w_target = item
 
 
     def add_parent(self, id):
@@ -313,24 +306,6 @@ class NINATarget(NINABase):
         self.obj["IsExpanded"] = flag
 
 
-    def get_waitfortime_provider(self):
-        return self.waitfortime["SelectedProvider"]["$id"]
-    
-    def set_waitfortime_provider(self, id):
-        if NINABase.verbose:
-            print("NINATarget(set_waitfortime_provider):", "id =", id)
-        self.waitfortime["SelectedProvider"] = { "$ref": id }
-
-
-    def get_timecondition_provider(self):
-        return self.timecondition["SelectedProvider"]["$id"]
-    
-    def set_timecondition_provider(self, id):
-        if NINABase.verbose:
-            print("NINATarget(set_timecondition_provider):", "id =", id)
-        self.timecondition["SelectedProvider"] = { "$ref": id }
-
-
 
 
 class NINASequence(NINABase):
@@ -345,6 +320,10 @@ class NINASequence(NINABase):
         self.start_id     = None
         self.targets_id   = None
         self.end_id       = None
+
+        # This dictionary holds the ids of the various time SelectedProvider{}, to be replaced with reference
+        # on further occurences
+        self.provider_dict = {}
 
         NINABase.__init__(self)
 
@@ -383,8 +362,6 @@ class NINASequence(NINABase):
 
     def process_csv(self, target_tmpl, file, destdir):
         tz_NA = datetime.timezone(datetime.timedelta(hours=2, minutes=0))
-        waitfortime_provider = None
-        timecondition_provider = None
 
         with open(file, newline='') as f:
             reader = csv.DictReader(f)
@@ -393,7 +370,8 @@ class NINASequence(NINABase):
                     continue
 
                 seq = int(row["#"])
-                target = row["Object"]
+                # target must not contain [/:]
+                target = row["Object"].replace("/", "").replace(":", "")
                 time_utc = datetime.datetime.fromisoformat(row["Observation date"].replace(" ", "-") + "T" + 
                                                            row["Time UT"] + ":00+00:00")
                 # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
@@ -451,20 +429,13 @@ class NINASequence(NINABase):
                     target_new.add_parent(self.targets_id)
                     # collapse view
                     target_new.set_expanded(False)
-                    # update SelectedProvider references
-                    if waitfortime_provider:
-                        target_new.set_waitfortime_provider(waitfortime_provider)
-                    else:
-                        waitfortime_provider = target_new.get_waitfortime_provider()
-                    if timecondition_provider:
-                        target_new.set_timecondition_provider(timecondition_provider)
-                    else:
-                        timecondition_provider = target_new.get_timecondition_provider()
-
                     self.append_target(target_new)
 
                 ##DELETE ME##
                 ##break
+
+        # update all SelectedProvider {...} with references
+        self.traverse(NINABase.process_provider, self.provider_dict)
 
 
 
