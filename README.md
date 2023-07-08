@@ -102,13 +102,13 @@ options:
   -h, --help            show this help message and exit
   -v, --verbose         debug messages
   -D DATA_DIR, --data-dir DATA_DIR
-                        N.I.N.A data directory
+                        N.I.N.A data directory (default D:/Users/remote/Documents/NINA-Data)
   -Z ZIP_DIR, --zip-dir ZIP_DIR
-                        directory for zip (.7z) files
+                        directory for zip (.7z) files (default C:/Users/remote/OneDrive/Remote-Upload)
   -t TIME_INTERVAL, --time-interval TIME_INTERVAL
                         time interval for checking data directory (default 60s)
   -z ZIP_PROG, --zip-prog ZIP_PROG
-                        full path of 7-zip.exe (default "c:\Program Files-Zipz.exe")
+                        full path of 7-zip.exe (default C:/Program Files/7-Zip/7z.exe)
 
 Version 0.1 / 2023-07-08 / Martin Junius
 ```

@@ -58,21 +58,22 @@ def create_zip_archive(target, datadir, zipfile):
 
 
 def main():
+    global OPT_V
+    global DATADIR, ZIPDIR, ZIPPROG, TIMER
+
     arg = argparse.ArgumentParser(
         prog        = "nina-zip-ready-data",
         description = "Zip target data in N.I.N.A data directory marked as ready",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
-    arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory")
-    arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files")
+    arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+DATADIR+")")
+    arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+ZIPDIR+")")
     arg.add_argument("-t", "--time-interval", type=int, help="time interval for checking data directory (default 60s)")
-    arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default \"c:\Program Files\7-Zip\7z.exe\")")
+    arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+ZIPPROG+")")
     # nargs="+" for min 1 filename argument
     # arg.add_argument("filename", nargs="*", help="filename")
     args = arg.parse_args()
 
-    global OPT_V
-    global DATADIR, ZIPDIR, ZIPPROG, TIMER
     OPT_V = args.verbose
 
     if args.data_dir:
