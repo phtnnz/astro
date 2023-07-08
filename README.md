@@ -3,7 +3,7 @@
 Python scripts for creating N.I.N.A JSON sequences and targets, from object data in CSV format and N.I.N.A templates
 
 ## nina-create-sequence
-Builds a complete N.I.N.A sequence for the observation night, using a base template (with empty Sequence Target Area) and a target template (repeated for every singl object), from a CSV list of targets exported by NEO Planner.
+Builds a complete N.I.N.A sequence for the observation night, using a base template (with empty Sequence Target Area) and a target template (repeated for every single object), from a CSV list of targets exported by NEO Planner.
 
 The directory NINA-Templates-IAS/ contains the necessary N.I.N.A templates.
 
