@@ -6,7 +6,7 @@ Python scripts for creating N.I.N.A JSON sequences and targets, from object data
 
 The following additional Python libraries must be installed:
 
-| Library  | PyPi URL                           |
+| Library  | PyPI URL                           |
 | -------- | ---------------------------------- |
 | requests | https://pypi.org/project/requests/ |
 | psutil   | https://pypi.org/project/psutil/   |
