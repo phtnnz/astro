@@ -12,7 +12,7 @@ import os
 import sys
 import argparse
 import json
-# The following libsmMust be installed with pip
+# The following libs must be installed with pip
 import requests
 
 global VERSION, AUTHOR

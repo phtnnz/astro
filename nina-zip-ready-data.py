@@ -19,7 +19,7 @@ import argparse
 import subprocess
 import time
 import platform
-# The following libsmMust be installed with pip
+# The following libs must be installed with pip
 # import psutil
 
 
