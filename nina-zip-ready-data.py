@@ -99,13 +99,22 @@ def main():
     OPT_V = args.verbose
 
     if args.data_dir:
-        DATADIR = os.path.abspath(args.data_dir)
+        DATADIR = args.data_dir
     if args.zip_dir:
-        ZIPDIR = os.path.abspath(args.zip_dir)
+        ZIPDIR = args.zip_dir
     if args.time_interval:
         TIMER = args.time_interval
     if args.zip_prog:
         ZIPPROG = args.zip_prog
+
+    DATADIR = os.path.abspath(DATADIR)
+    ZIPDIR = os.path.abspath(ZIPDIR)
+    ZIPPROG = os.path.abspath(ZIPPROG)
+
+    if OPT_V:
+        print("Data directory =", DATADIR)
+        print("ZIP directory  =", ZIPDIR)
+        print("ZIP program    =", ZIPPROG)
 
     try:
         while True:
