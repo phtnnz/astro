@@ -4,6 +4,13 @@ Python scripts for creating N.I.N.A JSON sequences and targets, from object data
 
 (See the most recent working* branch for bleeding edge code)
 
+The following additional Python libraries must be installed:
+
+| Library  | PyPi URL                           |
+| -------- | ---------------------------------- |
+| requests | https://pypi.org/project/requests/ |
+| psutil   | https://pypi.org/project/psutil/   |
+
 ## nina-create-sequence
 Builds a complete N.I.N.A sequence for the observation night, using a base template (with empty Sequence Target Area) and a target template (repeated for every single object), from a CSV list of targets exported by NEO Planner.
 
