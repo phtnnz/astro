@@ -18,6 +18,8 @@ import os
 import argparse
 import subprocess
 import time
+import platform
+# import psutil
 
 
 global VERSION, AUTHOR
@@ -30,6 +32,20 @@ DATADIR = "D:/Users/remote/Documents/NINA-Data"
 ZIPDIR  = "C:/Users/remote/OneDrive/Remote-Upload"
 ZIPPROG = "C:/Program Files/7-Zip/7z.exe"
 TIMER   = 60
+
+
+
+def set_priority():
+    system = platform.system()
+    if system == 'Windows':
+        # proc = psutil.Process(os.getpid())
+        # prio = psutil.HIGH_PRIORITY_CLASS
+        # prio = psutil.BELOW_NORMAL_PRIORITY_CLASS
+        # prio = psutil.IDLE_PRIORITY_CLASS           # low priority
+        # proc.set_nice(prio)
+        # if OPT_V:
+        #     print("System {}, setting process priority to {}".format(system, prio))
+        pass
 
 
 
@@ -53,7 +69,12 @@ def scan_data_dir(datadir, zipdir):
 
 def create_zip_archive(target, datadir, zipfile):
     # 7z.exe a -t7z -mx=7 -r -spf zipfile target
-    subprocess.run(args=[ZIPPROG, "a", "-t7z", "-mx=7", "-r", "-spf", zipfile, target], shell=False, cwd=datadir)
+    #   a       add files to archive
+    #   -t7z    set archive type to 7z
+    #   -mx7    set compression level to maximum (5=normal, 7=maximum, 9=ultra)
+    #   -r      recurse subdirectories
+    #   -spf    use fully qualified file paths
+    subprocess.run(args=[ZIPPROG, "a", "-t7z", "-mx7", "-r", "-spf", zipfile, target], shell=False, cwd=datadir)
 
 
 
