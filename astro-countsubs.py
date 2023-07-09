@@ -69,6 +69,8 @@ def walk_the_dir(dir):
             for fname in fileList:
                # Test for proper sub name ...
                match = re.search(r'_(' + f + r')_(\d+)\.00s_', fname)
+               if not match:
+                  match = re.search(r'_(' + f + r')_.+_(\d+)\.00s_', fname)
                if match:
                   if OPT_V: print('\t%s' % fname)
                   time = match.group(2)
