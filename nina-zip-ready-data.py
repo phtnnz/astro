@@ -12,6 +12,8 @@
 # ChangeLog
 # Version 0.1 / 2023-07-08
 #       First version of script
+# Version 0.2 / 2023-07-09
+#       Added process priority setting, -l option
 
 import sys
 import os
@@ -20,11 +22,11 @@ import subprocess
 import time
 import platform
 # The following libs must be installed with pip
-# import psutil
+import psutil
 
 
 global VERSION, AUTHOR
-VERSION = "0.1 / 2023-07-08"
+VERSION = "0.2 / 2023-07-09"
 AUTHOR  = "Martin Junius"
 
 global DATADIR, ZIPDIR, ZIPPROG, TIMER
@@ -39,14 +41,22 @@ TIMER   = 60
 def set_priority():
     system = platform.system()
     if system == 'Windows':
-        # proc = psutil.Process(os.getpid())
+        proc = psutil.Process(os.getpid())
+    # Windows priority classes ...
+    #   ABOVE_NORMAL_PRIORITY_CLASS     = 0x8000
+    #   BELOW_NORMAL_PRIORITY_CLASS     = 0x4000
+    #   HIGH_PRIORITY_CLASS             = 0x0080
+    #   IDLE_PRIORITY_CLASS             = 0x0040
+    #   NORMAL_PRIORITY_CLASS           = 0x0020
+    #   REALTIME_PRIORITY_CLASS         = 0x0100
         # prio = psutil.HIGH_PRIORITY_CLASS
         # prio = psutil.BELOW_NORMAL_PRIORITY_CLASS
-        # prio = psutil.IDLE_PRIORITY_CLASS           # low priority
-        # proc.set_nice(prio)
-        # if OPT_V:
-        #     print("System {}, setting process priority to {}".format(system, prio))
-        pass
+        prio = psutil.IDLE_PRIORITY_CLASS           # low priority
+        prio0 = proc.nice()
+        proc.nice(prio)
+        if OPT_V:
+            print(proc)
+            print("System {}, setting process priority {} -> {}".format(system, prio0, prio))
 
 
 
@@ -88,6 +98,7 @@ def main():
         description = "Zip target data in N.I.N.A data directory marked as ready",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
+    arg.add_argument("-l", "--low-priority", action="store_true", help="set process priority to low")
     arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+DATADIR+")")
     arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+ZIPDIR+")")
     arg.add_argument("-t", "--time-interval", type=int, help="time interval for checking data directory (default 60s)")
@@ -115,6 +126,10 @@ def main():
         print("Data directory =", DATADIR)
         print("ZIP directory  =", ZIPDIR)
         print("ZIP program    =", ZIPPROG)
+
+    # Set process priority
+    if args.low_priority:
+        set_priority()
 
     try:
         while True:
