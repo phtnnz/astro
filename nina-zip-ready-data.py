@@ -42,13 +42,15 @@ def set_priority():
     system = platform.system()
     if system == 'Windows':
         proc = psutil.Process(os.getpid())
-    # Windows priority classes ...
-    #   ABOVE_NORMAL_PRIORITY_CLASS     = 0x8000
-    #   BELOW_NORMAL_PRIORITY_CLASS     = 0x4000
-    #   HIGH_PRIORITY_CLASS             = 0x0080
-    #   IDLE_PRIORITY_CLASS             = 0x0040
-    #   NORMAL_PRIORITY_CLASS           = 0x0020
-    #   REALTIME_PRIORITY_CLASS         = 0x0100
+        # Windows priority classes:
+        #   ABOVE_NORMAL_PRIORITY_CLASS     = 0x8000
+        #   BELOW_NORMAL_PRIORITY_CLASS     = 0x4000
+        #   HIGH_PRIORITY_CLASS             = 0x0080
+        #   IDLE_PRIORITY_CLASS             = 0x0040
+        #   NORMAL_PRIORITY_CLASS           = 0x0020
+        #   REALTIME_PRIORITY_CLASS         = 0x0100
+        # Order low -> high: [0x0040,0x4000,0x0020,0x8000,0x0080,0x0100]
+
         # prio = psutil.HIGH_PRIORITY_CLASS
         # prio = psutil.BELOW_NORMAL_PRIORITY_CLASS
         prio = psutil.IDLE_PRIORITY_CLASS           # low priority
