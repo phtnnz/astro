@@ -48,6 +48,7 @@ def main(argv):
    if OPT_V: print("filter =", FILTER)
 
    # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
+   # see here https://bugs.python.org/issue39845
    walk_the_dir(args.dirname.rstrip("\""))
 
 
