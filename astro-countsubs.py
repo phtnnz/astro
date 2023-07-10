@@ -47,7 +47,7 @@ def main(argv):
 
    if OPT_V: print("filter =", FILTER)
 
-   # quick hack: argparse adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
+   # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
    walk_the_dir(args.dirname.rstrip("\""))
 
 
@@ -142,4 +142,5 @@ def print_filter_list(exp):
    
    
 if __name__ == "__main__":
+   print(sys.argv)
    main(sys.argv[1:])
