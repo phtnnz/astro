@@ -46,13 +46,14 @@ def main(argv):
       FILTER  = args.filter.split(",")
 
    if OPT_V: print("filter =", FILTER)
-      
-   walk_the_dir(args.dirname)
+
+   # quick hack: argparse adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
+   walk_the_dir(args.dirname.rstrip("\""))
 
 
 
 def walk_the_dir(dir):
-   rootDir = dir
+   rootDir = dir.replace("\\", "/")
    exposures = {}
 
    for dirName, subdirList, fileList in os.walk(rootDir):
