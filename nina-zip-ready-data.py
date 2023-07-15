@@ -20,6 +20,7 @@ import os
 import argparse
 import subprocess
 import time
+import datetime
 import platform
 # The following libs must be installed with pip
 import psutil
@@ -62,6 +63,11 @@ def set_priority():
 
 
 
+def time_now():
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+
 def scan_data_dir(datadir, zipdir):
     ready = [f.replace(".ready", "") for f in os.listdir(datadir) if f.endswith(".ready")]
     # print(ready)
@@ -76,6 +82,7 @@ def scan_data_dir(datadir, zipdir):
         else:
             if OPT_V:
                 print("  Zip file", zipfile, "must be created")
+            print("{} archiving target {}".format(time_now(), target))
             create_zip_archive(target, datadir, zipfile)
 
 
@@ -128,6 +135,9 @@ def main():
         print("Data directory =", DATADIR)
         print("ZIP directory  =", ZIPDIR)
         print("ZIP program    =", ZIPPROG)
+    else:
+        print("Waiting for ready data ... (Ctrl-C to interrupt)")
+
 
     # Set process priority
     if args.low_priority:
