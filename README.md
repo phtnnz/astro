@@ -101,13 +101,14 @@ from within N.I.N.A
 - Loop continuously
 
 ```
-usage: nina-zip-ready-data [-h] [-v] [-D DATA_DIR] [-Z ZIP_DIR] [-t TIME_INTERVAL] [-z ZIP_PROG]
+usage: nina-zip-ready-data [-h] [-v] [-l] [-D DATA_DIR] [-Z ZIP_DIR] [-t TIME_INTERVAL] [-z ZIP_PROG]
 
 Zip target data in N.I.N.A data directory marked as ready
 
 options:
   -h, --help            show this help message and exit
   -v, --verbose         debug messages
+  -l, --low-priority    set process priority to low
   -D DATA_DIR, --data-dir DATA_DIR
                         N.I.N.A data directory (default D:/Users/remote/Documents/NINA-Data)
   -Z ZIP_DIR, --zip-dir ZIP_DIR
@@ -117,5 +118,5 @@ options:
   -z ZIP_PROG, --zip-prog ZIP_PROG
                         full path of 7-zip.exe (default C:/Program Files/7-Zip/7z.exe)
 
-Version 0.1 / 2023-07-08 / Martin Junius
+Version 0.2 / 2023-07-09 / Martin Junius
 ```
