@@ -371,7 +371,7 @@ class NINASequence(NINABase):
 
                 seq = int(row["#"])
                 # target must not contain [/:]
-                target = row["Object"].replace("/", "").replace(":", "")
+                target = row["Object"].replace("/", "").replace(":", "").replace("\"", "")
                 time_utc = datetime.datetime.fromisoformat(row["Observation date"].replace(" ", "-") + "T" + 
                                                            row["Time UT"] + ":00+00:00")
                 # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00

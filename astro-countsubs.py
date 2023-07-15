@@ -46,13 +46,15 @@ def main(argv):
       FILTER  = args.filter.split(",")
 
    if OPT_V: print("filter =", FILTER)
-      
-   walk_the_dir(args.dirname)
+
+   # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
+   # see here https://bugs.python.org/issue39845
+   walk_the_dir(args.dirname.rstrip("\""))
 
 
 
 def walk_the_dir(dir):
-   rootDir = dir
+   rootDir = dir.replace("\\", "/")
    exposures = {}
 
    for dirName, subdirList, fileList in os.walk(rootDir):
@@ -69,6 +71,8 @@ def walk_the_dir(dir):
             for fname in fileList:
                # Test for proper sub name ...
                match = re.search(r'_(' + f + r')_(\d+)\.00s_', fname)
+               if not match:
+                  match = re.search(r'_(' + f + r')_.+_(\d+)\.00s_', fname)
                if match:
                   if OPT_V: print('\t%s' % fname)
                   time = match.group(2)
