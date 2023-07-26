@@ -77,8 +77,12 @@ def scan_data_dir(datadir, zipdir, date=None):
     for target in dirs:
         if OPT_V:
             print("Target to archive:", target)
-        zipfile = os.path.join(zipdir, target + "-" + date + ".7z")
-        if os.path.exists(zipfile):
+        zipfile1 = os.path.join(zipdir, target + ".7z")
+        zipfile  = os.path.join(zipdir, target + "-" + date + ".7z")
+        if os.path.exists(zipfile1):
+            if OPT_V:
+                print("  Zip file", zipfile1, "already exists")
+        elif os.path.exists(zipfile):
             if OPT_V:
                 print("  Zip file", zipfile, "already exists")
         else:
