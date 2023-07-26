@@ -110,6 +110,7 @@ def main():
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
     arg.add_argument("-l", "--low-priority", action="store_true", help="set process priority to low")
+    arg.add_argument("-d", "--date", help="archive target/DATE, default last night "+date_yesterday())
     arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+DATADIR+")")
     arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+ZIPDIR+")")
     arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+ZIPPROG+")")
@@ -134,12 +135,14 @@ def main():
         print("Data directory =", DATADIR)
         print("ZIP directory  =", ZIPDIR)
         print("ZIP program    =", ZIPPROG)
+        if args.date:
+            print("Date           =", args.date)
 
     # Set process priority
     if args.low_priority:
         set_priority()
 
-    scan_data_dir(DATADIR, ZIPDIR)
+    scan_data_dir(DATADIR, ZIPDIR, args.date)
 
 
 
