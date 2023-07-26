@@ -69,10 +69,10 @@ def scan_data_dir(datadir, zipdir, date=None):
     if not date:
         date = date_yesterday()
     if OPT_V:
-        print("Starting at", time_now(), "search date =", date)
+        print(time_now(), "archive date =", date)
 
     dirs = [d for d in os.listdir(datadir) if os.path.isdir(os.path.join(datadir, d, date))]
-    print(dirs)
+    # print(dirs)
 
     for target in dirs:
         if OPT_V:
@@ -96,12 +96,15 @@ def create_zip_archive(target, datadir, zipfile):
     #   -mx7    set compression level to maximum (5=normal, 7=maximum, 9=ultra)
     #   -r      recurse subdirectories
     #   -spf    use fully qualified file paths
-    subprocess.run(args=[ZIPPROG, "a", "-t7z", "-mx7", "-r", "-spf", zipfile, target], shell=False, cwd=datadir)
+    args7z = [ ZIPPROG, "a", "-t7z", "-mx7", "-r", "-spf", zipfile, target ]
+    print("Run", " ".join(args7z))
+    if not OPT_N:
+        subprocess.run(args=args7z, shell=False, cwd=datadir)
 
 
 
 def main():
-    global OPT_V
+    global OPT_V, OPT_N
     global DATADIR, ZIPDIR, ZIPPROG, TIMER
 
     arg = argparse.ArgumentParser(
@@ -109,6 +112,7 @@ def main():
         description = "Zip target data in N.I.N.A data directory from last night",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
+    arg.add_argument("-n", "--no-action", action="store_true", help="dry run")
     arg.add_argument("-l", "--low-priority", action="store_true", help="set process priority to low")
     arg.add_argument("-d", "--date", help="archive target/DATE, default last night "+date_yesterday())
     arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+DATADIR+")")
@@ -119,6 +123,7 @@ def main():
     args = arg.parse_args()
 
     OPT_V = args.verbose
+    OPT_N = args.no_action
 
     if args.data_dir:
         DATADIR = args.data_dir
