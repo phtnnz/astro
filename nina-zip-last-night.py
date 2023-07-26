@@ -66,15 +66,14 @@ def date_yesterday():
 
 
 def scan_data_dir(datadir, zipdir, date=None):
-    if not date:
-        date = date_yesterday()
-    if OPT_V:
-        print(time_now(), "archive date =", date)
-
     dirs = [d for d in os.listdir(datadir) if os.path.isdir(os.path.join(datadir, d, date))]
     # print(dirs)
+    scan_targets(datadir, zipdir, dirs, date)
 
-    for target in dirs:
+
+
+def scan_targets(datadir, zipdir, targets, date):
+    for target in targets:
         if OPT_V:
             print("Target to archive:", target)
         zipfile1 = os.path.join(zipdir, target + ".7z")
@@ -119,6 +118,7 @@ def main():
     arg.add_argument("-n", "--no-action", action="store_true", help="dry run")
     arg.add_argument("-l", "--low-priority", action="store_true", help="set process priority to low")
     arg.add_argument("-d", "--date", help="archive target/DATE, default last night "+date_yesterday())
+    arg.add_argument("-t", "--targets", help="archive TARGET[,TARGET] only")
     arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+DATADIR+")")
     arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+ZIPDIR+")")
     arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+ZIPPROG+")")
@@ -140,18 +140,26 @@ def main():
     ZIPDIR = os.path.abspath(ZIPDIR)
     ZIPPROG = os.path.abspath(ZIPPROG)
 
+    if not args.date:
+        date = args.date if args.date else date_yesterday()
+    if OPT_V:
+        print(time_now(), "archive date =", date)
+
     if OPT_V:
         print("Data directory =", DATADIR)
         print("ZIP directory  =", ZIPDIR)
         print("ZIP program    =", ZIPPROG)
-        if args.date:
-            print("Date           =", args.date)
+        print("Date           =", date)
 
     # Set process priority
     if args.low_priority:
         set_priority()
 
-    scan_data_dir(DATADIR, ZIPDIR, args.date)
+    if args.targets:
+        targets = args.targets.split(",")
+        scan_targets(DATADIR, ZIPDIR, targets, date)
+    else:
+        scan_data_dir(DATADIR, ZIPDIR, date)
 
 
 

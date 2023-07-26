@@ -129,7 +129,7 @@ Archive all N.I.N.A data from the last observation night (or date given by the -
 - If not, run 7z.exe to archive TARGET/YYYY-MM-DD data subdir in DATA to TARGET-YYYY-MM-DD.7z in ZIPDIR
 
 ```
-usage: nina-zip-last-night [-h] [-v] [-n] [-l] [-d DATE] [-D DATA_DIR] [-Z ZIP_DIR] [-z ZIP_PROG]
+usage: nina-zip-last-night [-h] [-v] [-n] [-l] [-d DATE] [-t TARGETS] [-D DATA_DIR] [-Z ZIP_DIR] [-z ZIP_PROG]
 
 Zip target data in N.I.N.A data directory from last night
 
@@ -139,6 +139,8 @@ options:
   -n, --no-action       dry run
   -l, --low-priority    set process priority to low
   -d DATE, --date DATE  archive target/DATE, default last night 2023-07-25
+  -t TARGETS, --targets TARGETS
+                        archive TARGET[,TARGET] only
   -D DATA_DIR, --data-dir DATA_DIR
                         N.I.N.A data directory (default D:/Users/remote/Documents/NINA-Data)
   -Z ZIP_DIR, --zip-dir ZIP_DIR
