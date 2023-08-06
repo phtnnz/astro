@@ -120,3 +120,33 @@ options:
 
 Version 0.2 / 2023-07-09 / Martin Junius
 ```
+
+## nina-zip-last-night
+Archive all N.I.N.A data from the last observation night (or date given by the -d option)
+- Search all TARGET/YYYY-MM-DD directories in DATADIR
+- Look for corresponding TARGET-YYYY-MM-DD.7z archive in ZIPDIR
+- If exists, skip
+- If not, run 7z.exe to archive TARGET/YYYY-MM-DD data subdir in DATA to TARGET-YYYY-MM-DD.7z in ZIPDIR
+
+```
+usage: nina-zip-last-night [-h] [-v] [-n] [-l] [-d DATE] [-t TARGETS] [-D DATA_DIR] [-Z ZIP_DIR] [-z ZIP_PROG]
+
+Zip target data in N.I.N.A data directory from last night
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         debug messages
+  -n, --no-action       dry run
+  -l, --low-priority    set process priority to low
+  -d DATE, --date DATE  archive target/DATE, default last night 2023-07-25
+  -t TARGETS, --targets TARGETS
+                        archive TARGET[,TARGET] only
+  -D DATA_DIR, --data-dir DATA_DIR
+                        N.I.N.A data directory (default D:/Users/remote/Documents/NINA-Data)
+  -Z ZIP_DIR, --zip-dir ZIP_DIR
+                        directory for zip (.7z) files (default C:/Users/remote/OneDrive/Remote-Upload)
+  -z ZIP_PROG, --zip-prog ZIP_PROG
+                        full path of 7-zip.exe (default C:/Program Files/7-Zip/7z.exe)
+
+Version 0.1 / 2023-07-26 / Martin Junius
+```
