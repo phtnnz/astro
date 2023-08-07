@@ -27,6 +27,7 @@ import argparse
 import json
 import imaplib
 import re
+import time
 # The following libs must be installed with pip
 import requests
 
@@ -35,9 +36,9 @@ NAME    = "mpc-retrieve-ack"
 VERSION = "0.0 / 2023-08-07"
 AUTHOR  = "Martin Junius"
 
-global CONFIG
+global CONFIG, WAMO_URL
 CONFIG = "astro-python/imap-account.json"
-
+WAMO_URL = "https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo"
 
 
 
@@ -146,10 +147,27 @@ def retrieve_from_imap(cf):
             print("    ", end="")
             print("\n    ".join(msg_ids))
 
+        retrieve_from_mpc_wamo(msg_ids)
+
     # Cleanup
     server.close()
     server.logout()
 
+
+
+def retrieve_from_mpc_wamo(ids):
+    """ Retrieve observation data from minorplanetcenter WAMO """
+
+    # Example
+    # curl -v -d "obs=LdY91I230000FGdd010000001" https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo
+
+    data = { "obs": "\r\n".join(ids)}
+    x = requests.post(WAMO_URL, data=data)
+
+    print(x.text)
+
+    # Avoid high load on the MPC server
+    time.sleep(0.5)
 
 
 
@@ -174,6 +192,7 @@ def main():
     
 
     retrieve_from_imap(cf)
+    # retrieve_from_mpc_wamo(["LdY91I230000FGdd010000001"])
 
 
 
