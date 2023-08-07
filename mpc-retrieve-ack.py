@@ -36,9 +36,10 @@ NAME    = "mpc-retrieve-ack"
 VERSION = "0.0 / 2023-08-07"
 AUTHOR  = "Martin Junius"
 
-global CONFIG, WAMO_URL
+global CONFIG, WAMO_URL, MPEC_URL
 CONFIG = "astro-python/imap-account.json"
 WAMO_URL = "https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo"
+MPEC_URL = "https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi"
 
 
 
@@ -171,6 +172,29 @@ def retrieve_from_mpc_wamo(ids):
 
 
 
+def retrieve_from_mpc_mpec(id):
+    """ Retrieve MPEC from minorplanetcenter """
+
+    # Example
+    # curl -v -d "S=M&F=P&N=2023-P25" https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi
+    # yields 302 redirect
+    # Location: https://www.minorplanetcenter.net/mpec/K23/K23P25.html
+
+    if Config.verbose:
+        print(NAME+":", "retrieving MPEC", id)
+    data = { "S": "M",  "F": "P",  "N": id }
+    x = requests.post(MPEC_URL, data=data, allow_redirects=False)
+
+    # print(x.headers)
+    url = x.headers["Location"]
+    if Config.verbose:
+        print(NAME+":", "MPEC", id, "URL =", url)
+
+    return url
+
+
+
+
 def main():
     arg = argparse.ArgumentParser(
         prog        = "mpc-retrieve-ack",
@@ -192,8 +216,7 @@ def main():
     
 
     retrieve_from_imap(cf)
-    # retrieve_from_mpc_wamo(["LdY91I230000FGdd010000001"])
-
+    # retrieve_from_mpc_mpec("2023-P25")
 
 
 if __name__ == "__main__":
