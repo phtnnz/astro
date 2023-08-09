@@ -16,6 +16,9 @@
 
 # Retrieve MPC ACK mails from IMAP mailbox, measurement IDs, measurement data, MPECs etc.
 
+# See https://www.minorplanetcenter.net/iau/info/PackedDes.html for a description of
+# the "packed" designations of minor planets
+
 # ChangeLog
 # Version 0.0 / 2023-08-07
 #       First test version
@@ -47,6 +50,7 @@ class Config:
     """ JSON Config for IMAP account """
 
     verbose  = False        # -v --verbose
+    no_wamo  = False        # -n --no-wamo-requests
     inbox    = "INBOX"      # -F --imap-foldeer
 
 
@@ -154,7 +158,8 @@ def retrieve_from_imap(cf):
             for id, obs in msg_ids.items():
                 print("       ", id, ":", obs)
 
-        retrieve_from_mpc_wamo(msg_ids)
+        if not Config.no_wamo:
+            retrieve_from_mpc_wamo(msg_ids)
 
     # Cleanup
     server.close()
@@ -202,21 +207,23 @@ def retrieve_from_mpc_mpec(id):
 
 
 def main():
-    arg = argparse.ArgumentParser(
-        prog        = "mpc-retrieve-ack",
-        description = "Retrieve MPC ACK data",
-        epilog      = "Version " + VERSION + " / " + AUTHOR)
-    arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
-    arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
-    args = arg.parse_args()
-
-    Config.verbose = args.verbose
-
     cf = Config()
     cf.read_json()
 
     if cf.get_inbox():
         Config.inbox = cf.get_inbox()
+
+    arg = argparse.ArgumentParser(
+        prog        = "mpc-retrieve-ack",
+        description = "Retrieve MPC ACK data",
+        epilog      = "Version " + VERSION + " / " + AUTHOR)
+    arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
+    arg.add_argument("-n", "--no-wamo-requests", action="store_true", help="don't request observations from minorplanetcenter.net WAMO")
+    arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
+    args = arg.parse_args()
+
+    Config.verbose = args.verbose
+    Config.no_wamo = args.no_wamo_requests
     if args.imap_folder:
         Config.inbox = args.imap_folder
     
