@@ -124,12 +124,16 @@ def retrieve_from_imap(cf):
         print("Message", num.decode("utf-8"))
         msg = data[0][1].decode("utf-8")
         ack1 = False
+        sub1 = False
         ids1 = False
         msg_ids = []
         for line in msg.splitlines():
             if ack1:
                 ack1 = False
                 msg_ack = line.strip()
+            if sub1:
+                sub1 = False
+                msg_submission = line.strip()
             if ids1:
                 m = re.search(r'-> ([A-Za-z0-9]+)$', line)
                 if m:    
@@ -138,17 +142,19 @@ def retrieve_from_imap(cf):
                 msg_date = line
             if line.startswith("The submission with the ACK line:"):
                 ack1 = True
+            if line.startswith("The following submission ID has been assigned to these observations:"):
+                sub1 = True
             if line.startswith("(IDs are NOT assigned to observations already submitted):"):
                 ids1 = True
         
         if Config.verbose:
             print("   ", msg_date)
-            print("    ", end="")
-            print(msg_ack)
-            print("    ", end="")
-            print("\n    ".join(msg_ids))
+            print("   ", msg_ack)
+            print("   ", msg_submission)
+            print("        ", end="")
+            print("\n        ".join(msg_ids))
 
-        retrieve_from_mpc_wamo(msg_ids)
+        # retrieve_from_mpc_wamo(msg_ids)
 
     # Cleanup
     server.close()
