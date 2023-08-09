@@ -126,7 +126,7 @@ def retrieve_from_imap(cf):
         ack1 = False
         sub1 = False
         ids1 = False
-        msg_ids = []
+        msg_ids = {}
         for line in msg.splitlines():
             if ack1:
                 ack1 = False
@@ -135,9 +135,9 @@ def retrieve_from_imap(cf):
                 sub1 = False
                 msg_submission = line.strip()
             if ids1:
-                m = re.search(r'-> ([A-Za-z0-9]+)$', line)
+                m = re.search(r'^(.+)  -> ([A-Za-z0-9]+)$', line)
                 if m:    
-                    msg_ids.append(m.group(1))
+                    msg_ids[m.group(2)] = m.group(1)
             if line.startswith("Date: "):
                 msg_date = line
             if line.startswith("The submission with the ACK line:"):
@@ -151,10 +151,10 @@ def retrieve_from_imap(cf):
             print("   ", msg_date)
             print("   ", msg_ack)
             print("   ", msg_submission)
-            print("        ", end="")
-            print("\n        ".join(msg_ids))
+            for id, obs in msg_ids.items():
+                print("       ", id, ":", obs)
 
-        # retrieve_from_mpc_wamo(msg_ids)
+        retrieve_from_mpc_wamo(msg_ids)
 
     # Cleanup
     server.close()
@@ -168,7 +168,7 @@ def retrieve_from_mpc_wamo(ids):
     # Example
     # curl -v -d "obs=LdY91I230000FGdd010000001" https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo
 
-    data = { "obs": "\r\n".join(ids)}
+    data = { "obs": "\r\n".join(ids.keys())}
     x = requests.post(WAMO_URL, data=data)
 
     print(x.text)
