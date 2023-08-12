@@ -49,9 +49,10 @@ MPEC_URL = "https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi"
 class Config:
     """ JSON Config for IMAP account """
 
-    verbose  = False        # -v --verbose
-    no_wamo  = False        # -n --no-wamo-requests
-    inbox    = "INBOX"      # -F --imap-foldeer
+    verbose     = False     # -v --verbose
+    no_wamo     = False     # -n --no-wamo-requests
+    list_folder = False     # -l --list-folders-only
+    inbox       = "INBOX"   # -F --imap-foldeer
 
 
     def __init__(self, file=None):
@@ -112,10 +113,13 @@ def retrieve_from_imap(cf):
     server = imaplib.IMAP4_SSL(cf.get_server())
     server.login(cf.get_account(), cf.get_password())
 
-    # Print list of mailboxes on server
-    code, mailboxes = server.list()
-    for mailbox in mailboxes:
-        print(mailbox.decode("utf-8"))
+    if Config.list_folder:
+        # Print list of mailboxes on server
+        print(NAME+":", "folders on IMAP server", cf.get_server())
+        code, mailboxes = server.list()
+        for mailbox in mailboxes:
+            print("   ", mailbox.decode().split(' "." ')[1])
+        return
 
     # Select mailbox
     if Config.verbose:
@@ -126,7 +130,7 @@ def retrieve_from_imap(cf):
     for num in data[0].split():
         typ, data = server.fetch(num, '(RFC822)')
         print("Message", num.decode("utf-8"))
-        msg = data[0][1].decode("utf-8")
+        msg = data[0][1].decode()
         ack1 = False
         sub1 = False
         ids1 = False
@@ -219,11 +223,13 @@ def main():
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
     arg.add_argument("-n", "--no-wamo-requests", action="store_true", help="don't request observations from minorplanetcenter.net WAMO")
+    arg.add_argument("-l", "--list-folders-only", action="store_true", help="list folders on IMAP server only")
     arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
     args = arg.parse_args()
 
-    Config.verbose = args.verbose
-    Config.no_wamo = args.no_wamo_requests
+    Config.verbose     = args.verbose
+    Config.no_wamo     = args.no_wamo_requests
+    Config.list_folder = args.list_folders_only
     if args.imap_folder:
         Config.inbox = args.imap_folder
     
