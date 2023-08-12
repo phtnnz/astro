@@ -22,6 +22,8 @@
 # ChangeLog
 # Version 0.0 / 2023-08-07
 #       First test version
+# Version 0.1 / 2023-08-12
+#       First somewhat usage version, retrieves ACK mails and WAMO data
 
 import sys
 import os
@@ -36,7 +38,7 @@ import requests
 
 global NAME, VERSION, AUTHOR
 NAME    = "mpc-retrieve-ack"
-VERSION = "0.0 / 2023-08-07"
+VERSION = "0.1 / 2023-08-12"
 AUTHOR  = "Martin Junius"
 
 global CONFIG, WAMO_URL, MPEC_URL
