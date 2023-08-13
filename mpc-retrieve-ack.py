@@ -55,7 +55,7 @@ class Config:
     no_wamo     = False     # -n --no-wamo-requests
     list_folder = False     # -l --list-folders-only
     inbox       = "INBOX"   # -F --imap-foldeer
-
+    msgs_list   = None      # -m --msgs
 
     def __init__(self, file=None):
         self.obj = None
@@ -126,10 +126,16 @@ def retrieve_from_imap(cf):
     # Select mailbox
     if Config.verbose:
         print(NAME+":", "from inbox", Config.inbox)
+        if Config.msgs_list:
+            print(NAME+":", "messages", Config.msgs_list)
     server.select(Config.inbox)
 
     typ, data = server.search(None, 'ALL')
     for num in data[0].split():
+        if Config.msgs_list:
+            if not int(num) in Config.msgs_list:
+                continue
+
         typ, data = server.fetch(num, '(RFC822)')
         print("Message", num.decode("utf-8"))
         msg = data[0][1].decode()
@@ -182,7 +188,8 @@ def retrieve_from_mpc_wamo(ids):
     data = { "obs": "\r\n".join(ids.keys())}
     x = requests.post(WAMO_URL, data=data)
 
-    print(x.text)
+    for line in x.text.splitlines():
+        print(">", line)
 
     # Avoid high load on the MPC server
     time.sleep(0.5)
@@ -211,6 +218,11 @@ def retrieve_from_mpc_mpec(id):
 
 
 
+def str_to_list(s):
+    return sum(((list(range(*[int(j) + k for k,j in enumerate(i.split('-'))]))
+         if '-' in i else [int(i)]) for i in s.split(',')), [])
+
+
 
 def main():
     cf = Config()
@@ -227,6 +239,7 @@ def main():
     arg.add_argument("-n", "--no-wamo-requests", action="store_true", help="don't request observations from minorplanetcenter.net WAMO")
     arg.add_argument("-l", "--list-folders-only", action="store_true", help="list folders on IMAP server only")
     arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
+    arg.add_argument("-m", "--msgs", help="retrieve messages in MSGS range only, e.g. \"1-3,5\", default all")
     args = arg.parse_args()
 
     Config.verbose     = args.verbose
@@ -234,7 +247,8 @@ def main():
     Config.list_folder = args.list_folders_only
     if args.imap_folder:
         Config.inbox = args.imap_folder
-    
+    if args.msgs:
+        Config.msgs_list = str_to_list(args.msgs)
 
     retrieve_from_imap(cf)
     # retrieve_from_mpc_mpec("2023-P25")
