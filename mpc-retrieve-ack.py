@@ -163,10 +163,10 @@ def retrieve_from_imap(cf):
             if line.startswith("(IDs are NOT assigned to observations already submitted):"):
                 ids1 = True
         
+        print("   ", msg_date)
+        print("   ", msg_ack)
+        print("   ", msg_submission)
         if Config.verbose:
-            print("   ", msg_date)
-            print("   ", msg_ack)
-            print("   ", msg_submission)
             for id, obs in msg_ids.items():
                 print("       ", id, ":", obs)
 
@@ -189,7 +189,24 @@ def retrieve_from_mpc_wamo(ids):
     x = requests.post(WAMO_URL, data=data)
 
     for line in x.text.splitlines():
-        print(">", line)
+        if Config.verbose:
+            print("WAMO>", line)
+        if line == "":
+            continue
+        
+        m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) has been identified as (.+) and published in (.+)\.$', line)
+        if not m:
+            m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) has been identified as (.+), (publication is pending).$', line)
+        if m:    
+            data = m.group(1)
+            id   = m.group(2)
+            obj  = m.group(3)
+            pub  = m.group(4)
+            print("       ", id, ":", data)
+            print("       ", " " * len(id), ":", obj)
+            print("       ", " " * len(id), ":", pub)
+        else:
+            print("unknown>", line)
 
     # Avoid high load on the MPC server
     time.sleep(0.5)
