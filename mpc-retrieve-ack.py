@@ -193,7 +193,7 @@ def retrieve_from_mpc_wamo(ids):
             print("WAMO>", line)
         if line == "":
             continue
-        
+
         m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) has been identified as (.+) and published in (.+)\.$', line)
         if not m:
             m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) has been identified as (.+), (publication is pending).$', line)
@@ -205,11 +205,20 @@ def retrieve_from_mpc_wamo(ids):
             print("       ", id, ":", data)
             print("       ", " " * len(id), ":", obj)
             print("       ", " " * len(id), ":", pub)
+            print_mpec_url("         " + " " * len(id) + ":", pub)
         else:
             print("unknown>", line)
 
     # Avoid high load on the MPC server
     time.sleep(0.5)
+
+
+
+def print_mpec_url(spacer, pub):
+    m = re.search(r'MPEC (\d\d\d\d-[A-Z]\d\d)', pub)
+    if m:
+        url = retrieve_from_mpc_mpec(m.group(1))
+        print(spacer, url)
 
 
 
