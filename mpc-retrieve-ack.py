@@ -24,6 +24,8 @@
 #       First test version
 # Version 0.1 / 2023-08-12
 #       First somewhat usable version, retrieves ACK mails and WAMO data
+# Version 0.2 / 2023-08-14
+#       List MPECs with published measurements separately
 
 import sys
 import os
@@ -38,7 +40,7 @@ import requests
 
 global NAME, VERSION, AUTHOR
 NAME    = "mpc-retrieve-ack"
-VERSION = "0.1 / 2023-08-12"
+VERSION = "0.2 / 2023-08-14"
 AUTHOR  = "Martin Junius"
 
 global CONFIG, WAMO_URL, MPEC_URL
@@ -252,6 +254,7 @@ def retrieve_from_mpc_mpec(id):
 
 
 
+# Hack from https://stackoverflow.com/questions/6405208/how-to-convert-numeric-string-ranges-to-a-list-in-python
 def str_to_list(s):
     return sum(((list(range(*[int(j) + k for k,j in enumerate(i.split('-'))]))
          if '-' in i else [int(i)]) for i in s.split(',')), [])
