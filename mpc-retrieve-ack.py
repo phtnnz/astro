@@ -23,7 +23,7 @@
 # Version 0.0 / 2023-08-07
 #       First test version
 # Version 0.1 / 2023-08-12
-#       First somewhat usage version, retrieves ACK mails and WAMO data
+#       First somewhat usable version, retrieves ACK mails and WAMO data
 
 import sys
 import os
@@ -104,6 +104,22 @@ class Config:
 
     def get_inbox(self):
         return self.obj["inbox"]
+
+
+
+class MPEC:
+    mpec_cache = {}
+
+    def add_publication(pub):
+        m = re.search(r'MPEC (\d\d\d\d-[A-Z]\d\d)', pub)
+        if m:
+            MPEC.mpec_cache[m.group(1)] = True
+
+
+    def print_mpec_list():
+        for id in MPEC.mpec_cache.keys():
+            print(id, ":", retrieve_from_mpc_mpec(id))
+
 
 
 
@@ -205,20 +221,12 @@ def retrieve_from_mpc_wamo(ids):
             print("       ", id, ":", data)
             print("       ", " " * len(id), ":", obj)
             print("       ", " " * len(id), ":", pub)
-            print_mpec_url("         " + " " * len(id) + ":", pub)
+            MPEC.add_publication(pub)
         else:
             print("unknown>", line)
 
     # Avoid high load on the MPC server
     time.sleep(0.5)
-
-
-
-def print_mpec_url(spacer, pub):
-    m = re.search(r'MPEC (\d\d\d\d-[A-Z]\d\d)', pub)
-    if m:
-        url = retrieve_from_mpc_mpec(m.group(1))
-        print(spacer, url)
 
 
 
@@ -277,7 +285,10 @@ def main():
         Config.msgs_list = str_to_list(args.msgs)
 
     retrieve_from_imap(cf)
-    # retrieve_from_mpc_mpec("2023-P25")
+
+    print("Published in the following MPECs")
+    MPEC.print_mpec_list()
+
 
 
 if __name__ == "__main__":
