@@ -254,6 +254,15 @@ def retrieve_from_mpc_mpec(id):
 
 
 
+def retrieve_from_directory(root):
+    for dir, subdirs, files in os.walk(root):
+        print("Processing directory", dir)
+        for f in files:
+            if f.endswith(".txt") or f.endswith(".TXT"):
+                print("f =", f)
+
+
+
 # Hack from https://stackoverflow.com/questions/6405208/how-to-convert-numeric-string-ranges-to-a-list-in-python
 def str_to_list(s):
     return sum(((list(range(*[int(j) + k for k,j in enumerate(i.split('-'))]))
@@ -277,6 +286,7 @@ def main():
     arg.add_argument("-l", "--list-folders-only", action="store_true", help="list folders on IMAP server only")
     arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
     arg.add_argument("-m", "--msgs", help="retrieve messages in MSGS range only, e.g. \"1-3,5\", default all")
+    arg.add_argument("directory", nargs="*", help="read MPC reports from directory instead of ACK mails")
     args = arg.parse_args()
 
     Config.verbose     = args.verbose
@@ -287,7 +297,11 @@ def main():
     if args.msgs:
         Config.msgs_list = str_to_list(args.msgs)
 
-    retrieve_from_imap(cf)
+    if args.directory:
+        for dir in args.directory:
+            retrieve_from_directory(dir)
+    else:
+        retrieve_from_imap(cf)
 
     print("Published in the following MPECs")
     MPEC.print_mpec_list()
