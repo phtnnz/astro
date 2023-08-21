@@ -58,6 +58,8 @@ class Config:
     list_folder = False     # -l --list-folders-only
     inbox       = "INBOX"   # -F --imap-foldeer
     msgs_list   = None      # -m --msgs
+    mpc1992     = False     # -M --mpc1992-reports
+    ades        = False     # -A --ades-reports
 
     def __init__(self, file=None):
         self.obj = None
@@ -287,6 +289,8 @@ def main():
     arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
     arg.add_argument("-m", "--msgs", help="retrieve messages in MSGS range only, e.g. \"1-3,5\", default all")
     arg.add_argument("directory", nargs="*", help="read MPC reports from directory instead of ACK mails")
+    arg.add_argument("-M", "--mpc1992-reports", action="store_true", help="read old MPC 1992 reports only")
+    arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports only")
     args = arg.parse_args()
 
     Config.verbose     = args.verbose
@@ -296,6 +300,8 @@ def main():
         Config.inbox = args.imap_folder
     if args.msgs:
         Config.msgs_list = str_to_list(args.msgs)
+    Config.mpc1992     = args.mpc1992_reports
+    Config.ades        = args.ades_reports
 
     if args.directory:
         for dir in args.directory:
