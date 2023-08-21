@@ -262,6 +262,37 @@ def retrieve_from_directory(root):
         for f in files:
             if f.endswith(".txt") or f.endswith(".TXT"):
                 print("f =", f)
+                process_file(os.path.join(dir, f))
+
+
+
+def process_file(file):
+    with open(file, "r") as fh:
+        line1 = fh.readline().strip()
+        print("line1 =", line1)
+
+        # Old MPC 1992 report format
+        if line1.startswith("COD ") and Config.mpc1992:
+            if Config.verbose: print("Processing MPC1992", file)
+            process_mpc1992(fh, line1)
+
+        # New ADES (PSV) report format
+        elif line1 == "# version=2017" and Config.ades:
+            if Config.verbose: print("Processing ADES", file)
+            process_ades(fh, line1)
+
+        else:
+            if Config.verbose: print("Not processing", file)
+
+
+
+def process_mpc1992(fh, line1):
+    pass
+
+
+
+def process_ades(fh, line1):
+    pass
 
 
 
@@ -289,8 +320,8 @@ def main():
     arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
     arg.add_argument("-m", "--msgs", help="retrieve messages in MSGS range only, e.g. \"1-3,5\", default all")
     arg.add_argument("directory", nargs="*", help="read MPC reports from directory instead of ACK mails")
-    arg.add_argument("-M", "--mpc1992-reports", action="store_true", help="read old MPC 1992 reports only")
-    arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports only")
+    arg.add_argument("-M", "--mpc1992-reports", action="store_true", help="read old MPC 1992 reports")
+    arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports")
     args = arg.parse_args()
 
     Config.verbose     = args.verbose
@@ -309,7 +340,7 @@ def main():
     else:
         retrieve_from_imap(cf)
 
-    print("Published in the following MPECs")
+    print("\nPublished in the following MPECs")
     MPEC.print_mpec_list()
 
 
