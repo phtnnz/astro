@@ -35,6 +35,7 @@ import json
 import imaplib
 import re
 import time
+import csv
 # The following libs must be installed with pip
 import requests
 
@@ -291,8 +292,44 @@ def process_mpc1992(fh, line1):
 
 
 
+def dict_remove_ws(dict):
+    return {k.strip():v.strip() for k, v in dict.items()}
+
+
 def process_ades(fh, line1):
-    pass
+    ades_obj = {}
+    key1 = None
+    key2 = None
+    while True:
+        pos = fh.tell()
+        line = fh.readline()
+        if not line:
+            break
+
+        # meta data header
+        m = re.match(r'^(#|!) (\w+) ?(.+)?$', line.strip())
+        if m:
+            print(m.groups())
+            (m1, m2, m3) = m.groups()
+            if m1 == "#":
+                key1 =  m2
+                ades_obj[key1] ={}
+            if m1 == "!":
+                key2 = m2
+                ades_obj[key1][key2] = m3
+
+        # PSV from this line on
+        else:
+            fh.seek(pos)
+            ades_obj["observations"] = []
+            reader = csv.DictReader(fh, delimiter='|', quoting=csv.QUOTE_NONE)
+            for row in reader:
+                print(dict_remove_ws(row))
+                ades_obj["observations"].append(row)
+
+            break
+
+    print(ades_obj)
 
 
 
