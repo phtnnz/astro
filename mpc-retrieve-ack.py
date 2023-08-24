@@ -191,8 +191,7 @@ def retrieve_from_imap(cf):
             for id, obs in msg_ids.items():
                 print("       ", id, ":", obs)
 
-        if not Config.no_wamo:
-            retrieve_from_mpc_wamo(msg_ids)
+        retrieve_from_mpc_wamo(msg_ids)
 
     # Cleanup
     server.close()
@@ -203,12 +202,16 @@ def retrieve_from_imap(cf):
 def retrieve_from_mpc_wamo(ids):
     """ Retrieve observation data from minorplanetcenter WAMO """
 
+    if Config.no_wamo:
+        return
+
     # Example
     # curl -v -d "obs=LdY91I230000FGdd010000001" https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo
 
     data = { "obs": "\r\n".join(ids.keys())}
     x = requests.post(WAMO_URL, data=data)
 
+    wamo = []
     for line in x.text.splitlines():
         if Config.verbose:
             print("WAMO>", line)
@@ -227,11 +230,17 @@ def retrieve_from_mpc_wamo(ids):
             print("       ", " " * len(id), ":", obj)
             print("       ", " " * len(id), ":", pub)
             MPEC.add_publication(pub)
+            wamo.append({"data":          data, 
+                         "observationID": id,
+                         "permID":        obj,
+                         "publication":   pub  })
         else:
             print("unknown>", line)
 
     # Avoid high load on the MPC server
     time.sleep(0.5)
+
+    return wamo
 
 
 
@@ -264,6 +273,9 @@ def retrieve_from_directory(root):
             if f.endswith(".txt") or f.endswith(".TXT"):
                 print("f =", f)
                 process_file(os.path.join(dir, f))
+
+                ##TMP##
+                return
 
 
 
@@ -298,6 +310,8 @@ def dict_remove_ws(dict):
 
 def process_ades(fh, line1):
     ades_obj = {}
+
+    # Read report txt file
     key1 = None
     key2 = None
     while True:
@@ -321,13 +335,22 @@ def process_ades(fh, line1):
         # PSV from this line on
         else:
             fh.seek(pos)
-            ades_obj["observations"] = []
+            ades_obj["_observations"] = []
             reader = csv.DictReader(fh, delimiter='|', quoting=csv.QUOTE_NONE)
             for row in reader:
                 print(dict_remove_ws(row))
-                ades_obj["observations"].append(row)
+                ades_obj["_observations"].append(dict_remove_ws(row))
 
             break
+
+    # Get trackIds and mpcCode to query WAMO
+    ids = {}
+    for trk in ades_obj["_observations"]:
+        ids[trk["trkSub"] + " " + trk["stn"]] = True
+    ades_obj["_ids"] = ids
+    wamo = retrieve_from_mpc_wamo(ids)
+    if wamo:
+        ades_obj["_wamo"] = wamo
 
     print(ades_obj)
 
