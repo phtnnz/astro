@@ -274,10 +274,6 @@ def retrieve_from_directory(root):
                 print("f =", f)
                 process_file(os.path.join(dir, f))
 
-                ##TMP##
-                return
-
-
 
 def process_file(file):
     with open(file, "r") as fh:
@@ -285,14 +281,16 @@ def process_file(file):
         print("line1 =", line1)
 
         # Old MPC 1992 report format
-        if line1.startswith("COD ") and Config.mpc1992:
-            if Config.verbose: print("Processing MPC1992", file)
-            process_mpc1992(fh, line1)
+        if line1.startswith("COD "):
+            if Config.mpc1992:
+                if Config.verbose: print("Processing MPC1992", file)
+                process_mpc1992(fh, line1)
 
         # New ADES (PSV) report format
-        elif line1 == "# version=2017" and Config.ades:
-            if Config.verbose: print("Processing ADES", file)
-            process_ades(fh, line1)
+        elif line1 == "# version=2017":
+            if Config.ades:
+                if Config.verbose: print("Processing ADES", file)
+                process_ades(fh, line1)
 
         else:
             if Config.verbose: print("Not processing", file)
@@ -300,7 +298,52 @@ def process_file(file):
 
 
 def process_mpc1992(fh, line1):
-    pass
+    mpc1992_obj = {}
+    mpc1992_obj["_observations"] = []
+    ids = {}
+
+    line = line1
+    while line:
+        # meta data header
+        m = re.match(r'^([A-Z0-9]{3}) (.+)$', line)
+        if m:
+            print(m.groups())
+            (m1, m2) = m.groups()
+            # requires Python >= 3.10!
+            match m1:
+                case "COD":
+                    mpc1992_obj["observatory"] = {"mpcCode": m2}
+                case "CON":
+                    mpc1992_obj["submitter"] = {"name": m2}
+                case "OBS":
+                    mpc1992_obj["observers"] = {"name": m2}
+                case "MEA":
+                    mpc1992_obj["measurers"] = {"name": m2}
+                case "TEL":
+                    mpc1992_obj["telescope"] = {"description": m2}      ##FIXME: split as in ADES report
+                case "NUM":
+                    mpc1992_obj["_number"] = int(m2)
+                case "ACK":
+                    mpc1992_obj["_ack_line"] = m2
+                case "AC2":
+                    mpc1992_obj["_ac2_line"] = m2
+
+        # data lines
+        else:
+            mpc1992_obj["_observations"].append({"data": line})
+            ids[line] = True
+
+        line = fh.readline().rstrip()
+        if line.startswith("----- end"):
+            break
+
+    wamo = retrieve_from_mpc_wamo(ids)
+    if wamo:
+        mpc1992_obj["_wamo"] = wamo
+    
+    print(mpc1992_obj)
+    ##TMP
+    sys.exit()
 
 
 
