@@ -232,7 +232,7 @@ def retrieve_from_mpc_wamo(ids):
             MPEC.add_publication(pub)
             wamo.append({"data":          data, 
                          "observationID": id,
-                         "permID":        obj,
+                         "objID":         obj,
                          "publication":   pub  })
         else:
             print("unknown>", line)
@@ -271,14 +271,14 @@ def retrieve_from_directory(root):
         print("Processing directory", dir)
         for f in files:
             if f.endswith(".txt") or f.endswith(".TXT"):
-                print("f =", f)
+                # print("f =", f)
                 process_file(os.path.join(dir, f))
 
 
 def process_file(file):
     with open(file, "r") as fh:
         line1 = fh.readline().strip()
-        print("line1 =", line1)
+        # print("line1 =", line1)
 
         # Old MPC 1992 report format
         if line1.startswith("COD "):
@@ -341,9 +341,9 @@ def process_mpc1992(fh, line1):
     if wamo:
         mpc1992_obj["_wamo"] = wamo
     
-    print(mpc1992_obj)
-    ##TMP
-    sys.exit()
+    # print(mpc1992_obj)
+    if Config.verbose:
+        print(json.dumps(mpc1992_obj, indent=4))
 
 
 
@@ -439,7 +439,10 @@ def main():
 
     if args.directory:
         for dir in args.directory:
-            retrieve_from_directory(dir)
+            # quick hack: Windows PowerShell adds a stray " to the end of dirname 
+            # if it ends with a backslash \ AND contains a space!!!
+            # see here https://bugs.python.org/issue39845
+            retrieve_from_directory(dir.rstrip("\""))
     else:
         retrieve_from_imap(cf)
 
