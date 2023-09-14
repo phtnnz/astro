@@ -146,16 +146,15 @@ def main():
     if args.data_dir:
         DATADIR = args.data_dir
     if args.zip_dir:
-        ZIPDIR = args.zip_dir
+        ZIPDIR  = args.zip_dir
     if args.zip_prog:
         ZIPPROG = args.zip_prog
 
     DATADIR = os.path.abspath(DATADIR)
-    ZIPDIR = os.path.abspath(ZIPDIR)
+    ZIPDIR  = os.path.abspath(ZIPDIR)
     ZIPPROG = os.path.abspath(ZIPPROG)
 
-    if not args.date:
-        date = args.date if args.date else date_yesterday()
+    date = args.date if args.date else date_yesterday()
     if OPT_V:
         print(time_now(), "archive date =", date)
 
