@@ -156,9 +156,6 @@ def main():
 
     date = args.date if args.date else date_yesterday()
     if OPT_V:
-        print(time_now(), "archive date =", date)
-
-    if OPT_V:
         print("Data directory =", DATADIR)
         print("ZIP directory  =", ZIPDIR)
         print("ZIP program    =", ZIPPROG)
