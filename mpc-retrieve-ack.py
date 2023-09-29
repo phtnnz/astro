@@ -173,6 +173,9 @@ def retrieve_from_imap(cf):
         ack1 = False
         sub1 = False
         ids1 = False
+        msg_date = "-no Date header-"
+        msg_ack = "-no ACK reference-"
+        msg_submission = "-no submission id-"
         msg_ids = {}
         for line in msg.splitlines():
             if ack1:
@@ -213,6 +216,9 @@ def retrieve_from_mpc_wamo(ids):
     """ Retrieve observation data from minorplanetcenter WAMO """
 
     if Config.no_wamo:
+        return
+    if not ids:
+        # empty ids dict
         return
 
     # Example
