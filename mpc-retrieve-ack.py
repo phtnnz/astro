@@ -182,7 +182,7 @@ def retrieve_from_imap(cf):
                 sub1 = False
                 msg_submission = line.strip()
             if ids1:
-                m = re.search(r'^(.+)  -> ([A-Za-z0-9]+)$', line)
+                m = re.search(r'^(.+) -> ([A-Za-z0-9]+)$', line)
                 if m:    
                     msg_ids[m.group(2)] = m.group(1)
             if line.startswith("Date: "):
