@@ -438,7 +438,7 @@ def main():
     arg.add_argument("-l", "--list-folders-only", action="store_true", help="list folders on IMAP server only")
     arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
     arg.add_argument("-m", "--msgs", help="retrieve messages in MSGS range only, e.g. \"1-3,5\", default all")
-    arg.add_argument("directory", nargs="*", help="read MPC reports from directory instead of ACK mails")
+    arg.add_argument("directory", nargs="*", help="read MPC reports from directory/file instead of ACK mails")
     arg.add_argument("-M", "--mpc1992-reports", action="store_true", help="read old MPC 1992 reports")
     arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports")
     args = arg.parse_args()
@@ -458,7 +458,11 @@ def main():
             # quick hack: Windows PowerShell adds a stray " to the end of dirname 
             # if it ends with a backslash \ AND contains a space!!!
             # see here https://bugs.python.org/issue39845
-            retrieve_from_directory(dir.rstrip("\""))
+            dir = dir.rstrip("\"")
+            if os.path.isdir(dir):
+                retrieve_from_directory(dir)
+            if os.path.isfile(dir):
+                process_file(dir)
     else:
         retrieve_from_imap(cf)
 
