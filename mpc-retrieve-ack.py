@@ -137,6 +137,28 @@ class MPEC:
 
 
 
+class Data80:
+    def __init__(self, data):
+        self.data80 = data
+
+
+    def parse_data(self):
+        self.obj = {}
+        packed_perm_id = self.data80[0:5]
+        packed_prov_id = self.data80[5:12]
+        discovery      = self.data80[12]
+        note1          = self.data80[13]        # C=CCD, B=CMOS, V=Roving Observer, X=replaced
+        note2          = self.data80[14]        # leer, K=stacked, 0=?, 1=?
+        date           = self.data80[15:32]
+        ra             = self.data80[32:44]
+        dec            = self.data80[44:56]
+        #blank         = self.data80[56:65]
+        mag            = self.data80[65:71]
+        #blank???      = self.data80[71:77]
+        code           = self.data80[77:80]
+
+
+
 
 def retrieve_from_imap(cf):
     """ Connect to IMAP server and retrieve ACK mails """
@@ -246,6 +268,10 @@ def retrieve_from_mpc_wamo(ids):
             print("       ", " " * len(id), ":", obj)
             print("       ", " " * len(id), ":", pub)
             MPEC.add_publication(pub)
+
+            data80 = Data80(data)
+            data80.parse_data()
+
             wamo.append({"data":          data, 
                          "observationID": id,
                          "objID":         obj,
