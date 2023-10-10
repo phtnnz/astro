@@ -19,15 +19,22 @@
 # Data formats:
 #
 # Packed Provisional and Permanent Designations
-#    https://www.minorplanetcenter.net/iau/info/PackedDes.html
+#   https://www.minorplanetcenter.net/iau/info/PackedDes.html
 #
 # Format For Optical Astrometric Observations Of Comets, Minor Planets and Natural Satellites
 # (MPC1992 80-column format)
-#    https://www.minorplanetcenter.net/iau/info/OpticalObs.html 
+#   https://www.minorplanetcenter.net/iau/info/OpticalObs.html 
 #
 # Astrometry Data Exchange Standard
 # (ADES)
-#    https://minorplanetcenter.net/iau/info/IAU2015_ADES.pdf
+#   https://minorplanetcenter.net/iau/info/IAU2015_ADES.pdf
+#
+# Explanation of References on Astrometric Observations
+# (Column 73-77 of observation record)
+#   https://minorplanetcenter.net/iau/info/References.html
+#
+# See also this github repo
+#   https://github.com/IAU-ADES/ADES-Master/tree/master/Python/bin
 
 # ChangeLog
 # Version 0.0 / 2023-08-07
@@ -154,7 +161,7 @@ class Data80:
         dec            = self.data80[44:56]
         #blank         = self.data80[56:65]
         mag            = self.data80[65:71]
-        #blank???      = self.data80[71:77]
+        reference      = self.data80[71:77]     # publication reference
         code           = self.data80[77:80]
 
 
