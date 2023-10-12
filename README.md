@@ -25,6 +25,7 @@ The following additional Python libraries must be installed:
 | -------- | ---------------------------------- |
 | requests | https://pypi.org/project/requests/ |
 | psutil   | https://pypi.org/project/psutil/   |
+| icecream | https://pypi.org/project/icecream/ |
 
 ## nina-create-sequence
 Builds a complete N.I.N.A sequence for the observation night, using a base template (with empty Sequence Target Area) and a target template (repeated for every single object), from a CSV list of targets exported by NEO Planner.
@@ -165,3 +166,5 @@ options:
 
 Version 0.1 / 2023-07-26 / Martin Junius
 ```
+
+## mpc-retrieve-ack
