@@ -55,6 +55,7 @@ import time
 import csv
 # The following libs must be installed with pip
 import requests
+from icecream import ic
 
 global NAME, VERSION, AUTHOR
 NAME    = "mpc-retrieve-ack"
@@ -160,10 +161,12 @@ class Data80:
         ra             = self.data80[32:44]
         dec            = self.data80[44:56]
         #blank         = self.data80[56:65]
-        mag            = self.data80[65:71]
+        mag            = self.data80[65:70]
+        band           = self.data80[70]
         reference      = self.data80[71:77]     # publication reference
         code           = self.data80[77:80]
 
+        ic(mag, band, reference)
 
 
 
