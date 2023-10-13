@@ -43,6 +43,7 @@ import sys
 import os
 import argparse
 import re
+import json
 # The following libs must be installed with pip
 from icecream import ic
 
@@ -57,46 +58,72 @@ class MPCData80:
         self.data80 = data
 
 
+    def get_col(self, col1, col2=0):
+        if col2 > 0:
+            return self.data80[col1 -1 : col2]
+        else:
+            return self.data80[col1 - 1]
+
+
     def parse_data(self):
         self.obj = {}
-        self.obj["data80"] = self.data80
+        self.obj["data"] = self.data80
 
-#    Columns     Format   Use
-#     1 -  5       A5     Packed minor planet number
-#     6 - 12       A7     Packed provisional designation, or a temporary designation
-#    13            A1     Discovery asterisk
-#    14            A1     Note 1
-#    15            A1     Note 2
-#    16 - 32              Date of observation
-#    33 - 44              Observed RA (J2000.0)
-#    45 - 56              Observed Decl. (J2000.0)
-#    57 - 65       9X     Must be blank
-#    66 - 71    F5.2,A1   Observed magnitude and band
-#                            (or nuclear/total flag for comets)
-#    72 - 77       X      Must be blank
-#    78 - 80       A3     Observatory code
+        #    Columns     Format   Use
+        #     1 -  5       A5     Packed minor planet number
+        #     6 - 12       A7     Packed provisional designation, or a temporary designation
+        #    13            A1     Discovery asterisk
+        #    14            A1     Note 1
+        #    15            A1     Note 2
+        #    16 - 32              Date of observation
+        #    33 - 44              Observed RA (J2000.0)
+        #    45 - 56              Observed Decl. (J2000.0)
+        #    57 - 65       9X     Must be blank
+        #    66 - 71    F5.2,A1   Observed magnitude and band
+        #                            (or nuclear/total flag for comets)
+        #    72 - 77       X      Must be blank
+        #    78 - 80       A3     Observatory code
 
-        packed_id      = self.data80[0:12]
-        discovery      = self.data80[12]
-        note1          = self.data80[13]        # C=CCD, B=CMOS, V=Roving Observer, X=replaced
-        note2          = self.data80[14]        # leer, K=stacked, 0=?, 1=?
-        date           = self.data80[15:32]
-        ra             = self.data80[32:44]
-        dec            = self.data80[44:56]
-        #blank         = self.data80[56:65]
-        mag            = self.data80[65:70]
-        band           = self.data80[70]
-        #???           = self.data80[71]
-        packed_ref     = self.data80[72:77]     # publication reference
-        code           = self.data80[77:80]
+        packed_id      = self.get_col(1, 12)
+        discovery      = self.get_col(13)
+        note1          = self.get_col(14)        # C=CCD, B=CMOS, V=Roving Observer, X=replaced
+        note2          = self.get_col(15)        # leer, K=stacked, 0=?, 1=?
+        date           = self.get_col(16, 32)
+        ra             = self.get_col(33, 44)
+        dec            = self.get_col(45, 56)
+        #blank                       (57, 65)
+        mag            = self.get_col(66, 70)
+        band           = self.get_col(71)
+        field72        = self.get_col(72)        # present in published MPC data???
+        packed_ref     = self.get_col(73, 77)    # publication reference
+        code           = self.get_col(78, 80)
 
         ic(self)
-        ic(packed_id, discovery, note1, note2, date, ra, dec, mag, band, packed_ref, code)
+        ic(packed_id, discovery, note1, note2, date, ra, dec, mag, band, field72, packed_ref, code)
 
         (perm_id, prov_id) = MPCData80.unpack_id(packed_id)
-        ref = MPCData80.unpack_reference(packed_ref)
+
+        year = date[0:4]                # FIXME: quick hack to get the MPEC year, is this really correct?
+        ref = MPCData80.unpack_reference(packed_ref, year)
         ic(perm_id, prov_id, ref)
 
+        self.obj["permId"] = perm_id
+        self.obj["provId"] = prov_id
+        self.obj["discovery"] = discovery.strip()
+        self.obj["note1"] = note1
+        self.obj["note2"] = note2
+        self.obj["date"] = date         # FIXME: convert to proper date
+        self.obj["ra"] = ra
+        self.obj["dec"] = dec
+        self.obj["mag"] = mag
+        self.obj["band"] = band
+        self.obj["field72"] = field72
+        self.obj["reference"] = ref
+        self.obj["code"] = code
+
+
+    def get_json(self, indent=4):
+        return json.dumps(self.obj, indent=indent)
 
 
     def decode_single(c):
@@ -118,9 +145,9 @@ class MPCData80:
 
 
     # Below adapted from https://github.com/IAU-ADES/ADES-Master/blob/master/Python/bin/packUtil.py
-    def unpack_reference(packedref):
+    def unpack_reference(packedref, year):
         if packedref[0] == "E":                                     # Temporary MPEC
-            packedref = "MPEC <YEAR>-" + packedref[1] + str( "{:02d}".format(int(packedref[2:])) )
+            packedref = "MPEC " + year + "-" + packedref[1] + str( "{:02d}".format(int(packedref[2:])) )
         elif packedref[0] in '0123456789':                          # MPC case A
             packedref = "MPC  " + str(int(packedref))               #   <5-digit number>
         elif packedref[0] == '@':                                   # MPC case B
@@ -221,7 +248,7 @@ def main():
 
     data = MPCData80(args.data80)
     data.parse_data()
-
+    print(data.get_json())
 
 
 if __name__ == "__main__":
