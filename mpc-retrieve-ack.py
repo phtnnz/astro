@@ -16,26 +16,6 @@
 
 # Retrieve MPC ACK mails from IMAP mailbox, measurement IDs, measurement data, MPECs etc.
 
-# Data formats:
-#
-# Packed Provisional and Permanent Designations
-#   https://www.minorplanetcenter.net/iau/info/PackedDes.html
-#
-# Format For Optical Astrometric Observations Of Comets, Minor Planets and Natural Satellites
-# (MPC1992 80-column format)
-#   https://www.minorplanetcenter.net/iau/info/OpticalObs.html 
-#
-# Astrometry Data Exchange Standard
-# (ADES)
-#   https://minorplanetcenter.net/iau/info/IAU2015_ADES.pdf
-#
-# Explanation of References on Astrometric Observations
-# (Column 73-77 of observation record)
-#   https://minorplanetcenter.net/iau/info/References.html
-#
-# See also this github repo
-#   https://github.com/IAU-ADES/ADES-Master/tree/master/Python/bin
-
 # ChangeLog
 # Version 0.0 / 2023-08-07
 #       First test version

@@ -14,6 +14,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Data formats:
+#
+# Packed Provisional and Permanent Designations
+#   https://www.minorplanetcenter.net/iau/info/PackedDes.html
+#
+# Format For Optical Astrometric Observations Of Comets, Minor Planets and Natural Satellites
+# (MPC1992 80-column format)
+#   https://www.minorplanetcenter.net/iau/info/OpticalObs.html 
+#
+# Astrometry Data Exchange Standard
+# (ADES)
+#   https://minorplanetcenter.net/iau/info/IAU2015_ADES.pdf
+#
+# Explanation of References on Astrometric Observations
+# (Column 73-77 of observation record)
+#   https://minorplanetcenter.net/iau/info/References.html
+#
+# See also this github repo
+#   https://github.com/IAU-ADES/ADES-Master/tree/master/Python/bin
+
 # ChangeLog
 # Version 0.1 / 2023-1013
 #       Moved Data80 class from mpc-retrieve-ack to here, renamed to MPCData80
@@ -99,7 +119,7 @@ class MPCData80:
     # Adapted from https://github.com/IAU-ADES/ADES-Master/blob/master/Python/bin/packUtil.py
     def unpack_reference(packedref):
         if packedref[0] == "E":                                     # Temporary MPEC
-            packedref = "<YEAR>-" + packedref[1] + str(int(packedref[2:]))
+            packedref = "MPEC <YEAR>-" + packedref[1] + str(int(packedref[2:]))
         elif packedref[0] in '0123456789':                          # MPC case A
             packedref = "MPC  " + str(int(packedref))               #   <5-digit number>
         elif packedref[0] == '@':                                   # MPC case B
