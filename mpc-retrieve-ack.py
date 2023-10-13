@@ -56,6 +56,8 @@ import csv
 # The following libs must be installed with pip
 import requests
 from icecream import ic
+# Local modules
+from mpcdata80 import MPCData80
 
 global NAME, VERSION, AUTHOR
 NAME    = "mpc-retrieve-ack"
@@ -142,93 +144,6 @@ class MPEC:
     def print_mpec_list():
         for id in MPEC.mpec_cache.keys():
             print(id, ":", retrieve_from_mpc_mpec(id))
-
-
-
-class Data80:
-    def __init__(self, data):
-        self.data80 = data
-
-
-    def parse_data(self):
-        self.obj = {}
-        self.obj["data80"] = self.data80
-
-#    Columns     Format   Use
-#     1 -  5       A5     Packed minor planet number
-#     6 - 12       A7     Packed provisional designation, or a temporary designation
-#    13            A1     Discovery asterisk
-#    14            A1     Note 1
-#    15            A1     Note 2
-#    16 - 32              Date of observation
-#    33 - 44              Observed RA (J2000.0)
-#    45 - 56              Observed Decl. (J2000.0)
-#    57 - 65       9X     Must be blank
-#    66 - 71    F5.2,A1   Observed magnitude and band
-#                            (or nuclear/total flag for comets)
-#    72 - 77       X      Must be blank
-#    78 - 80       A3     Observatory code
-
-        packed_perm_id = self.data80[0:5]
-        packed_prov_id = self.data80[5:12]
-        discovery      = self.data80[12]
-        note1          = self.data80[13]        # C=CCD, B=CMOS, V=Roving Observer, X=replaced
-        note2          = self.data80[14]        # leer, K=stacked, 0=?, 1=?
-        date           = self.data80[15:32]
-        ra             = self.data80[32:44]
-        dec            = self.data80[44:56]
-        #blank         = self.data80[56:65]
-        mag            = self.data80[65:70]
-        band           = self.data80[70]
-        #???           = self.data80[71]
-        packed_ref     = self.data80[72:77]     # publication reference
-        code           = self.data80[77:80]
-
-        ic(self)
-        ic(packed_perm_id, packed_prov_id, discovery, note1, note2, date, ra, dec, mag, band, packed_ref, code)
-
-        ref = Data80.unpack_reference(packed_ref)
-        ic(ref)
-
-
-
-    def decode_single(c):
-        v = ord(c)
-        if v >= ord("0"):
-            if v >= ord("A"):
-                if v >= ord("a"):
-                    return v - ord("a") + 10 + 26
-                return v - ord("A") + 10
-            return v - ord("0")
-        return 0
-    
-    def decode_base62(s): 
-        """Input s = ~XXXX """
-        return ( ( (  Data80.decode_single(s[1]) * 62 
-                    + Data80.decode_single(s[2])      ) * 62 
-                    + Data80.decode_single(s[3])             ) * 62
-                    + Data80.decode_single(s[4])                    )
-
-
-    # Adapted from https://github.com/IAU-ADES/ADES-Master/blob/master/Python/bin/packUtil.py
-    def unpack_reference(packedref):
-        if packedref[0] == "E":                                     # Temporary MPEC
-            packedref = "<YEAR>-" + packedref[1] + str(int(packedref[2:]))
-        elif packedref[0] in '0123456789':                          # MPC case A
-            packedref = "MPC  " + str(int(packedref))               #   <5-digit number>
-        elif packedref[0] == '@':                                   # MPC case B
-            packedref = "MPC  " + str(100000 + int(packedref[1:]))  #   @<4-digit number>
-        elif packedref[0] == '#':                                   # MPC case C
-            n = 110000 + Data80.decode_base62(packedref)            #   ~<4-digit radix 62>
-            packedref = "MPC  " + str(n)
-        elif packedref[0] in 'abcdefghijklmnopqrstuvwxyz':          # MPS case D
-            n = int(packedref[1:]) + 10000*'abcdefghijklmnopqrstuvwxyz'.index(packedref[0])
-            packedref = "MPS  " + str(n)                            #   <letter + 4-digit base 10>
-        elif packedref[0] == '~':                                   # MPS case E
-            n = 260000 + Data80.decode_base62(packedref)            #   ~<4-digit radix 62>
-            packedref = "MPS  " + str(n)
-        # Case F, G not handled
-        return packedref
 
 
 
@@ -341,7 +256,7 @@ def retrieve_from_mpc_wamo(ids):
             print("       ", " " * len(id), ":", pub)
             MPEC.add_publication(pub)
 
-            data80 = Data80(data)
+            data80 = MPCData80(data)
             data80.parse_data()
 
             wamo.append({"data":          data, 
