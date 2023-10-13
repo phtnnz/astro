@@ -42,6 +42,7 @@
 import sys
 import os
 import argparse
+import re
 # The following libs must be installed with pip
 from icecream import ic
 
@@ -93,8 +94,9 @@ class MPCData80:
         ic(self)
         ic(packed_perm_id, packed_prov_id, discovery, note1, note2, date, ra, dec, mag, band, packed_ref, code)
 
+        perm = MPCData80.unpack_perm_id(packed_perm_id)
         ref = MPCData80.unpack_reference(packed_ref)
-        ic(ref)
+        ic(perm, ref)
 
 
 
@@ -116,7 +118,7 @@ class MPCData80:
                     + MPCData80.decode_single(s[4])                    )
 
 
-    # Adapted from https://github.com/IAU-ADES/ADES-Master/blob/master/Python/bin/packUtil.py
+    # Below adapted from https://github.com/IAU-ADES/ADES-Master/blob/master/Python/bin/packUtil.py
     def unpack_reference(packedref):
         if packedref[0] == "E":                                     # Temporary MPEC
             packedref = "MPEC <YEAR>-" + packedref[1] + str(int(packedref[2:]))
@@ -135,7 +137,24 @@ class MPCData80:
             packedref = "MPS  " + str(n)
         # Case F, G not handled
         return packedref
+    
 
+    def unpack_perm_id(packed):
+        # Minor planet
+        m = re.search(r'^(?: {5}|([0-9A-Za-z])(\d{4})|(~[0-9A-Za-z]{4}))$', packed)
+        #                         ^(1)         ^(2)    ^(3)
+        if m:
+            ic(m)
+            n = False
+            if m.group(1):
+                n = int(m.group(2)) + 10000 * MPCData80.decode_single(m.group(1))
+            if m.group(3):
+                n = 620000 + MPCData80.decode_base62(m.group(3))
+            if n:
+                return "(" + str(n) + ")"
+
+        return False
+    
 
 
 ### Can be run as a command line script ###
