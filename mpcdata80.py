@@ -76,8 +76,7 @@ class MPCData80:
 #    72 - 77       X      Must be blank
 #    78 - 80       A3     Observatory code
 
-        packed_perm_id = self.data80[0:5]
-        packed_prov_id = self.data80[5:12]
+        packed_id      = self.data80[0:12]
         discovery      = self.data80[12]
         note1          = self.data80[13]        # C=CCD, B=CMOS, V=Roving Observer, X=replaced
         note2          = self.data80[14]        # leer, K=stacked, 0=?, 1=?
@@ -92,11 +91,11 @@ class MPCData80:
         code           = self.data80[77:80]
 
         ic(self)
-        ic(packed_perm_id, packed_prov_id, discovery, note1, note2, date, ra, dec, mag, band, packed_ref, code)
+        ic(packed_id, discovery, note1, note2, date, ra, dec, mag, band, packed_ref, code)
 
-        perm = MPCData80.unpack_perm_id(packed_perm_id)
+        (perm_id, prov_id) = MPCData80.unpack_id(packed_id)
         ref = MPCData80.unpack_reference(packed_ref)
-        ic(perm, ref)
+        ic(perm_id, prov_id, ref)
 
 
 
@@ -111,7 +110,7 @@ class MPCData80:
         return 0
     
     def decode_base62(s): 
-        """Input s = ~XXXX """
+        """ Input s = ~XXXX """
         return ( ( (  MPCData80.decode_single(s[1]) * 62 
                     + MPCData80.decode_single(s[2])      ) * 62 
                     + MPCData80.decode_single(s[3])             ) * 62
@@ -121,40 +120,87 @@ class MPCData80:
     # Below adapted from https://github.com/IAU-ADES/ADES-Master/blob/master/Python/bin/packUtil.py
     def unpack_reference(packedref):
         if packedref[0] == "E":                                     # Temporary MPEC
-            packedref = "MPEC <YEAR>-" + packedref[1] + str(int(packedref[2:]))
+            packedref = "MPEC <YEAR>-" + packedref[1] + str( "{:02d}".format(int(packedref[2:])) )
         elif packedref[0] in '0123456789':                          # MPC case A
             packedref = "MPC  " + str(int(packedref))               #   <5-digit number>
         elif packedref[0] == '@':                                   # MPC case B
             packedref = "MPC  " + str(100000 + int(packedref[1:]))  #   @<4-digit number>
         elif packedref[0] == '#':                                   # MPC case C
-            n = 110000 + MPCData80.decode_base62(packedref)            #   ~<4-digit radix 62>
+            n = 110000 + MPCData80.decode_base62(packedref)         #   ~<4-digit radix 62>
             packedref = "MPC  " + str(n)
         elif packedref[0] in 'abcdefghijklmnopqrstuvwxyz':          # MPS case D
             n = int(packedref[1:]) + 10000*'abcdefghijklmnopqrstuvwxyz'.index(packedref[0])
             packedref = "MPS  " + str(n)                            #   <letter + 4-digit base 10>
         elif packedref[0] == '~':                                   # MPS case E
-            n = 260000 + MPCData80.decode_base62(packedref)            #   ~<4-digit radix 62>
+            n = 260000 + MPCData80.decode_base62(packedref)         #   ~<4-digit radix 62>
             packedref = "MPS  " + str(n)
         # Case F, G not handled
         return packedref
     
 
-    def unpack_perm_id(packed):
+    def unpack_id(packed):
+        perm_id = ""
+        prov_id = ""
         # Minor planet
-        m = re.search(r'^(?: {5}|([0-9A-Za-z])(\d{4})|(~[0-9A-Za-z]{4}))$', packed)
+        m = re.search(r'^(?: {5}|([0-9A-Za-z])(\d{4})|(~[0-9A-Za-z]{4}))' +
         #                         ^(1)         ^(2)    ^(3)
+                      r'(?: {7}|([I-K])(\d{2})([A-HJ-Y])([a-zA-Z0-9])(\d)(?:([A-HJ-Z])|0))$', packed)
+        #                        ^(4)   ^(5)   ^(6)      ^(7)         ^(8)   ^(9)
         if m:
             ic(m)
-            n = False
-            if m.group(1):
-                n = int(m.group(2)) + 10000 * MPCData80.decode_single(m.group(1))
-            if m.group(3):
-                n = 620000 + MPCData80.decode_base62(m.group(3))
-            if n:
-                return "(" + str(n) + ")"
-
-        return False
+            # permId
+            if m.group(1) or m.group(3):
+                if m.group(1):
+                    n = int(m.group(2)) + 10000 * MPCData80.decode_single(m.group(1))
+                if m.group(3):
+                    n = 620000 + MPCData80.decode_base62(m.group(3))
+                if n:
+                    perm_id = "(" + str(n) + ")"
+            # provId
+            if m.group(4):
+                y = MPCData80.decode_single(m.group(4)) * 100 + int(m.group(5))
+                y = "{0:0d}".format(y)
+                n = MPCData80.decode_single(m.group(7)) * 10 + int(m.group(8))
+                ns = str(n) if n>0 else ""
+                if m.group(9):  # normal asteroid provid
+                    prov_id =  y + ' ' + m.group(6) + m.group(9) + ns
+                else:           # comet ID -- use A/
+                    prov_id =  'A/' + y + ' ' + m.group(6) + ns
     
+        # Comets
+        m = re.search(r'^(?: {4}|(\d{4}))([APCDXI])' +
+        #                         ^(1)    ^(3)
+                      r'(?:([0-9A-Za-z])(\d{2})([A-HJ-Y])([a-zA-Z0-9])(\d)(?:0|([A-Z])|([a-z])))$', packed)
+        #                   ^(3)         ^(4)   ^(5)      ^(6)         ^(7)     ^(8)    ^(9)
+        if m:
+            type = m.group(2)
+            if m.group(1):
+                n = int(m.group(1))
+                perm_id = str(n) + type
+                # now check for fragments
+                if m.group(9):
+                    perm_id = perm_id + '-' + m.group(9).upper()
+                if m.group(11):
+                    frag = (m.group(10) + m.group(11)).strip().upper()
+                perm_id = perm_id + '-' + frag
+
+            if m.group(3):
+                y = MPCData80.decode_single(m.group(3)) * 100 + int(m.group(4))
+                y = "{0:0d}".format(y)
+                n = MPCData80.decode_single(m.group(6)) * 10 + int(m.group(7))
+                ns = str(n) if n>0 else ""
+                extra = ''
+                if m.group(8): # m.group(8) changes nothing 
+                    extra = m.group(8) # adds order
+                frag = ''
+                if m.group(9): # fragment letter
+                    frag = '-' + m.group(9).upper()
+
+                prov_id =  m.group(2) + '/' + y + ' ' + m.group(5) + extra + ns + frag
+
+        return (perm_id, prov_id)
+
+
 
 
 ### Can be run as a command line script ###
