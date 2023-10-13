@@ -46,6 +46,9 @@ import re
 import json
 # The following libs must be installed with pip
 from icecream import ic
+# Disable debugging
+ic.disable()
+
 
 global VERSION, AUTHOR
 VERSION = "0.1 / 2023-10-13"
@@ -168,6 +171,7 @@ class MPCData80:
     def unpack_id(packed):
         perm_id = ""
         prov_id = ""
+
         # Minor planet
         m = re.search(r'^(?: {5}|([0-9A-Za-z])(\d{4})|(~[0-9A-Za-z]{4}))' +
         #                         ^(1)         ^(2)    ^(3)
