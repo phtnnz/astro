@@ -170,34 +170,39 @@ def retrieve_from_imap(cf):
         msg_ack = "-no ACK reference-"
         msg_submission = "-no submission id-"
         msg_ids = {}
-        for line in msg.splitlines():
-            if ack1:
-                ack1 = False
-                msg_ack = line.strip()
-            if sub1:
-                sub1 = False
-                msg_submission = line.strip()
-            if ids1:
-                m = re.search(r'^(.+) -> ([A-Za-z0-9]+)$', line)
-                if m:    
-                    msg_ids[m.group(2)] = m.group(1)
+
+        # New code using iter and allowing, a bit tricky though. ;-)
+        # Requires Python 3.8+
+        line_iter = iter(msg.splitlines())
+        while (line := next(line_iter, None)) != None:
             if line.startswith("Date: "):
                 msg_date = line
             if line.startswith("Subject: "):
                 msg_subject = line
-                # FIXME: add following line if it starts with white space
+                line = next(line_iter, None)
+                if line[0].isspace():
+                    msg_subject = msg_subject + " " + line.lstrip()
+                    continue
             if line.startswith("The submission with the ACK line:"):
-                ack1 = True
+                print(line)
+                line = next(line_iter)
+                print(line)
+                msg_ack = line.strip()
             if line.startswith("The following submission ID has been assigned to these observations:"):
-                sub1 = True
+                line = next(line_iter)
+                msg_submission = line.strip()
             if line.startswith("(IDs are NOT assigned to observations already submitted):"):
-                ids1 = True
-        
+                while (line := next(line_iter, None)) != None:
+                    m = re.search(r'^(.+) -> ([A-Za-z0-9]+)$', line)
+                    if m:    
+                        msg_ids[m.group(2)] = m.group(1)
+
         if Config.list_msgs:
             print("   ", msg_date)
             print("   ", msg_subject)
         else:
             print("   ", msg_date)
+            print("   ", msg_subject)
             print("   ", msg_ack)
             print("   ", msg_submission)
             if Config.verbose:
