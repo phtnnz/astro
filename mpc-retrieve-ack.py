@@ -239,8 +239,10 @@ def retrieve_from_mpc_wamo(ids):
             continue
 
         m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) has been identified as (.+) and published in (.+)\.$', line)
+        pending = False
         if not m:
             m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) has been identified as (.+), (publication is pending).$', line)
+            pending = True
         if m:    
             data = m.group(1)
             id   = m.group(2)
@@ -249,7 +251,10 @@ def retrieve_from_mpc_wamo(ids):
             print("       ", id, ":", data)
             print("       ", " " * len(id), ":", obj)
             print("       ", " " * len(id), ":", pub)
-            MPEC.add_publication(pub)
+            if pending:
+                pub = "pending"
+            else:
+                MPEC.add_publication(pub)
 
             data80 = MPCData80(data)
             data80.parse_data()
