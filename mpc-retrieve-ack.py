@@ -57,7 +57,8 @@ class Config:
     verbose     = False     # -v --verbose
     no_wamo     = False     # -n --no-wamo-requests
     list_folder = False     # -l --list-folders-only
-    inbox       = "INBOX"   # -F --imap-foldeer
+    list_msgs   = False     # -L --list-messages-only
+    inbox       = "INBOX"   # -F --imap-folder
     msgs_list   = None      # -m --msgs
     mpc1992     = False     # -M --mpc1992-reports
     ades        = False     # -A --ades-reports
@@ -164,6 +165,7 @@ def retrieve_from_imap(cf):
         ack1 = False
         sub1 = False
         ids1 = False
+        msg_subject = "-no Subject header-"
         msg_date = "-no Date header-"
         msg_ack = "-no ACK reference-"
         msg_submission = "-no submission id-"
@@ -181,6 +183,9 @@ def retrieve_from_imap(cf):
                     msg_ids[m.group(2)] = m.group(1)
             if line.startswith("Date: "):
                 msg_date = line
+            if line.startswith("Subject: "):
+                msg_subject = line
+                # FIXME: add following line if it starts with white space
             if line.startswith("The submission with the ACK line:"):
                 ack1 = True
             if line.startswith("The following submission ID has been assigned to these observations:"):
@@ -188,14 +193,17 @@ def retrieve_from_imap(cf):
             if line.startswith("(IDs are NOT assigned to observations already submitted):"):
                 ids1 = True
         
-        print("   ", msg_date)
-        print("   ", msg_ack)
-        print("   ", msg_submission)
-        if Config.verbose:
-            for id, obs in msg_ids.items():
-                print("       ", id, ":", obs)
-
-        retrieve_from_mpc_wamo(msg_ids)
+        if Config.list_msgs:
+            print("   ", msg_date)
+            print("   ", msg_subject)
+        else:
+            print("   ", msg_date)
+            print("   ", msg_ack)
+            print("   ", msg_submission)
+            if Config.verbose:
+                for id, obs in msg_ids.items():
+                    print("       ", id, ":", obs)
+            retrieve_from_mpc_wamo(msg_ids)
 
     # Cleanup
     server.close()
@@ -440,6 +448,7 @@ def main():
     arg.add_argument("-n", "--no-wamo-requests", action="store_true", help="don't request observations from minorplanetcenter.net WAMO")
     arg.add_argument("-l", "--list-folders-only", action="store_true", help="list folders on IMAP server only")
     arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
+    arg.add_argument("-L", "--list-messages-only", action="store_true", help="list messages in IMAP folder only")
     arg.add_argument("-m", "--msgs", help="retrieve messages in MSGS range only, e.g. \"1-3,5\", default all")
     arg.add_argument("directory", nargs="*", help="read MPC reports from directory/file instead of ACK mails")
     arg.add_argument("-M", "--mpc1992-reports", action="store_true", help="read old MPC 1992 reports")
@@ -449,6 +458,7 @@ def main():
     Config.verbose     = args.verbose
     Config.no_wamo     = args.no_wamo_requests
     Config.list_folder = args.list_folders_only
+    Config.list_msgs   = args.list_messages_only
     if args.imap_folder:
         Config.inbox = args.imap_folder
     if args.msgs:
