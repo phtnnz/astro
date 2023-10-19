@@ -245,7 +245,14 @@ def retrieve_from_mpc_wamo(ids):
                          "observationID": id,
                          "objID":         obj,
                          "publication":   pub  })
-        else:
+
+        m = re.search(r'The obsID \'(.+)\' is in the \'(.+)\' processing queue.$', line)
+        if m:
+            id   = m.group(1)
+            pub  = "Processing queue " + m.group(2)
+            print("       ", id, ":", pub)
+
+        if not m:
             print("unknown>", line)
 
     # Avoid high load on the MPC server
