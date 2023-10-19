@@ -246,11 +246,12 @@ def retrieve_from_mpc_wamo(ids):
                          "objID":         obj,
                          "publication":   pub  })
 
-        m = re.search(r'The obsID \'(.+)\' is in the \'(.+)\' processing queue.$', line)
-        if m:
-            id   = m.group(1)
-            pub  = "Processing queue " + m.group(2)
-            print("       ", id, ":", pub)
+        if not m:
+            m = re.search(r'The obsID \'(.+)\' is in the \'(.+)\' processing queue.$', line)
+            if m:
+                id   = m.group(1)
+                pub  = "Processing queue " + m.group(2)
+                print("       ", id, ":", pub)
 
         if not m:
             print("unknown>", line)
