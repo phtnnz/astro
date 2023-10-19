@@ -171,7 +171,7 @@ def retrieve_from_imap(cf):
         msg_submission = "-no submission id-"
         msg_ids = {}
 
-        # New code using iter and allowing, a bit tricky though. ;-)
+        # New code using iter, a bit tricky though. ;-)
         # Requires Python 3.8+
         line_iter = iter(msg.splitlines())
         while (line := next(line_iter, None)) != None:
@@ -184,13 +184,13 @@ def retrieve_from_imap(cf):
                     msg_subject = msg_subject + " " + line.lstrip()
                     continue
             if line.startswith("The submission with the ACK line:"):
-                print(line)
                 line = next(line_iter)
-                print(line)
                 msg_ack = line.strip()
+                continue
             if line.startswith("The following submission ID has been assigned to these observations:"):
                 line = next(line_iter)
                 msg_submission = line.strip()
+                continue
             if line.startswith("(IDs are NOT assigned to observations already submitted):"):
                 while (line := next(line_iter, None)) != None:
                     m = re.search(r'^(.+) -> ([A-Za-z0-9]+)$', line)
