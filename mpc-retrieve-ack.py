@@ -116,14 +116,16 @@ class MPEC:
     mpec_cache = {}
 
     def add_publication(pub):
-        m = re.search(r'MPEC (\d\d\d\d-[A-Z]\d\d)', pub)
-        if m:
-            MPEC.mpec_cache[m.group(1)] = True
+            MPEC.mpec_cache[pub] = True
 
 
-    def print_mpec_list():
+    def print_publication_list():
         for id in MPEC.mpec_cache.keys():
-            print(id, ":", retrieve_from_mpc_mpec(id))
+            m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
+            if m:
+                print(id, ":", retrieve_from_mpc_mpec(m.group(1)))
+            else:
+                print(id)
 
 
 
@@ -459,8 +461,8 @@ def main():
     else:
         retrieve_from_imap(cf)
 
-    print("\nPublished in the following MPECs")
-    MPEC.print_mpec_list()
+    print("\nPublished:")
+    MPEC.print_publication_list()
 
 
 
