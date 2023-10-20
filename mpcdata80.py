@@ -16,6 +16,9 @@
 
 # Data formats:
 #
+# General documentation page
+#   https://www.minorplanetcenter.net/iau/MPC_Documentation.html
+#
 # Packed Provisional and Permanent Designations
 #   https://www.minorplanetcenter.net/iau/info/PackedDes.html
 #
@@ -26,6 +29,10 @@
 # Astrometry Data Exchange Standard
 # (ADES)
 #   https://minorplanetcenter.net/iau/info/IAU2015_ADES.pdf
+#
+# Catalog Codes
+# (Column 72 of observation record in MPECs/WAMO responses)
+#   https://www.minorplanetcenter.net/iau/info/CatalogueCodes.html
 #
 # Explanation of References on Astrometric Observations
 # (Column 73-77 of observation record)
@@ -53,6 +60,71 @@ ic.disable()
 global VERSION, AUTHOR
 VERSION = "0.1 / 2023-10-13"
 AUTHOR  = "Martin Junius"
+
+
+# MPC Catalog codes - column 72
+# Char   Catalogue
+mpc_catalog_codes = {
+  "a": "USNO-A1.0",
+  "b": "USNO-SA1.0",
+  "c": "USNO-A2.0",
+  "d": "USNO-SA2.0",
+  "e": "UCAC-1",
+  "f": "Tycho-1",
+  "g": "Tycho-2",
+  "h": "GSC-1.0",
+  "i": "GSC-1.1",
+  "j": "GSC-1.2",
+  "k": "GSC-2.2",
+  "l": "ACT",
+  "m": "GSC-ACT",
+  "n": "SDSS-DR8",
+  "o": "USNO-B1.0",
+  "p": "PPM",
+  "q": "UCAC-4",
+  "r": "UCAC-2",
+  "s": "USNO-B2.0",
+  "t": "PPMXL",
+  "u": "UCAC-3",
+  "v": "NOMAD",
+  "w": "CMC-14",
+  "x": "Hipparcos 2",
+  "y": "Hipparcos",
+  "z": "GSC (version unspecified)",
+  "A": "AC",
+  "B": "SAO 1984",
+  "C": "SAO",
+  "D": "AGK 3",
+  "E": "FK4",
+  "F": "ACRS",
+  "G": "Lick Gaspra Catalogue",
+  "H": "Ida93 Catalogue",
+  "I": "Perth 70",
+  "J": "COSMOS/UKST Southern Sky Catalogue",
+  "K": "Yale",
+  "L": "2MASS",
+  "M": "GSC-2.3",
+  "N": "SDSS-DR7",
+  "O": "SST-RC1",
+  "P": "MPOSC3",
+  "Q": "CMC-15",
+  "R": "SST-RC4",
+  "S": "URAT-1",
+  "T": "URAT-2",
+  "U": "Gaia-DR1",
+  "V": "Gaia-DR2",
+  "W": "Gaia-DR3",
+  "X": "Gaia-EDR3",
+  "Y": "UCAC-5",
+  "Z": "ATLAS-2",
+  "0": "IHW",
+  "1": "PS1-DR1",
+  "2": "PS1-DR2",
+  "3": "Gaia_Int  ",
+  "4": "GZ",
+  "5": "USNO-UBAD",
+  "6": "Gaia2016",
+}
 
 
 
@@ -97,12 +169,12 @@ class MPCData80:
         #blank                       (57, 65)
         mag            = self.get_col(66, 70)
         band           = self.get_col(71)
-        field72        = self.get_col(72)        # present in published MPC data???
+        cat            = self.get_col(72)        # catalog codes
         packed_ref     = self.get_col(73, 77)    # publication reference
         code           = self.get_col(78, 80)
 
         ic(self)
-        ic(packed_id, discovery, note1, note2, date, ra, dec, mag, band, field72, packed_ref, code)
+        ic(packed_id, discovery, note1, note2, date, ra, dec, mag, band, cat, packed_ref, code)
 
         (perm_id, prov_id) = MPCData80.unpack_id(packed_id)
 
@@ -120,8 +192,8 @@ class MPCData80:
         self.obj["dec"] = dec
         self.obj["mag"] = mag
         self.obj["band"] = band
-        self.obj["field72"] = field72
-        self.obj["reference"] = ref
+        self.obj["catalog"] = mpc_catalog_codes[cat] if cat != " " else ""
+        self.obj["reference"] = ref if ref != "     " else ""
         self.obj["code"] = code
 
 
