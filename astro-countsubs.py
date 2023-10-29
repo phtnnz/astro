@@ -17,9 +17,11 @@
 # ChangeLog
 # Version 0.1 / 2023-07-07
 #       Added to repository asto
+# Version 0.2 / 2023-10-10
+#       Allow VdS-style filename, new exposure time option
 
 global VERSION, AUTHOR
-VERSION = "0.1 / 2023-07-07"
+VERSION = "0.2 / 2023-10-29"
 AUTHOR  = "Martin Junius"
 
 
@@ -32,41 +34,6 @@ FILTER = ["L", "R", "G", "B", "Ha", "OIII", "SII"]
 
 
 
-def main(argv):
-    arg = argparse.ArgumentParser(
-        prog        = "astro-countsubs",
-        description = "Traverse directory and count N.I.N.A subs",
-        epilog      = "Version: " + VERSION + " / " + AUTHOR)
-    arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
-    arg.add_argument("-x", "--exclude", help="exclude filter, e.g. Ha,SII")
-    arg.add_argument("-f", "--filter", help="filter list, e.g. L,R,G.B")
-    arg.add_argument("dirname", help="directory name")
-
-    args  = arg.parse_args()
-    #   print(args)
-
-    global OPT_V
-    global FILTER
-
-    OPT_V = args.verbose
-
-    if args.exclude:
-        exclude = args.exclude.split(",")
-        filter1 = [x for x in FILTER if x not in exclude]
-        if OPT_V and filter1: print("filter =", filter1)
-        FILTER  = filter1
-
-    if args.filter:
-        FILTER  = args.filter.split(",")
-
-    if OPT_V: print("filter =", FILTER)
-
-    # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
-    # see here https://bugs.python.org/issue39845
-    walk_the_dir(args.dirname.rstrip("\""))
-
-
-
 def walk_the_dir(dir):
     rootDir = dir.replace("\\", "/")
     exposures = {}
@@ -75,8 +42,11 @@ def walk_the_dir(dir):
         if OPT_V: print('Found directory: %s' % dirName)
         # Test for Astro dir ...
         m = re.search(r'[\\/](\d\d\d\d-\d\d-\d\d)[\\/]LIGHT$', dirName)
+        if not m:
+            m = re.search(r'[\\/](\d\d\d\d-\d\d-\d\d)$', dirName)
         if m:
             date = m.group(1)
+            if OPT_V: print("  Date:", date)
             exposures[date] = {}
             
             for f in FILTER:
@@ -87,10 +57,16 @@ def walk_the_dir(dir):
                     match = re.search(r'_(' + f + r')_(\d+)\.00s_', fname)
                     if not match:
                         match = re.search(r'_(' + f + r')_.+_(\d+)\.00s_', fname)
+                    if not match:
+                        # VdS "Piehler" style
+                        match = re.search(r'_(' + f + r')_()\d{4}-\d{2}-\d{2}', fname)
                     if match:
                         if OPT_V: print("\t" + fname)
-                        time = match.group(2)
+                        time = match.group(2) if match.group(2) else EXPOSURE
                         if OPT_V: print("\t" + date, f, time)
+                        if not time:
+                            print("ERROR: time is none or zero")
+                            continue
 
                         if time in exposures[date][f]:
                             exposures[date][f][time] += 1
@@ -133,7 +109,7 @@ def print_filter_list(exp):
             print(f + ": ", end="")
             for time in total[f].keys():
                 n = total[f][time]
-                time = int(time)
+                time = int(time) 
                 print("%dx %ds   " % (n, time), end="")
     print("")
 
@@ -156,5 +132,43 @@ def print_filter_list(exp):
    
    
    
+def main():
+    arg = argparse.ArgumentParser(
+        prog        = "astro-countsubs",
+        description = "Traverse directory and count N.I.N.A subs",
+        epilog      = "Version: " + VERSION + " / " + AUTHOR)
+    arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
+    arg.add_argument("-x", "--exclude", help="exclude filter, e.g. Ha,SII")
+    arg.add_argument("-f", "--filter", help="filter list, e.g. L,R,G.B")
+    arg.add_argument("-t", "--exposure-time", help="exposure time (sec) if not present in filename")
+    arg.add_argument("dirname", help="directory name")
+
+    args  = arg.parse_args()
+    #   print(args)
+
+    global OPT_V
+    global FILTER
+    global EXPOSURE
+
+    OPT_V = args.verbose
+    EXPOSURE = args.exposure_time
+
+    if args.exclude:
+        exclude = args.exclude.split(",")
+        filter1 = [x for x in FILTER if x not in exclude]
+        if OPT_V and filter1: print("filter =", filter1)
+        FILTER  = filter1
+
+    if args.filter:
+        FILTER  = args.filter.split(",")
+
+    if OPT_V: print("filter =", FILTER)
+
+    # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
+    # see here https://bugs.python.org/issue39845
+    walk_the_dir(args.dirname.rstrip("\""))
+
+
+
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
