@@ -46,8 +46,6 @@
 #       Moved Data80 class from mpc-retrieve-ack to here, renamed to MPCData80
 #       Can be imported as a module or run as a command line script
 
-import sys
-import os
 import argparse
 import re
 import json
