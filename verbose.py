@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # ChangeLog
-# Version 0.0 / 2023-11-04
+# Version 0.1 / 2023-11-04
 #       First version of verbose module
 #       Usage:  from verbose import verbose
 #               verbose(print-like-args)
@@ -23,10 +23,7 @@
 #               verbose.disabled()
 #               verbose.set_name(name)
 
-import sys
-import os
 import argparse
-from typing import Any
 # The following libs must be installed with pip
 from icecream import ic
 # Disable debugging
