@@ -73,8 +73,8 @@ def main():
         prog        = NAME,
         description = "Test script for verbose module",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
-    arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
-    arg.add_argument("-d", "--debug", action="store_true", help="debug messages")
+    arg.add_argument("-v", "--verbose", action="store_true", help="verbose messages")
+    arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
 
     args = arg.parse_args()
 
