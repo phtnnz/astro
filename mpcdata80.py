@@ -55,11 +55,14 @@ import json
 from icecream import ic
 # Disable debugging
 ic.disable()
+# Local modules
+from verbose import verbose
 
 
-global VERSION, AUTHOR
+global VERSION, AUTHOR, NAME
 VERSION = "0.1 / 2023-10-13"
 AUTHOR  = "Martin Junius"
+NAME    = "mpcdata80"
 
 
 # MPC Catalog codes - column 72
@@ -309,18 +312,20 @@ class MPCData80:
 ### Can be run as a command line script ###
 def main():
     arg = argparse.ArgumentParser(
-        prog        = "mpc-data80",
+        prog        = NAME,
         description = "Parse MPC 80-column data format",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
-    arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
-    # arg.add_argument("-n", "--name", help="example option name")
-    # arg.add_argument("-i", "--int", type=int, help="example option int")
+    arg.add_argument("-v", "--verbose", action="store_true", help="verbose messages")
+    arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("data80", help="80-column data, use quotes!")
 
     args = arg.parse_args()
 
-    global OPT_V
-    OPT_V = args.verbose
+    if args.verbose:
+        verbose.set_prog(NAME)
+        verbose.enable()
+    if args.debug:
+        ic.enable()
 
     data = MPCData80(args.data80)
     data.parse_data()
