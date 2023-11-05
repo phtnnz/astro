@@ -136,6 +136,7 @@ mpc_catalog_codes = {
 class MPCData80:
     def __init__(self, data):
         self.data80 = data
+        self.parse_data()
 
 
     def get_col(self, col1, col2=0):
@@ -205,6 +206,9 @@ class MPCData80:
     def get_json(self, indent=4):
         return json.dumps(self.obj, indent=indent)
 
+    def get_obj(self):
+        return self.obj
+    
 
     def decode_single(c):
         v = ord(c)
