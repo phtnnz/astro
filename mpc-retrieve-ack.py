@@ -134,6 +134,19 @@ class Publication:
 
 
 
+class JSONOutput:
+    obj_cache = []
+
+    def add_json_obj(obj):
+        JSONOutput.obj_cache.append(obj)
+
+    def write_json(file):
+        with open(file, 'w') as f:
+            json.dump(obj_cache, f, indent = 4)
+
+
+
+
 def retrieve_from_imap(cf):
     """ Connect to IMAP server and retrieve ACK mails """
 
