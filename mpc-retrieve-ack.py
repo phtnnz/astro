@@ -35,6 +35,7 @@ import time
 import csv
 
 # The following libs must be installed with pip
+import requests
 from icecream import ic
 # Disable debugging
 ic.disable()
@@ -161,54 +162,11 @@ def retrieve_from_imap(cf):
                 continue
 
         typ, data = server.fetch(num, '(RFC822)')
-        print("Message", num.decode("utf-8"))
+        n = int(num.decode())
+        # print("Message", num.decode("utf-8"))
+        print("Message", n)
         msg = data[0][1].decode()
-        ack1 = False
-        sub1 = False
-        ids1 = False
-        msg_subject = "-no Subject header-"
-        msg_date = "-no Date header-"
-        msg_ack = "-no ACK reference-"
-        msg_submission = "-no submission id-"
-        msg_ids = {}
-
-        # New code using iter, a bit tricky though. ;-)
-        # Requires Python 3.8+
-        line_iter = iter(msg.splitlines())
-        while (line := next(line_iter, None)) != None:
-            if line.startswith("Date: "):
-                msg_date = line
-            if line.startswith("Subject: "):
-                msg_subject = line
-                line = next(line_iter, None)
-                if line[0].isspace():
-                    msg_subject = msg_subject + " " + line.lstrip()
-                    continue
-            if line.startswith("The submission with the ACK line:"):
-                line = next(line_iter)
-                msg_ack = line.strip()
-                continue
-            if line.startswith("The following submission ID has been assigned to these observations:"):
-                line = next(line_iter)
-                msg_submission = line.strip()
-                continue
-            if line.startswith("(IDs are NOT assigned to observations already submitted):"):
-                while (line := next(line_iter, None)) != None:
-                    m = re.search(r'^(.+) -> ([A-Za-z0-9]+)$', line)
-                    if m:    
-                        msg_ids[m.group(2)] = m.group(1)
-
-        if Config.list_msgs:
-            print("   ", msg_date)
-            print("   ", msg_subject)
-        else:
-            print("   ", msg_date)
-            print("   ", msg_subject)
-            print("   ", msg_ack)
-            print("   ", msg_submission)
-            for id, obs in msg_ids.items():
-                verbose("       ", id, ":", obs)
-            retrieve_from_mpc_wamo(msg_ids)
+        retrieve_from_msg(n, msg)
 
     # Cleanup
     server.close()
@@ -216,14 +174,77 @@ def retrieve_from_imap(cf):
 
 
 
+
+def retrieve_from_msg(msg_n, msg):
+    ack_obj = {}
+    ack_obj["_wamo"] = []
+
+    ack1 = False
+    sub1 = False
+    ids1 = False
+    msg_subject = "-no Subject header-"
+    msg_date = "-no Date header-"
+    msg_ack = "-no ACK reference-"
+    msg_submission = "-no submission id-"
+    msg_ids = {}
+
+    # New code using iter, a bit tricky though. ;-)
+    # Requires Python 3.8+
+    line_iter = iter(msg.splitlines())
+    while (line := next(line_iter, None)) != None:
+        if line.startswith("Date: "):
+            msg_date = line
+        if line.startswith("Subject: "):
+            msg_subject = line
+            line = next(line_iter, None)
+            if line[0].isspace():
+                msg_subject = msg_subject + " " + line.lstrip()
+                continue
+        if line.startswith("The submission with the ACK line:"):
+            line = next(line_iter)
+            msg_ack = line.strip()
+            continue
+        if line.startswith("The following submission ID has been assigned to these observations:"):
+            line = next(line_iter)
+            msg_submission = line.strip()
+            continue
+        if line.startswith("(IDs are NOT assigned to observations already submitted):"):
+            while (line := next(line_iter, None)) != None:
+                m = re.search(r'^(.+) -> ([A-Za-z0-9]+)$', line)
+                if m:    
+                    msg_ids[m.group(2)] = m.group(1)
+
+    if Config.list_msgs:
+        print(" ", msg_date)
+        print(" ", msg_subject)
+    else:
+        print(" ", msg_date)
+        print(" ", msg_subject)
+        print(" ", msg_ack)
+        print(" ", msg_submission)
+        for id, obs in msg_ids.items():
+            verbose(id, ":", obs)
+        ack_obj["message"] = msg_n
+        ack_obj["date"] = msg_date
+        ack_obj["subject"] = msg_subject
+        ack_obj["ack"] = msg_ack
+        ack_obj["submission"] = msg_submission
+
+        wamo = retrieve_from_mpc_wamo(msg_ids)
+        if wamo:
+            ack_obj["_wamo"].append(wamo)
+        verbose("JSON =", json.dumps(ack_obj, indent=4))
+
+
+
 def retrieve_from_mpc_wamo(ids):
     """ Retrieve observation data from minorplanetcenter WAMO """
 
     if Config.no_wamo:
-        return
+        return None
     if not ids:
         # empty ids dict
-        return
+        return None
 
     # Example
     # curl -v -d "obs=LdY91I230000FGdd010000001" https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo
@@ -440,7 +461,6 @@ def process_ades(fh, line1):
                 row1 = dict_remove_ws(row)
                 ic(row1)
                 ades_obj["_observations"].append(row1)
-
             break
 
     # Get trackIds and mpcCode to query WAMO
