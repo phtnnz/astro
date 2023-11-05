@@ -136,8 +136,7 @@ class Publication:
 def retrieve_from_imap(cf):
     """ Connect to IMAP server and retrieve ACK mails """
 
-    if Config.verbose:
-        print(NAME+":", "retrieving mails from IMAP server", cf.get_server())
+    verbose("retrieving mails from IMAP server", cf.get_server())
     server = imaplib.IMAP4_SSL(cf.get_server())
     server.login(cf.get_account(), cf.get_password())
 
@@ -150,10 +149,9 @@ def retrieve_from_imap(cf):
         return
 
     # Select mailbox
-    if Config.verbose:
-        print(NAME+":", "from inbox", Config.inbox)
-        if Config.msgs_list:
-            print(NAME+":", "messages", Config.msgs_list)
+    verbose("from inbox", Config.inbox)
+    if Config.msgs_list:
+        print(NAME+":", "messages", Config.msgs_list)
     server.select(Config.inbox)
 
     typ, data = server.search(None, 'ALL')
@@ -208,9 +206,8 @@ def retrieve_from_imap(cf):
             print("   ", msg_subject)
             print("   ", msg_ack)
             print("   ", msg_submission)
-            if Config.verbose:
-                for id, obs in msg_ids.items():
-                    print("       ", id, ":", obs)
+            for id, obs in msg_ids.items():
+                verbose("       ", id, ":", obs)
             retrieve_from_mpc_wamo(msg_ids)
 
     # Cleanup
@@ -236,8 +233,7 @@ def retrieve_from_mpc_wamo(ids):
 
     wamo = []
     for line in x.text.splitlines():
-        if Config.verbose:
-            print("WAMO>", line)
+        ic("WAMO>", line)
         if line == "":
             continue
 
@@ -291,15 +287,13 @@ def retrieve_from_mpc_mpec(id):
     # yields 302 redirect
     # Location: https://www.minorplanetcenter.net/mpec/K23/K23P25.html
 
-    if Config.verbose:
-        print(NAME+":", "retrieving MPEC", id)
+    verbose("retrieving MPEC", id)
     data = { "S": "M",  "F": "P",  "N": id }
     x = requests.post(MPEC_URL, data=data, allow_redirects=False)
 
     # print(x.headers)
     url = x.headers["Location"]
-    if Config.verbose:
-        print(NAME+":", "MPEC", id, "URL =", url)
+    verbose("MPEC", id, "URL =", url)
 
     return url
 
@@ -307,7 +301,7 @@ def retrieve_from_mpc_mpec(id):
 
 def retrieve_from_directory(root):
     for dir, subdirs, files in os.walk(root):
-        print("Processing directory", dir)
+        verbose("Processing directory", dir)
         for f in files:
             if f.endswith(".txt") or f.endswith(".TXT"):
                 # print("f =", f)
@@ -322,17 +316,17 @@ def process_file(file):
         # Old MPC 1992 report format
         if line1.startswith("COD "):
             if Config.mpc1992:
-                if Config.verbose: print("Processing MPC1992", file)
+                verbose("Processing MPC1992", file)
                 process_mpc1992(fh, line1)
 
         # New ADES (PSV) report format
         elif line1 == "# version=2017":
             if Config.ades:
-                if Config.verbose: print("Processing ADES", file)
+                verbose("Processing ADES", file)
                 process_ades(fh, line1)
 
         else:
-            if Config.verbose: print("Not processing", file)
+            verbose("Not processing", file)
 
 
 
@@ -377,7 +371,7 @@ def process_mpc1992(fh, line1):
                                                     "design":   mtel.group(3), 
                                                     "detector": mtel.group(4)}
                     else:
-                        mpc1992_obj["telescope"] = {"description": m2}      ##FIXME: split as in ADES report
+                        mpc1992_obj["telescope"] = {"_description": m2}      ##FIXME: split as in ADES report
                 case "NUM":
                     mpc1992_obj["_number"] = int(m2)
                 case "ACK":
@@ -404,8 +398,7 @@ def process_mpc1992(fh, line1):
         mpc1992_obj["_wamo"] = wamo
     
     # print(mpc1992_obj)
-    if Config.verbose:
-        print(json.dumps(mpc1992_obj, indent=4))
+    verbose("JSON =", json.dumps(mpc1992_obj, indent=4))
 
 
 
@@ -494,6 +487,7 @@ def main():
 
     if args.verbose:
         verbose.set_prog(NAME)
+        error.set_prog(NAME + ": ERROR")
         verbose.enable()
     if args.debug:
         ic.enable()
@@ -507,8 +501,6 @@ def main():
         Config.msgs_list = str_to_list(args.msgs)
     Config.mpc1992     = args.mpc1992_reports
     Config.ades        = args.ades_reports
-
-    ic.enable()
 
     if args.directory:
         for dir in args.directory:
