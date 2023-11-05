@@ -422,7 +422,7 @@ def process_ades(fh, line1):
         # meta data header
         m = re.match(r'^(#|!) (\w+) ?(.+)?$', line.strip())
         if m:
-            print(m.groups())
+            ic(m.groups())
             (m1, m2, m3) = m.groups()
             if m1 == "#":
                 key1 =  m2
@@ -437,8 +437,9 @@ def process_ades(fh, line1):
             ades_obj["_observations"] = []
             reader = csv.DictReader(fh, delimiter='|', quoting=csv.QUOTE_NONE)
             for row in reader:
-                print(dict_remove_ws(row))
-                ades_obj["_observations"].append(dict_remove_ws(row))
+                row1 = dict_remove_ws(row)
+                ic(row1)
+                ades_obj["_observations"].append(row1)
 
             break
 
@@ -451,7 +452,8 @@ def process_ades(fh, line1):
     if wamo:
         ades_obj["_wamo"] = wamo
 
-    print(ades_obj)
+    # print(ades_obj)
+    verbose("JSON =", json.dumps(ades_obj, indent=4))
 
 
 
