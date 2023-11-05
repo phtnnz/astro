@@ -67,6 +67,7 @@ class Config:
     msgs_list   = None      # -m --msgs
     mpc1992     = False     # -M --mpc1992-reports
     ades        = False     # -A --ades-reports
+    output      = None      # -o --output
 
     def __init__(self, file=None):
         self.obj = None
@@ -142,7 +143,7 @@ class JSONOutput:
 
     def write_json(file):
         with open(file, 'w') as f:
-            json.dump(obj_cache, f, indent = 4)
+            json.dump(JSONOutput.obj_cache, f, indent = 4)
 
 
 
@@ -179,7 +180,9 @@ def retrieve_from_imap(cf):
         # print("Message", num.decode("utf-8"))
         print("Message", n)
         msg = data[0][1].decode()
-        retrieve_from_msg(n, msg)
+        obj = retrieve_from_msg(n, msg)
+        if obj:
+            JSONOutput.add_json_obj(obj)
 
     # Cleanup
     server.close()
@@ -230,23 +233,26 @@ def retrieve_from_msg(msg_n, msg):
     if Config.list_msgs:
         print(" ", msg_date)
         print(" ", msg_subject)
-    else:
-        print(" ", msg_date)
-        print(" ", msg_subject)
-        print(" ", msg_ack)
-        print(" ", msg_submission)
-        for id, obs in msg_ids.items():
-            verbose(id, ":", obs)
-        ack_obj["message"] = msg_n
-        ack_obj["date"] = msg_date
-        ack_obj["subject"] = msg_subject
-        ack_obj["ack"] = msg_ack
-        ack_obj["submission"] = msg_submission
+        return None
+    
+    print(" ", msg_date)
+    print(" ", msg_subject)
+    print(" ", msg_ack)
+    print(" ", msg_submission)
+    for id, obs in msg_ids.items():
+        verbose(id, ":", obs)
+    ack_obj["message"] = msg_n
+    ack_obj["date"] = msg_date
+    ack_obj["subject"] = msg_subject
+    ack_obj["ack"] = msg_ack
+    ack_obj["submission"] = msg_submission
 
-        wamo = retrieve_from_mpc_wamo(msg_ids)
-        if wamo:
-            ack_obj["_wamo"].append(wamo)
-        verbose("JSON =", json.dumps(ack_obj, indent=4))
+    wamo = retrieve_from_mpc_wamo(msg_ids)
+    if wamo:
+        ack_obj["_wamo"].append(wamo)
+    verbose("JSON =", json.dumps(ack_obj, indent=4))
+
+    return ack_obj
 
 
 
@@ -518,6 +524,7 @@ def main():
     arg.add_argument("directory", nargs="*", help="read MPC reports from directory/file instead of ACK mails")
     arg.add_argument("-M", "--mpc1992-reports", action="store_true", help="read old MPC 1992 reports")
     arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports")
+    arg.add_argument("-o", "--output", help="write JSON to OUTPUT file")
     args = arg.parse_args()
 
     if args.verbose:
@@ -536,6 +543,7 @@ def main():
         Config.msgs_list = str_to_list(args.msgs)
     Config.mpc1992     = args.mpc1992_reports
     Config.ades        = args.ades_reports
+    Config.output      = args.output
 
     if args.directory:
         for dir in args.directory:
@@ -552,6 +560,9 @@ def main():
 
     print("\nPublished:")
     Publication.print_publication_list()
+
+    if Config.output:
+        JSONOutput.write_json(Config.output)
 
 
 
