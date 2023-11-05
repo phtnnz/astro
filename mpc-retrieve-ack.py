@@ -257,9 +257,8 @@ def retrieve_from_mpc_wamo(ids):
                 Publication.add_publication(pub)
 
             data80 = MPCData80(data)
-            data80.parse_data()
 
-            wamo.append({"data":          data, 
+            wamo.append({"data":          data80.get_obj(),
                          "observationID": id,
                          "objID":         obj,
                          "publication":   pub  })
@@ -367,12 +366,12 @@ def process_mpc1992(fh, line1):
                     # TEL 0.25-m f/4.5 reflector + CMO
                     # sometimes f/X is missing
                     ic(m2)
-                    mtel = re.match(r'^([0-9.]+)-m (?:f/([0-9.]+) )?([A-Za-z]+) \+ ([A-Za-z]+)$', m2)
+                    mtel = re.match(r'^([0-9.]+)-m (?:f/([0-9.]+) )?([A-Za-z-]+) \+ ([A-Za-z]+)$', m2)
                     if mtel:
                         ic(mtel.groups())
                         mpc1992_obj["telescope"] = {"aperture": mtel.group(1), 
-                                                    "fRatio": mtel.group(2),
-                                                    "design": mtel.group(3), 
+                                                    "fRatio":   mtel.group(2),
+                                                    "design":   mtel.group(3), 
                                                     "detector": mtel.group(4)}
                     else:
                         mpc1992_obj["telescope"] = {"description": m2}      ##FIXME: split as in ADES report
@@ -389,7 +388,8 @@ def process_mpc1992(fh, line1):
 
         # data lines
         else:
-            mpc1992_obj["_observations"].append({"data": line})
+            data = MPCData80(line)
+            mpc1992_obj["_observations"].append(data.get_obj())
             ids[line] = True
 
         line = fh.readline().rstrip()
