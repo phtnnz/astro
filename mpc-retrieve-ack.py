@@ -75,7 +75,7 @@ class Config:
         # get JSON config from %APPDATA%
         appdata = os.environ.get('APPDATA')
         if not appdata:
-            print(NAME+":", "environment APPDATA not set!")
+            error("environment APPDATA not set!")
             sys.exit(errno.ENOENT)
         self.appdata = appdata.replace("\\", "/")
 
