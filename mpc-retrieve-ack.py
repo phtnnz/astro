@@ -348,25 +348,33 @@ def retrieve_from_directory(root):
                 process_file(os.path.join(dir, f))
 
 
+
 def process_file(file):
     with open(file, "r") as fh:
         line1 = fh.readline().strip()
-        # print("line1 =", line1)
+        obj = None
 
         # Old MPC 1992 report format
         if line1.startswith("COD "):
             if Config.mpc1992:
                 verbose("Processing MPC1992", file)
-                process_mpc1992(fh, line1)
+                format = "MPC1992"
+                obj = process_mpc1992(fh, line1)
 
         # New ADES (PSV) report format
         elif line1 == "# version=2017":
             if Config.ades:
                 verbose("Processing ADES", file)
-                process_ades(fh, line1)
+                format = "ADES"
+                obj = process_ades(fh, line1)
 
         else:
             verbose("Not processing", file)
+
+        if obj:
+            obj["_file"] = file.replace("\\", "/")
+            obj["_format"] = format
+            JSONOutput.add_json_obj(obj)
 
 
 
@@ -436,9 +444,9 @@ def process_mpc1992(fh, line1):
     wamo = retrieve_from_mpc_wamo(ids)
     if wamo:
         mpc1992_obj["_wamo"] = wamo
-    
-    # print(mpc1992_obj)
     verbose("JSON =", json.dumps(mpc1992_obj, indent=4))
+
+    return mpc1992_obj
 
 
 
@@ -490,9 +498,9 @@ def process_ades(fh, line1):
     wamo = retrieve_from_mpc_wamo(ids)
     if wamo:
         ades_obj["_wamo"] = wamo
-
-    # print(ades_obj)
     verbose("JSON =", json.dumps(ades_obj, indent=4))
+
+    return ades_obj
 
 
 
