@@ -33,11 +33,16 @@ import imaplib
 import re
 import time
 import csv
+
 # The following libs must be installed with pip
-import requests
 from icecream import ic
+# Disable debugging
+ic.disable()
+
 # Local modules
+from verbose import verbose, error
 from mpcdata80 import MPCData80
+
 
 global NAME, VERSION, AUTHOR
 NAME    = "mpc-retrieve-ack"
@@ -54,7 +59,6 @@ MPEC_URL = "https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi"
 class Config:
     """ JSON Config for IMAP account """
 
-    verbose     = False     # -v --verbose
     no_wamo     = False     # -n --no-wamo-requests
     list_folder = False     # -l --list-folders-only
     list_msgs   = False     # -L --list-messages-only
@@ -76,10 +80,9 @@ class Config:
 
         ##FIXME: use os.path
         self.config = self.appdata + "/" + (file if file else CONFIG)
-        if Config.verbose:
-            print(NAME+":", "config file", self.config)
+        verbose("config file", self.config)
         if not os.path.isfile(self.config):
-            print(NAME+":", "config file", self.config, 
+            error("config file", self.config, 
                   "doesn't exist, must contain:\n   ",
                   '{ "server": "<FQDN>", "account": "<ACCOUNT>", "password": "<PASSWORD>", "inbox": "<INBOX>" }')
             sys.exit(errno.ENOENT)
@@ -474,10 +477,11 @@ def main():
         Config.inbox = cf.get_inbox()
 
     arg = argparse.ArgumentParser(
-        prog        = "mpc-retrieve-ack",
+        prog        = NAME,
         description = "Retrieve MPC ACK data",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
-    arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
+    arg.add_argument("-v", "--verbose", action="store_true", help="verbose messages")
+    arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("-n", "--no-wamo-requests", action="store_true", help="don't request observations from minorplanetcenter.net WAMO")
     arg.add_argument("-l", "--list-folders-only", action="store_true", help="list folders on IMAP server only")
     arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
@@ -488,7 +492,12 @@ def main():
     arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports")
     args = arg.parse_args()
 
-    Config.verbose     = args.verbose
+    if args.verbose:
+        verbose.set_prog(NAME)
+        verbose.enable()
+    if args.debug:
+        ic.enable()
+
     Config.no_wamo     = args.no_wamo_requests
     Config.list_folder = args.list_folders_only
     Config.list_msgs   = args.list_messages_only
