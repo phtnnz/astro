@@ -39,8 +39,8 @@ NAME    = "verbose"
 
 class Verbose:
 
-    def __init__(self):
-        self.enabled = False
+    def __init__(self, flag=False):
+        self.enabled = flag
         self.progname = None
 
     def __call__(self, *args):
@@ -62,6 +62,7 @@ class Verbose:
 
 
 verbose = Verbose()
+error   = Verbose(True)
 
 
 
