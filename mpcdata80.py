@@ -40,6 +40,10 @@
 #
 # See also this github repo
 #   https://github.com/IAU-ADES/ADES-Master/tree/master/Python/bin
+#
+# Other descriptions
+#   https://birtwhistle.org.uk/Docs/ADESAstrometryParser/ConversiontoMPC1992format.html
+
 
 # ChangeLog
 # Version 0.1 / 2023-1013
