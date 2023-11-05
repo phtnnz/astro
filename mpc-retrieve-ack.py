@@ -344,7 +344,7 @@ def process_mpc1992(fh, line1):
         # meta data header
         m = re.match(r'^([A-Z0-9]{3}) (.+)$', line)
         if m:
-            print(m.groups())
+            ic(m.groups())
             (m1, m2) = m.groups()
             # requires Python >= 3.10!
             match m1:
@@ -357,13 +357,35 @@ def process_mpc1992(fh, line1):
                 case "MEA":
                     mpc1992_obj["measurers"] = {"name": m2}
                 case "TEL":
-                    mpc1992_obj["telescope"] = {"description": m2}      ##FIXME: split as in ADES report
+                    ## ADES
+                    # # telescope
+                    # ! design reflector
+                    # ! aperture 0.25
+                    # ! fRatio 4.5
+                    # ! detector CMO
+                    ## MPC1992
+                    # TEL 0.25-m f/4.5 reflector + CMO
+                    # sometimes f/X is missing
+                    ic(m2)
+                    mtel = re.match(r'^([0-9.]+)-m (?:f/([0-9.]+) )?([A-Za-z]+) \+ ([A-Za-z]+)$', m2)
+                    if mtel:
+                        ic(mtel.groups())
+                        mpc1992_obj["telescope"] = {"aperture": mtel.group(1), 
+                                                    "fRatio": mtel.group(2),
+                                                    "design": mtel.group(3), 
+                                                    "detector": mtel.group(4)}
+                    else:
+                        mpc1992_obj["telescope"] = {"description": m2}      ##FIXME: split as in ADES report
                 case "NUM":
                     mpc1992_obj["_number"] = int(m2)
                 case "ACK":
                     mpc1992_obj["_ack_line"] = m2
                 case "AC2":
                     mpc1992_obj["_ac2_line"] = m2
+                case "COM":
+                    mpc1992_obj["_comment"] = m2
+                case "NET":
+                    mpc1992_obj["_catalog"] = m2
 
         # data lines
         else:
@@ -385,6 +407,7 @@ def process_mpc1992(fh, line1):
 
 
 def dict_remove_ws(dict):
+    """ Remove white space for dict keys and values """
     return {k.strip():v.strip() for k, v in dict.items()}
 
 
@@ -475,6 +498,8 @@ def main():
         Config.msgs_list = str_to_list(args.msgs)
     Config.mpc1992     = args.mpc1992_reports
     Config.ades        = args.ades_reports
+
+    ic.enable()
 
     if args.directory:
         for dir in args.directory:
