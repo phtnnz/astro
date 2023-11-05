@@ -78,6 +78,7 @@ def main():
 
     if args.verbose:
         verbose.set_prog(NAME)
+        error.set_prog(NAME + ": ERROR")
         verbose.enable()
     if args.debug:
         ic.enable()
@@ -85,6 +86,7 @@ def main():
     ic(args)
     verbose("Test", "1", "for", "verbose()")
     verbose("Test", "2", "for more", "verbose()", "with some formatting {:04d}".format(11+12))
+    error("Error test", "for Verbose module")
 
     
 
