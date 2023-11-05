@@ -113,15 +113,15 @@ class Config:
 
 
 
-class MPEC:
+class Publication:
     mpec_cache = {}
 
     def add_publication(pub):
-            MPEC.mpec_cache[pub] = True
+            Publication.mpec_cache[pub] = True
 
 
     def print_publication_list():
-        for id in MPEC.mpec_cache.keys():
+        for id in Publication.mpec_cache.keys():
             m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
             if m:
                 print(id, ":", retrieve_from_mpc_mpec(m.group(1)))
@@ -254,7 +254,7 @@ def retrieve_from_mpc_wamo(ids):
             if pending:
                 pub = "pending"
             else:
-                MPEC.add_publication(pub)
+                Publication.add_publication(pub)
 
             data80 = MPCData80(data)
             data80.parse_data()
@@ -490,7 +490,7 @@ def main():
         retrieve_from_imap(cf)
 
     print("\nPublished:")
-    MPEC.print_publication_list()
+    Publication.print_publication_list()
 
 
 
