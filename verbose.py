@@ -46,7 +46,6 @@ class Verbose:
     def __call__(self, *args):
         if not self.enabled:
             return
-        ic("Verbose.__call__", args)
         if self.progname:
             print(self.progname + ": ", end="")
         print(*args)
