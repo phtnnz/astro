@@ -193,10 +193,10 @@ class MPCData80:
         self.obj["discovery"] = discovery.strip()
         self.obj["note1"] = note1
         self.obj["note2"] = note2
-        self.obj["date"] = date         # FIXME: convert to proper date
-        self.obj["ra"] = ra
-        self.obj["dec"] = dec
-        self.obj["mag"] = mag
+        self.obj["date"] = date.strip()         # FIXME: convert to proper date
+        self.obj["ra"] = ra.strip()
+        self.obj["dec"] = dec.strip()
+        self.obj["mag"] = mag.strip()
         self.obj["band"] = band
         self.obj["catalog"] = mpc_catalog_codes[cat] if cat != " " else ""
         self.obj["reference"] = ref if ref != "     " else ""
