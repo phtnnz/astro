@@ -1,4 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
+# Copyright 2023 Martin Junius
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # Archive all N.I.N.A exposure data from the previous night, i.e. date=yesterday
 # - Search all TARGET/YYYY-MM-DD directories in DATADIR
@@ -132,19 +146,15 @@ def main():
     if args.data_dir:
         DATADIR = args.data_dir
     if args.zip_dir:
-        ZIPDIR = args.zip_dir
+        ZIPDIR  = args.zip_dir
     if args.zip_prog:
         ZIPPROG = args.zip_prog
 
     DATADIR = os.path.abspath(DATADIR)
-    ZIPDIR = os.path.abspath(ZIPDIR)
+    ZIPDIR  = os.path.abspath(ZIPDIR)
     ZIPPROG = os.path.abspath(ZIPPROG)
 
-    if not args.date:
-        date = args.date if args.date else date_yesterday()
-    if OPT_V:
-        print(time_now(), "archive date =", date)
-
+    date = args.date if args.date else date_yesterday()
     if OPT_V:
         print("Data directory =", DATADIR)
         print("ZIP directory  =", ZIPDIR)

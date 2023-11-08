@@ -2,6 +2,21 @@
 
 Python scripts for creating N.I.N.A JSON sequences and targets, from object data in CSV format and N.I.N.A templates
 
+Copyright 2023 Martin Junius
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+
 (See the most recent working* branch for bleeding edge code)
 
 The following additional Python libraries must be installed:
@@ -10,6 +25,15 @@ The following additional Python libraries must be installed:
 | -------- | ---------------------------------- |
 | requests | https://pypi.org/project/requests/ |
 | psutil   | https://pypi.org/project/psutil/   |
+| icecream | https://pypi.org/project/icecream/ |
+
+Local modules:
+
+| Library   | Function                           |
+| --------- | ---------------------------------- |
+| mpcdata80 | Class for handling MPC 80-column data format |
+| verbose   | verbose() and error() messages               |
+
 
 ## nina-create-sequence
 Builds a complete N.I.N.A sequence for the observation night, using a base template (with empty Sequence Target Area) and a target template (repeated for every single object), from a CSV list of targets exported by NEO Planner.
@@ -72,7 +96,7 @@ Use the batch files/wrappers with full path in N.I.N.A's "External Script" instr
 Count sub frames in directory structure and compute total exposure time. Relies on YYYY-MM-DD sub-directories and FITS filenames containing filter name and exposure time.
 
 ```
-usage: astro-countsubs [-h] [-v] [-x EXCLUDE] [-f FILTER] dirname
+usage: astro-countsubs [-h] [-v] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] dirname
 
 Traverse directory and count N.I.N.A subs
 
@@ -86,8 +110,10 @@ options:
                         exclude filter, e.g. Ha,SII
   -f FILTER, --filter FILTER
                         filter list, e.g. L,R,G.B
+  -t EXPOSURE_TIME, --exposure-time EXPOSURE_TIME
+                        exposure time (sec) if not present in filename
 
-Version: 0.1 / 2023-07-07 / Martin Junius
+Version: 0.2 / 2023-10-29 / Martin Junius
 ```
 
 ## nina-zip-ready-data
@@ -150,3 +176,59 @@ options:
 
 Version 0.1 / 2023-07-26 / Martin Junius
 ```
+
+## mpc-retrieve-ack
+Retrieve Minor Planets Center observation data from IMAP server with ACK mails, locally stored ADES and MPC1992 report files, and MPC WAMO service
+
+```
+usage: mpc-retrieve-ack [-h] [-v] [-d] [-n] [-l] [-f IMAP_FOLDER] [-L] [-m MSGS] [-M] [-A] [-o OUTPUT] [directory ...]
+
+Retrieve MPC ACK data
+
+positional arguments:
+  directory             read MPC reports from directory/file instead of ACK mails
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         verbose messages
+  -d, --debug           more debug messages
+  -n, --no-wamo-requests
+                        don't request observations from minorplanetcenter.net WAMO
+  -l, --list-folders-only
+                        list folders on IMAP server only
+  -f IMAP_FOLDER, --imap-folder IMAP_FOLDER
+                        IMAP folder to retrieve mails, default INBOX
+  -L, --list-messages-only
+                        list messages in IMAP folder only
+  -m MSGS, --msgs MSGS  retrieve messages in MSGS range only, e.g. "1-3,5", default all
+  -M, --mpc1992-reports
+                        read old MPC 1992 reports
+  -A, --ades-reports    read new ADES (PSV format) reports
+  -o OUTPUT, --output OUTPUT
+                        write JSON to OUTPUT file
+
+Version 0.2 / 2023-08-14 / Martin Junius
+```
+
+Config data for IMAP mailbox is stored in %APPDATA%/astro-python/imap-account.json
+
+Examples:
+```
+mpc-retrieve-ack.py -l
+```
+List mailbox folders
+
+```
+mpc-retrieve-ack.py -f INBOX.Archive -L
+```
+List messages in folder INBOX.Archive
+
+```
+mpc-retrieve-ack.py -f INBOX.Archive -o ack-mails.json
+```
+Retrieve all ACK mails from INBOX.Archvie, query WAMO, and write results to ack-mails.json
+
+```
+mpc-retrieve-ack.py -A -o ades-reports.json '\Users\someone\Asteroids\reports\'
+```
+Retrieve all ADES report file from the given directory (recursively), query WAMO, and write results to ades-reports.json
