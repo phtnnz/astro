@@ -150,6 +150,17 @@ class JSONOutput:
             json.dump(JSONOutput.obj_cache, f, indent = 4)
 
 
+class CSVOutput:
+    obj_cache = []
+
+    def add_csv_obj(obj):
+        CSVOutput.obj_cache.append(obj)
+
+    def write_csv(file):
+        with open(file, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(objcache)
+
 
 
 def retrieve_from_imap(cf):
@@ -170,7 +181,7 @@ def retrieve_from_imap(cf):
     # Select mailbox
     verbose("from inbox", Config.inbox)
     if Config.msgs_list:
-        print(NAME+":", "messages", Config.msgs_list)
+        verbose("messages", Config.msgs_list)
     server.select(Config.inbox)
 
     typ, data = server.search(None, 'ALL')
