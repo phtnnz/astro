@@ -23,6 +23,9 @@
 #       First somewhat usable version, retrieves ACK mails and WAMO data
 # Version 0.2 / 2023-08-14
 #       List MPECs with published measurements separately
+# Version 1.0 / 2023-12-01
+#       Bumped version to 1.0 as most functions are there, 
+#       new --csv option (not yet functional)
 
 import sys
 import os
@@ -47,7 +50,7 @@ from mpcdata80 import MPCData80
 
 global NAME, VERSION, AUTHOR
 NAME    = "mpc-retrieve-ack"
-VERSION = "0.2 / 2023-08-14"
+VERSION = "1.0 / 2023-12-01"
 AUTHOR  = "Martin Junius"
 
 global CONFIG, WAMO_URL, MPEC_URL
@@ -68,6 +71,7 @@ class Config:
     mpc1992     = False     # -M --mpc1992-reports
     ades        = False     # -A --ades-reports
     output      = None      # -o --output
+    csv         = False     # -C --csv
 
     def __init__(self, file=None):
         self.obj = None
@@ -535,6 +539,7 @@ def main():
     arg.add_argument("-M", "--mpc1992-reports", action="store_true", help="read old MPC 1992 reports")
     arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports")
     arg.add_argument("-o", "--output", help="write JSON to OUTPUT file")
+    arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format (instead of JSON)")
     args = arg.parse_args()
 
     if args.verbose:
@@ -554,6 +559,7 @@ def main():
     Config.mpc1992     = args.mpc1992_reports
     Config.ades        = args.ades_reports
     Config.output      = args.output
+    Config.csv         = args.csv
 
     if args.directory:
         for dir in args.directory:
