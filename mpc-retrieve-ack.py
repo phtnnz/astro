@@ -158,8 +158,8 @@ class CSVOutput:
 
     def write_csv(file):
         with open(file, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerows(objcache)
+            writer = csv.writer(f, dialect="excel", delimiter=";", quoting=csv.QUOTE_ALL)
+            writer.writerows(CSVOutput.obj_cache)
 
 
 
@@ -248,6 +248,8 @@ def retrieve_from_msg(msg_n, msg):
     if Config.list_msgs:
         print(" ", msg_date)
         print(" ", msg_subject)
+        if Config.csv:
+            CSVOutput.add_csv_obj([msg_n, msg_date, msg_subject])
         return None
     
     print(" ", msg_date)
@@ -589,7 +591,10 @@ def main():
     Publication.print_publication_list()
 
     if Config.output:
-        JSONOutput.write_json(Config.output)
+        if Config.csv:
+            CSVOutput.write_csv(Config.output)
+        else:
+            JSONOutput.write_json(Config.output)
 
 
 
