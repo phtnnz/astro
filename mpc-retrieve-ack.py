@@ -249,7 +249,7 @@ def retrieve_from_msg(msg_n, msg):
         print(" ", msg_date)
         print(" ", msg_subject)
         if Config.csv:
-            CSVOutput.add_csv_obj([msg_n, msg_date, msg_subject])
+            CSVOutput.add_csv_obj([msg_n, msg_date.removeprefix("Date: "), msg_subject.removeprefix("Subject: ")])
         return None
     
     print(" ", msg_date)
@@ -267,6 +267,10 @@ def retrieve_from_msg(msg_n, msg):
     wamo = retrieve_from_mpc_wamo(msg_ids)
     if wamo:
         ack_obj["_wamo"].append(wamo)
+    else:
+        if Config.csv:
+            for id, obs in msg_ids.items():
+                CSVOutput.add_csv_obj([ msg_n, msg_date.removeprefix("Date: "), msg_ack, msg_submission, id, obs ])
     verbose("JSON =", json.dumps(ack_obj, indent=4))
 
     return ack_obj
