@@ -267,10 +267,21 @@ def retrieve_from_msg(msg_n, msg):
     wamo = retrieve_from_mpc_wamo(msg_ids)
     if wamo:
         ack_obj["_wamo"].append(wamo)
+        if Config.csv:
+            for wobj in wamo:
+                CSVOutput.add_csv_obj([ msg_n, msg_date.removeprefix("Date: "), msg_ack, 
+                                        wobj["observationID"], wobj["objID"], wobj["publication"],
+                                        wobj["data"]["data"],
+                                        wobj["data"]["permId"], wobj["data"]["provId"], wobj["data"]["discovery"],
+                                        wobj["data"]["note1"], wobj["data"]["note2"], 
+                                        wobj["data"]["date"], wobj["data"]["ra"], wobj["data"]["dec"], 
+                                        wobj["data"]["mag"], wobj["data"]["band"], wobj["data"]["catalog"], 
+                                        wobj["data"]["reference"], wobj["data"]["code"]
+                                       ])
     else:
         if Config.csv:
             for id, obs in msg_ids.items():
-                CSVOutput.add_csv_obj([ msg_n, msg_date.removeprefix("Date: "), msg_ack, msg_submission, id, obs ])
+                CSVOutput.add_csv_obj([ msg_n, msg_date.removeprefix("Date: "), msg_ack, id, obs ])
     verbose("JSON =", json.dumps(ack_obj, indent=4))
 
     return ack_obj
