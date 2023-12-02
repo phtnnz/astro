@@ -152,13 +152,19 @@ class JSONOutput:
 
 class CSVOutput:
     obj_cache = []
+    fields = None
 
     def add_csv_obj(obj):
         CSVOutput.obj_cache.append(obj)
 
+    def add_csv_fields(fields):
+        CSVOutput.fields = fields
+
     def write_csv(file):
         with open(file, 'w', newline='') as f:
             writer = csv.writer(f, dialect="excel", delimiter=";", quoting=csv.QUOTE_ALL)
+            if CSVOutput.fields:
+                writer.writerow(CSVOutput.fields)
             writer.writerows(CSVOutput.obj_cache)
 
 
@@ -249,6 +255,8 @@ def retrieve_from_msg(msg_n, msg):
         print(" ", msg_date)
         print(" ", msg_subject)
         if Config.csv:
+            # CSV output: list of messages in mailbox
+            CSVOutput.add_csv_fields([ "#", "Date", "Subject" ])
             CSVOutput.add_csv_obj([msg_n, msg_date.removeprefix("Date: "), msg_subject.removeprefix("Subject: ")])
         return None
     
@@ -269,6 +277,11 @@ def retrieve_from_msg(msg_n, msg):
         ack_obj["_wamo"].append(wamo)
         if Config.csv:
             for wobj in wamo:
+                # CSV output: list of messages in mailbox with complete WAMO data
+                CSVOutput.add_csv_fields([ "#", "Date", "ACK", "id", "objId", "publication",
+                                            "obs80", "permId", "provId", "discovery", "note1", "note2",
+                                            "obs_date", "ra", "dec", "mag", "band", "catalog",
+                                            "reference", "code" ])
                 CSVOutput.add_csv_obj([ msg_n, msg_date.removeprefix("Date: "), msg_ack, 
                                         wobj["observationID"], wobj["objID"], wobj["publication"],
                                         wobj["data"]["data"],
@@ -281,6 +294,8 @@ def retrieve_from_msg(msg_n, msg):
     else:
         if Config.csv:
             for id, obs in msg_ids.items():
+                # CSV output: list of messages in mailbox with id and obs
+                CSVOutput.add_csv_fields([ "#", "Date", "ACK", "id", "obs" ])
                 CSVOutput.add_csv_obj([ msg_n, msg_date.removeprefix("Date: "), msg_ack, id, obs ])
     verbose("JSON =", json.dumps(ack_obj, indent=4))
 
