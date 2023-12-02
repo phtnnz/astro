@@ -23,9 +23,9 @@
 #       First somewhat usable version, retrieves ACK mails and WAMO data
 # Version 0.2 / 2023-08-14
 #       List MPECs with published measurements separately
-# Version 1.0 / 2023-12-01
+# Version 1.0 / 2023-12-02
 #       Bumped version to 1.0 as most functions are there, 
-#       new --csv option (not yet functional)
+#       new --csv option generating CSV output from ACK mails (and WAMO)
 
 import sys
 import os
@@ -50,7 +50,7 @@ from mpcdata80 import MPCData80
 
 global NAME, VERSION, AUTHOR
 NAME    = "mpc-retrieve-ack"
-VERSION = "1.0 / 2023-12-01"
+VERSION = "1.0 / 2023-12-02"
 AUTHOR  = "Martin Junius"
 
 global CONFIG, WAMO_URL, MPEC_URL
@@ -315,6 +315,7 @@ def retrieve_from_mpc_wamo(ids):
     # Example
     # curl -v -d "obs=LdY91I230000FGdd010000001" https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo
 
+    ##FIXME: use API
     data = { "obs": "\r\n".join(ids.keys())}
     x = requests.post(WAMO_URL, data=data)
 
