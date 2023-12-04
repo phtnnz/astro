@@ -1,6 +1,6 @@
 # N.I.N.A Automation
 
-This document collects various information for automating N.I.N.A (target) templates an sequences (JSON).
+This document collects various information for automating N.I.N.A (target) templates and sequences (JSON).
 
 ## Example Timings for the IAS Remote Telescope
 
