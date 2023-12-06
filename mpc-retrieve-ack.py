@@ -72,7 +72,9 @@ class Config:
     ades        = False     # -A --ades-reports
     output      = None      # -o --output
     csv         = False     # -C --csv
+    overview    = False     # -O --overview
 
+    
     def __init__(self, file=None):
         self.obj = None
         self.file = file
@@ -624,6 +626,7 @@ def main():
     arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports")
     arg.add_argument("-o", "--output", help="write JSON to OUTPUT file")
     arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format (instead of JSON)")
+    arg.add_argument("-O", "--overview", action="store_true", help="create overview of objects and observations")
     args = arg.parse_args()
 
     if args.verbose:
@@ -644,6 +647,7 @@ def main():
     Config.ades        = args.ades_reports
     Config.output      = args.output
     Config.csv         = args.csv
+    Config.overview    = args.overview
 
     if args.directory:
         for dir in args.directory:
