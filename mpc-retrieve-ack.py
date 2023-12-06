@@ -131,12 +131,14 @@ class Publication:
 
 
     def print_publication_list():
-        for id in Publication.mpec_cache.keys():
-            m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
-            if m:
-                print(id, ":", retrieve_from_mpc_mpec(m.group(1)))
-            else:
-                print(id)
+        if Publication.mpec_cache:
+            print("\nPublished:")
+            for id in Publication.mpec_cache.keys():
+                m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
+                if m:
+                    print(id, ":", retrieve_from_mpc_mpec(m.group(1)))
+                else:
+                    print(id)
 
 
 
@@ -214,21 +216,6 @@ def retrieve_from_imap(cf):
         server.select(folder)
         retrieve_from_folder(server, folder)
 
-    # typ, data = server.search(None, 'ALL')
-    # for num in data[0].split():
-    #     if Config.msgs_list:
-    #         if not int(num) in Config.msgs_list:
-    #             continue
-
-    #     typ, data = server.fetch(num, '(RFC822)')
-    #     n = int(num.decode())
-    #     # print("Message", num.decode("utf-8"))
-    #     print("Message", n)
-    #     msg = data[0][1].decode()
-    #     obj = retrieve_from_msg(n, msg)
-    #     if obj:
-    #         JSONOutput.add_json_obj(obj)
-
     # Cleanup
     server.close()
     server.logout()
@@ -245,7 +232,7 @@ def retrieve_from_folder(server, folder):
 
         typ, data = server.fetch(num, '(RFC822)')
         n = int(num.decode())
-        print("Folder", folder, "/ message", n)
+        verbose("Folder", folder, "/ message", n)
         msg = data[0][1].decode()
         obj = retrieve_from_msg(folder, n, msg)
         if obj:
@@ -293,18 +280,18 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
                     msg_ids[m.group(2)] = m.group(1)
 
     if Config.list_msgs:
-        print(" ", msg_date)
-        print(" ", msg_subject)
+        verbose(" ", msg_date)
+        verbose(" ", msg_subject)
         if Config.csv:
             # CSV output: list of messages in mailbox
             CSVOutput.add_csv_fields([ "Folder", "Message#", "Date", "Subject" ])
             CSVOutput.add_csv_obj([msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_subject.removeprefix("Subject: ")])
         return None
     
-    print(" ", msg_date)
-    print(" ", msg_subject)
-    print(" ", msg_ack)
-    print(" ", msg_submission)
+    verbose(" ", msg_date)
+    verbose(" ", msg_subject)
+    verbose(" ", msg_ack)
+    verbose(" ", msg_submission)
     for id, obs in msg_ids.items():
         verbose(id, ":", obs)
     ack_obj["message"] = msg_n
@@ -381,9 +368,9 @@ def retrieve_from_mpc_wamo(ids):
             id   = m.group(2)
             obj  = m.group(3)
             pub  = m.group(4)
-            print("       ", id, ":", data)
-            print("       ", " " * len(id), ":", obj)
-            print("       ", " " * len(id), ":", pub)
+            verbose("       ", id, ":", data)
+            verbose("       ", " " * len(id), ":", obj)
+            verbose("       ", " " * len(id), ":", pub)
             if pending:
                 pub = "pending"
             else:
@@ -401,10 +388,10 @@ def retrieve_from_mpc_wamo(ids):
             if m:
                 id   = m.group(1)
                 pub  = "Processing queue " + m.group(2)
-                print("       ", id, ":", pub)
+                verbose("       ", id, ":", pub)
 
         if not m:
-            print("unknown>", line)
+            verbose("unknown>", line)
 
     # Avoid high load on the MPC server
     time.sleep(0.5)
@@ -666,11 +653,11 @@ def main():
     else:
         retrieve_from_imap(cf)
 
-    print("\nPublished:")
-    Publication.print_publication_list()
 
     if Config.overview:
         ObsOverview.print_all()
+
+    Publication.print_publication_list()
 
     if Config.output:
         if Config.csv:
