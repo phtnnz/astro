@@ -139,6 +139,26 @@ class Publication:
 
 
 
+class ObsOverview:
+    """ Store all objects with respective list of observatons """
+    # obj_cache[object] = [ obs1, obs2, obs3, ... ]
+    obj_cache = {}
+
+    def add_obs(obj, obs):
+        if ObsOverview.obj_cache[obj]:
+            ObsOverview.obj_cache[obj].append(obs)
+        else:
+            ObsOverview.obj_cache[obj] = [ obs ]
+
+
+    def print_all():
+        for obj, list in ObsOverview.obj_cache.items():
+            print(obj)
+            for obs in list:
+                print("   ", obs)
+
+
+
 class JSONOutput:
     obj_cache = []
 
