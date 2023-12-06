@@ -124,16 +124,16 @@ class Config:
 
 
 class Publication:
-    mpec_cache = {}
+    pub_cache = {}
 
     def add_publication(pub):
-            Publication.mpec_cache[pub] = True
+            Publication.pub_cache[pub] = True
 
 
     def print_publication_list():
-        if Publication.mpec_cache:
+        if Publication.pub_cache:
             print("\nPublished:")
-            for id in Publication.mpec_cache.keys():
+            for id in Publication.pub_cache.keys():
                 m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
                 if m:
                     print(id, ":", retrieve_from_mpc_mpec(m.group(1)))
