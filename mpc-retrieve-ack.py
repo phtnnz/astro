@@ -73,7 +73,6 @@ class Config:
     output      = None      # -o --output
     csv         = False     # -C --csv
     overview    = False     # -O --overview
-
     
     def __init__(self, file=None):
         self.obj = None
@@ -147,7 +146,7 @@ class ObsOverview:
     obj_cache = {}
 
     def add_obs(obj, obs):
-        if ObsOverview.obj_cache[obj]:
+        if obj in ObsOverview.obj_cache:
             ObsOverview.obj_cache[obj].append(obs)
         else:
             ObsOverview.obj_cache[obj] = [ obs ]
@@ -333,6 +332,11 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
                                         wobj["data"]["mag"], wobj["data"]["band"], wobj["data"]["catalog"], 
                                         wobj["data"]["reference"], wobj["data"]["code"]
                                        ])
+
+        if Config.overview:
+            for wobj in wamo:
+                ObsOverview.add_obs(wobj["objID"], wobj["data"]["data"])
+       
     else:
         if Config.csv:
             for id, obs in msg_ids.items():
@@ -664,6 +668,9 @@ def main():
 
     print("\nPublished:")
     Publication.print_publication_list()
+
+    if Config.overview:
+        ObsOverview.print_all()
 
     if Config.output:
         if Config.csv:
