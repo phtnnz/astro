@@ -26,6 +26,8 @@
 # Version 1.0 / 2023-12-02
 #       Bumped version to 1.0 as most functions are there, 
 #       new --csv option generating CSV output from ACK mails (and WAMO)
+# Version 1.1 / 2023-12-06
+#       Added -O --overview output, listing all objects and respective observations
 
 import sys
 import os
@@ -50,7 +52,7 @@ from mpcdata80 import MPCData80
 
 global NAME, VERSION, AUTHOR
 NAME    = "mpc-retrieve-ack"
-VERSION = "1.0 / 2023-12-02"
+VERSION = "1.1 / 2023-12-06"
 AUTHOR  = "Martin Junius"
 
 global CONFIG, WAMO_URL, MPEC_URL
