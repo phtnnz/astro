@@ -141,6 +141,20 @@ class Publication:
                     print(id)
 
 
+# Adapted from https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside
+def atoi(text):
+    return int(text) if text.isdigit() else text
+
+def natural_keys(*args):
+    # This one is a bit tricky when using sorted() with dict.items()
+    text, val = args[0]
+    '''
+    alist.sort(key=natural_keys) sorts in human order
+    http://nedbatchelder.com/blog/200712/human_sorting.html
+    (See Toothy's implementation in the comments)
+    '''
+    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+
 
 class ObsOverview:
     """ Store all objects with respective list of observatons """
@@ -155,9 +169,9 @@ class ObsOverview:
 
 
     def print_all():
-        for obj, list in ObsOverview.obj_cache.items():
+        for obj, list in sorted(ObsOverview.obj_cache.items(), key=natural_keys):
             print(obj)
-            for obs in list:
+            for obs in sorted(list):
                 print("   ", obs)
 
 
