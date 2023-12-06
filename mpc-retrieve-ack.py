@@ -185,10 +185,36 @@ def retrieve_from_imap(cf):
         return
 
     # Select mailbox
-    verbose("from inbox", Config.inbox)
+    verbose("from folder(s)", Config.inbox)
     if Config.msgs_list:
         verbose("messages", Config.msgs_list)
-    server.select(Config.inbox)
+
+    for folder in Config.inbox.split(","):
+        server.select(folder)
+        retrieve_from_folder(server, folder)
+
+    # typ, data = server.search(None, 'ALL')
+    # for num in data[0].split():
+    #     if Config.msgs_list:
+    #         if not int(num) in Config.msgs_list:
+    #             continue
+
+    #     typ, data = server.fetch(num, '(RFC822)')
+    #     n = int(num.decode())
+    #     # print("Message", num.decode("utf-8"))
+    #     print("Message", n)
+    #     msg = data[0][1].decode()
+    #     obj = retrieve_from_msg(n, msg)
+    #     if obj:
+    #         JSONOutput.add_json_obj(obj)
+
+    # Cleanup
+    server.close()
+    server.logout()
+
+
+def retrieve_from_folder(server, folder):
+    server.select(folder)
 
     typ, data = server.search(None, 'ALL')
     for num in data[0].split():
@@ -198,21 +224,15 @@ def retrieve_from_imap(cf):
 
         typ, data = server.fetch(num, '(RFC822)')
         n = int(num.decode())
-        # print("Message", num.decode("utf-8"))
-        print("Message", n)
+        print("Folder", folder, "/ message", n)
         msg = data[0][1].decode()
-        obj = retrieve_from_msg(n, msg)
+        obj = retrieve_from_msg(folder, n, msg)
         if obj:
             JSONOutput.add_json_obj(obj)
 
-    # Cleanup
-    server.close()
-    server.logout()
 
 
-
-
-def retrieve_from_msg(msg_n, msg):
+def retrieve_from_msg(msg_folder, msg_n, msg):
     ack_obj = {}
     ack_obj["_wamo"] = []
 
@@ -256,8 +276,8 @@ def retrieve_from_msg(msg_n, msg):
         print(" ", msg_subject)
         if Config.csv:
             # CSV output: list of messages in mailbox
-            CSVOutput.add_csv_fields([ "#", "Date", "Subject" ])
-            CSVOutput.add_csv_obj([msg_n, msg_date.removeprefix("Date: "), msg_subject.removeprefix("Subject: ")])
+            CSVOutput.add_csv_fields([ "Folder", "Message#", "Date", "Subject" ])
+            CSVOutput.add_csv_obj([msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_subject.removeprefix("Subject: ")])
         return None
     
     print(" ", msg_date)
@@ -278,11 +298,11 @@ def retrieve_from_msg(msg_n, msg):
         if Config.csv:
             for wobj in wamo:
                 # CSV output: list of messages in mailbox with complete WAMO data
-                CSVOutput.add_csv_fields([ "#", "Date", "ACK", "id", "objId", "publication",
-                                            "obs80", "permId", "provId", "discovery", "note1", "note2",
-                                            "obs_date", "ra", "dec", "mag", "band", "catalog",
-                                            "reference", "code" ])
-                CSVOutput.add_csv_obj([ msg_n, msg_date.removeprefix("Date: "), msg_ack, 
+                CSVOutput.add_csv_fields([ "Folder", "Message#", "Date", "ACK", "id", "objId", "publication",
+                                           "obs80", "permId", "provId", "discovery", "note1", "note2",
+                                           "obs_date", "ra", "dec", "mag", "band", "catalog",
+                                           "reference", "code" ])
+                CSVOutput.add_csv_obj([ msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_ack, 
                                         wobj["observationID"], wobj["objID"], wobj["publication"],
                                         wobj["data"]["data"],
                                         wobj["data"]["permId"], wobj["data"]["provId"], wobj["data"]["discovery"],
@@ -295,8 +315,8 @@ def retrieve_from_msg(msg_n, msg):
         if Config.csv:
             for id, obs in msg_ids.items():
                 # CSV output: list of messages in mailbox with id and obs
-                CSVOutput.add_csv_fields([ "#", "Date", "ACK", "id", "obs" ])
-                CSVOutput.add_csv_obj([ msg_n, msg_date.removeprefix("Date: "), msg_ack, id, obs ])
+                CSVOutput.add_csv_fields([ "Folder", "Message#", "Date", "ACK", "id", "obs" ])
+                CSVOutput.add_csv_obj([ msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_ack, id, obs ])
     verbose("JSON =", json.dumps(ack_obj, indent=4))
 
     return ack_obj
@@ -576,7 +596,7 @@ def main():
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("-n", "--no-wamo-requests", action="store_true", help="don't request observations from minorplanetcenter.net WAMO")
     arg.add_argument("-l", "--list-folders-only", action="store_true", help="list folders on IMAP server only")
-    arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
+    arg.add_argument("-f", "--imap-folder", help="IMAP folder(s) (comma-separated) to retrieve mails from, default "+Config.inbox)
     arg.add_argument("-L", "--list-messages-only", action="store_true", help="list messages in IMAP folder only")
     arg.add_argument("-m", "--msgs", help="retrieve messages in MSGS range only, e.g. \"1-3,5\", default all")
     arg.add_argument("directory", nargs="*", help="read MPC reports from directory/file instead of ACK mails")
