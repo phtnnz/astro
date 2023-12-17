@@ -181,7 +181,7 @@ Version 0.1 / 2023-07-26 / Martin Junius
 Retrieve Minor Planets Center observation data from IMAP server with ACK mails, locally stored ADES and MPC1992 report files, and MPC WAMO service
 
 ```
-usage: mpc-retrieve-ack [-h] [-v] [-d] [-n] [-l] [-f IMAP_FOLDER] [-L] [-m MSGS] [-M] [-A] [-o OUTPUT] [directory ...]
+usage: mpc-retrieve-ack [-h] [-v] [-d] [-n] [-l] [-f IMAP_FOLDER] [-L] [-m MSGS] [-M] [-A] [-o OUTPUT] [-C] [-O] [directory ...]
 
 Retrieve MPC ACK data
 
@@ -197,7 +197,7 @@ options:
   -l, --list-folders-only
                         list folders on IMAP server only
   -f IMAP_FOLDER, --imap-folder IMAP_FOLDER
-                        IMAP folder to retrieve mails, default INBOX
+                        IMAP folder(s) (comma-separated) to retrieve mails from, default INBOX
   -L, --list-messages-only
                         list messages in IMAP folder only
   -m MSGS, --msgs MSGS  retrieve messages in MSGS range only, e.g. "1-3,5", default all
@@ -206,8 +206,10 @@ options:
   -A, --ades-reports    read new ADES (PSV format) reports
   -o OUTPUT, --output OUTPUT
                         write JSON to OUTPUT file
+  -C, --csv             use CSV output format (instead of JSON)
+  -O, --overview        create overview of objects and observations
 
-Version 0.2 / 2023-08-14 / Martin Junius
+Version 1.1 / 2023-12-06 / Martin Junius
 ```
 
 Config data for IMAP mailbox is stored in %APPDATA%/astro-python/imap-account.json
