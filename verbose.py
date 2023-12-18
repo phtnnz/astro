@@ -113,7 +113,7 @@ def main():
     ic(args)
     verbose("Test", "1", "for", "verbose()")
     verbose("Test", "2", "for more", "verbose()", "with some formatting {:04d}".format(11+12))
-    warning("A", "warning", "messages", " --- but no abort here!")
+    warning("A", "warning", "message", " --- but no abort here!")
     error.set_errno(99)
     error("Error test", "for Verbose module")
 
