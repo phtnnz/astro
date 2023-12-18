@@ -49,7 +49,8 @@ class JSCONConfig:
     def __init__(self, file=None):
         self.obj    = None                      # JSON object
         self.config = self.search_config(file)  # Config file, full path
-
+        self.read_json()
+        
 
     def search_config(self, file=None):
         # Default
