@@ -50,7 +50,7 @@ class JSCONConfig:
         self.obj    = None                      # JSON object
         self.config = self.search_config(file)  # Config file, full path
         self.read_json()
-        
+
 
     def search_config(self, file=None):
         # Default
@@ -122,7 +122,7 @@ def main():
         ic.enable()
 
     config = JSCONConfig()
-    ic(config.get_json())
+    print("JSON Config =", json.dumps(config.get_json(), indent=4))
 
 
 if __name__ == "__main__":
