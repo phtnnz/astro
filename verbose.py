@@ -21,9 +21,17 @@
 #               verbose(print-like-args)
 #               verbose.enable()
 #               verbose.disable()
-#               verbose.set_name(name)
+#               verbose.set_prog(name)
+# Version 0.2 / 2023-12-18
+#       Added warning(), error() with abort
+#       Usage:  from verbose import verbose, warning, error, set_program_name
+#               warning(print-like-args)
+#               error(print-like-args)
 
 import argparse
+import errno
+import sys
+
 # The following libs must be installed with pip
 from icecream import ic
 # Disable debugging
@@ -39,16 +47,22 @@ NAME    = "verbose"
 
 class Verbose:
 
-    def __init__(self, flag=False):
+    def __init__(self, flag=False, prefix=None, abort=False):
         self.enabled = flag
         self.progname = None
+        self.prefix = prefix
+        self.abort = abort
 
     def __call__(self, *args):
         if not self.enabled:
             return
         if self.progname:
             print(self.progname + ": ", end="")
+        if self.prefix:
+            print(self.prefix + ": ", end="")
         print(*args)
+        if self.abort:
+            self.exit()
 
     def enable(self):
         self.enabled = True
@@ -59,9 +73,21 @@ class Verbose:
     def set_prog(self, name):
         self.progname = name
 
+    def exit(self, err=errno.ENOENT):
+        if self.progname:
+            print(self.progname + ": ", end="")
+        print(f"exiting ({err})")
+        sys.exit(err)
+
 
 verbose = Verbose()
-error   = Verbose(True)
+warning = Verbose(True, "WARNING")
+error   = Verbose(True, "ERROR", True)
+
+def set_program_name(name):
+    verbose.set_prog(name)
+    warning.set_prog(name)
+    error.set_prog(name)
 
 
 
@@ -75,9 +101,8 @@ def main():
 
     args = arg.parse_args()
 
+    set_program_name(NAME)
     if args.verbose:
-        verbose.set_prog(NAME)
-        error.set_prog(NAME + ": ERROR")
         verbose.enable()
     if args.debug:
         ic.enable()
@@ -85,6 +110,7 @@ def main():
     ic(args)
     verbose("Test", "1", "for", "verbose()")
     verbose("Test", "2", "for more", "verbose()", "with some formatting {:04d}".format(11+12))
+    warning("A", "warning", "messages", " --- but no abort here!")
     error("Error test", "for Verbose module")
 
     
