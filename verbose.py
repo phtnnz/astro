@@ -20,7 +20,7 @@
 #       Usage:  from verbose import verbose
 #               verbose(print-like-args)
 #               verbose.enable()
-#               verbose.disabled()
+#               verbose.disable()
 #               verbose.set_name(name)
 
 import argparse
@@ -31,7 +31,7 @@ ic.disable()
 
 
 global VERSION, AUTHOR, NAME
-VERSION = "0.0 / 2023-11-04"
+VERSION = "0.1 / 2023-11-04"
 AUTHOR  = "Martin Junius"
 NAME    = "verbose"
 
