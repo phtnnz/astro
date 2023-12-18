@@ -292,7 +292,6 @@ def main():
     if args.exclude:
         exclude = args.exclude.split(",")
         filter1 = [x for x in FILTER if x not in exclude]
-        if filter1: verbose("filter =", filter1)
         FILTER  = filter1
 
     if args.filter:
@@ -306,7 +305,7 @@ def main():
     if(args.extra_data):
         for kv in args.extra_data.split(","):
             (key, value) = kv.split("=")
-            print("data:", key, "=", value)
+            verbose("extra data:", key, "=", value)
         CSVOutput.extra[key] = value
 
     # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
