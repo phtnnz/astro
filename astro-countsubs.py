@@ -123,10 +123,9 @@ class CSVOutput:
 
 
 def walk_the_dir(dir):
-    rootDir = dir.replace("\\", "/")
     exposures = {}
 
-    for dirName, subdirList, fileList in os.walk(rootDir):
+    for dirName, subdirList, fileList in os.walk(dir):
         verbose('Found directory: %s' % dirName)
         # Test for Astro dir ...
         m = re.search(r'[\\/](\d\d\d\d-\d\d-\d\d)[\\/]LIGHT$', dirName)
