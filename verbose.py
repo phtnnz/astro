@@ -29,7 +29,6 @@
 #               error(print-like-args)
 
 import argparse
-import errno
 import sys
 
 # The following libs must be installed with pip
@@ -52,6 +51,7 @@ class Verbose:
         self.progname = None
         self.prefix = prefix
         self.abort = abort
+        self.errno = 1          # exit(1) for generic errors
 
     def __call__(self, *args):
         if not self.enabled:
@@ -73,11 +73,14 @@ class Verbose:
     def set_prog(self, name):
         self.progname = name
 
-    def exit(self, err=errno.ENOENT):
+    def set_errno(self, errno):
+        self.errno = errno
+
+    def exit(self):
         if self.progname:
             print(self.progname + ": ", end="")
-        print(f"exiting ({err})")
-        sys.exit(err)
+        print(f"exiting ({self.errno})")
+        sys.exit(self.errno)
 
 
 verbose = Verbose()
@@ -111,6 +114,7 @@ def main():
     verbose("Test", "1", "for", "verbose()")
     verbose("Test", "2", "for more", "verbose()", "with some formatting {:04d}".format(11+12))
     warning("A", "warning", "messages", " --- but no abort here!")
+    error.set_errno(99)
     error("Error test", "for Verbose module")
 
     
