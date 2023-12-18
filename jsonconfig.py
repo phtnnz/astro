@@ -25,7 +25,6 @@ import os
 import errno
 import argparse
 import json
-import time
 
 # The following libs must be installed with pip
 from icecream import ic
