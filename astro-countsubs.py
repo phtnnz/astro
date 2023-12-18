@@ -19,18 +19,106 @@
 #       Added to repository asto
 # Version 0.2 / 2023-10-10
 #       Allow VdS-style filename, new exposure time option
+# Version 0.3 / 2023-12-18
+#       Refactored, output for Astrobin CSV
 
-global VERSION, AUTHOR
-VERSION = "0.2 / 2023-10-29"
-AUTHOR  = "Martin Junius"
-
-
-import os, sys
+import os
 import argparse
 import re
+import csv
+
+# The following libs must be installed with pip
+from icecream import ic
+# Disable debugging
+ic.disable()
+
+# Local modules
+from verbose import verbose, error
+from jsonconfig import JSCONConfig
 
 
+global VERSION, AUTHOR, NAME
+VERSION = "0.3 / 2023-10-29"
+AUTHOR  = "Martin Junius"
+NAME    = "astro-countsubs"
+
+
+global FILTER, EXPOSURE
 FILTER = ["L", "R", "G", "B", "Ha", "OIII", "SII"]
+EXPOSURE = None
+
+global ASTROBIN_FIELDS
+# ASTROBIN_FIELDS = [ "date", "filter", "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
+#                    "darks", "flats", "flatDarks", "bias", "bortle", "meanSqm", "meanFwhm", "temperature"  ]
+ASTROBIN_FIELDS = [ "date", "filter", "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
+                   "darks", "flats", "flatDarks", "bias", "bortle"  ]
+
+
+
+global KEY_FILTER_SETS, KEY_CALIBRATION, DEFAULT_EXTRA
+KEY_FILTER_SETS = "filter sets"
+KEY_CALIBRATION = "calibration"
+DEFAULT_EXTRA = { "binning": 1, "gain": 56, "cooling": -10, "fnumber": 4.5, "bortle": 1 }
+
+
+# Read config with filter sets and calibration frames
+class AstroConfig(JSCONConfig):
+    def __init__(self, file=None):
+        super().__init__(file)
+
+
+    def get_filter_id(self, filter_set, filter):
+        obj = self.get_json()
+        if KEY_FILTER_SETS in obj:
+            sets = obj[KEY_FILTER_SETS]
+            if filter_set in sets:
+                return sets[filter_set][filter]
+            else:
+                error(f"unknown filter set \"{filter_set}\"")
+        else:
+            error(f"no key \"{KEY_FILTER_SETS}\" in config")
+
+
+    def get_calibration(self, mastertype, param="*"):
+        obj = self.get_json()
+        if KEY_CALIBRATION in obj:
+            cal = obj[KEY_CALIBRATION]
+            if mastertype in cal:
+                return cal[mastertype][param]
+            else:
+                ##FIXME: warning()
+                verbose(f"unknown mastertype \"{mastertype}\"")
+                return ""
+        else:
+            error(f"no key \"{KEY_CALIBRATION}\" in config")
+        
+
+# Get config with filter sets and calibration frames
+config = AstroConfig()
+
+
+# CSV output
+class CSVOutput:
+    enabled = False
+    output = None
+    filter_set = None
+    extra = DEFAULT_EXTRA
+
+    obj_cache = []
+    fields = ASTROBIN_FIELDS
+
+    def append_csv(obj):
+        CSVOutput.obj_cache.append(obj)
+
+    def set_csv_fields(fields):
+        CSVOutput.fields = fields
+
+    def write_csv(file):
+        with open(file, 'w', newline='') as f:
+            writer = csv.writer(f, dialect="excel")
+            if CSVOutput.fields:
+                writer.writerow(CSVOutput.fields)
+            writer.writerows(CSVOutput.obj_cache)
 
 
 
@@ -39,14 +127,14 @@ def walk_the_dir(dir):
     exposures = {}
 
     for dirName, subdirList, fileList in os.walk(rootDir):
-        if OPT_V: print('Found directory: %s' % dirName)
+        verbose('Found directory: %s' % dirName)
         # Test for Astro dir ...
         m = re.search(r'[\\/](\d\d\d\d-\d\d-\d\d)[\\/]LIGHT$', dirName)
         if not m:
             m = re.search(r'[\\/](\d\d\d\d-\d\d-\d\d)$', dirName)
         if m:
             date = m.group(1)
-            if OPT_V: print("  Date:", date)
+            verbose("  Date:", date)
             exposures[date] = {}
             
             for f in FILTER:
@@ -61,19 +149,21 @@ def walk_the_dir(dir):
                         # VdS "Piehler" style
                         match = re.search(r'_(' + f + r')_()\d{4}-\d{2}-\d{2}', fname)
                     if match:
-                        if OPT_V: print("\t" + fname)
+                        verbose("\t" + fname)
                         time = match.group(2) if match.group(2) else EXPOSURE
-                        if OPT_V: print("\t" + date, f, time)
+                        verbose("\t" + date, f, time)
                         if not time:
-                            print("ERROR: time is none or zero")
-                            continue
+                            error(f"time is none or zero for file {fname}")
 
                         if time in exposures[date][f]:
                             exposures[date][f][time] += 1
                         else:
                             exposures[date][f][time] = 1
 
-    print_filter_list(exposures)
+    if CSVOutput.enabled:
+        csv_list(exposures)
+    else:
+        print_filter_list(exposures)
 
 
 
@@ -129,40 +219,95 @@ def print_filter_list(exp):
     mins  = int((total1 - hours*3600) / 60)
     print("  %ds / %dh%d" % (total1, hours, mins))
    
-   
+
+def extra(key):
+    if key in CSVOutput.extra:
+        return CSVOutput.extra[key]
+    else:
+        return ""
+
+def csv_list(exp):
+    filter_set = CSVOutput.filter_set
+
+    # CSV format as required by the Astrobin upload
+    # For documentation see https://welcome.astrobin.com/importing-acquisitions-from-csv/
+    #
+    # Fields:
+    # "date", "filter", "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
+    # "darks", "flats", "flatDarks", "bias", "bortle", "meanSqm", "meanFwhm", "temperature"
+    #
+    # Not all fields must be present, BUT FIELDS MUST NOT BE EMPTY
+
+    for date in exp.keys():
+        for f in exp[date].keys():
+            for time in exp[date][f].keys():
+                n = exp[date][f][time]
+                time = int(time)
+                filter = config.get_filter_id(filter_set, f)
+                darks = config.get_calibration("masterdark", str(time)+"s")
+                flats = config.get_calibration("masterflat", f)
+                # flatdarks = config.get_calibration("masterflatdark", f)
+                bias = config.get_calibration("masterbias")
+                # fields = [  date, filter, n, time, 
+                #             extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
+                #             darks, flats, 0, bias,
+                #             extra("bortle"), extra("sqm"), extra("fwhm"), extra("temperature") ]
+                fields = [  date, filter, n, time, 
+                            extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
+                            darks, flats, 0, bias,
+                            extra("bortle") ]
+                print(",".join(map(str, fields)))
+                CSVOutput.append_csv(fields)
+
+    if CSVOutput.output:
+        CSVOutput.write_csv(CSVOutput.output)
+
    
    
 def main():
     arg = argparse.ArgumentParser(
-        prog        = "astro-countsubs",
+        prog        = NAME,
         description = "Traverse directory and count N.I.N.A subs",
         epilog      = "Version: " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
     arg.add_argument("-x", "--exclude", help="exclude filter, e.g. Ha,SII")
     arg.add_argument("-f", "--filter", help="filter list, e.g. L,R,G.B")
     arg.add_argument("-t", "--exposure-time", help="exposure time (sec) if not present in filename")
+    arg.add_argument("-C", "--csv", action="store_true", help="output CSV list")
+    arg.add_argument("-o", "--output", help="write to file OUTPUT")
+    arg.add_argument("-F", "--filter-set", help="name of filter set for Astrobin CSV (see config)")
+    arg.add_argument("-D", "--extra-data", help="KEY=VALUE,... pairs for setting gain, binning, &c.")
     arg.add_argument("dirname", help="directory name")
 
     args  = arg.parse_args()
-    #   print(args)
 
-    global OPT_V
-    global FILTER
-    global EXPOSURE
+    verbose.set_prog(NAME)
+    error.set_prog(NAME)
+    if args.verbose:
+        verbose.enable()
 
-    OPT_V = args.verbose
+    global FILTER, EXPOSURE
     EXPOSURE = args.exposure_time
 
     if args.exclude:
         exclude = args.exclude.split(",")
         filter1 = [x for x in FILTER if x not in exclude]
-        if OPT_V and filter1: print("filter =", filter1)
+        if filter1: verbose("filter =", filter1)
         FILTER  = filter1
 
     if args.filter:
         FILTER  = args.filter.split(",")
 
-    if OPT_V: print("filter =", FILTER)
+    verbose("filter =", FILTER)
+
+    CSVOutput.enabled = args.csv
+    CSVOutput.output  = args.output
+    CSVOutput.filter_set = args.filter_set
+    if(args.extra_data):
+        for kv in args.extra_data.split(","):
+            (key, value) = kv.split("=")
+            print("data:", key, "=", value)
+        CSVOutput.extra[key] = value
 
     # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
     # see here https://bugs.python.org/issue39845
