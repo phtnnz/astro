@@ -17,10 +17,9 @@
 # ChangeLog
 # Version 0.1 / 2023-11-04
 #       First version of verbose module
-#       Usage:  from verbose import verbose
-#               verbose(print-like-args)
 # Version 0.2 / 2023-12-18
 #       Added warning(), error() with abort
+#
 #       Usage:  from verbose import verbose, warning, error
 #               verbose(print-like-args)
 #               warning(print-like-args)
@@ -120,8 +119,6 @@ def main():
     error("Error test", "for Verbose module")
 
     
-
-
 
 if __name__ == "__main__":
     main()
