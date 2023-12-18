@@ -29,5 +29,27 @@
             "OIII": 5071,
             "SII": 5120
         }
+    },
+    "calibration": {
+        "_comment": "Number of calibration frames for astro-countsubs.py",
+        "masterbias": { 
+            "*": 100 
+        },
+        "masterflat": {
+            "L": 20,
+            "R": 20,
+            "G": 20,
+            "B": 20,
+            "Ha": 20,
+            "OIII": 20,
+            "SII": 20
+        },
+        "masterdark": {
+            "60s": 12,
+            "120s": 13,
+            "180s": 20,
+            "300s": 15,
+            "600s": 7
+        }
     }
 }
