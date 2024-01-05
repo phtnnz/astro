@@ -46,7 +46,7 @@ from icecream import ic
 ic.disable()
 
 # Local modules
-from verbose import verbose, error
+from verbose import verbose, warning, error
 from mpcdata80 import MPCData80
 
 
@@ -381,7 +381,7 @@ def retrieve_from_mpc_wamo(ids):
 
     wamo = []
     for line in x.text.splitlines():
-        ic("WAMO>", line)
+        ic(line)
         if line == "":
             continue
 
@@ -413,12 +413,27 @@ def retrieve_from_mpc_wamo(ids):
         if not m:
             m = re.search(r'The obsID \'(.+)\' is in the \'(.+)\' processing queue.$', line)
             if m:
-                id   = m.group(1)
-                pub  = "Processing queue " + m.group(2)
+                id = m.group(1)
+                pub = "Processing queue " + m.group(2)
                 verbose("       ", id, ":", pub)
 
         if not m:
-            verbose("unknown>", line)
+            m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) is on the (NEOCP/PCCP).$', line)
+            if m:
+                data = m.group(1)
+                id   = m.group(2)
+                pub  = m.group(3)
+            verbose("       ", id, ":", data)
+            verbose("       ", " " * len(id), ":", pub)
+            data80 = MPCData80(data)
+
+            wamo.append({"data":          data80.get_obj(),
+                         "observationID": id,
+                         "objID":         data80.get_col(6, 12),    # tracklet ID
+                         "publication":   pub  })
+
+        if not m:
+            warning("unknown>", line)
 
     # Avoid high load on the MPC server
     time.sleep(0.5)
