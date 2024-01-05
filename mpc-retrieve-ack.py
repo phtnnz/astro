@@ -435,13 +435,12 @@ def retrieve_from_mpc_mpec(id):
     # yields 302 redirect
     # Location: https://www.minorplanetcenter.net/mpec/K23/K23P25.html
 
-    verbose("retrieving MPEC", id)
     data = { "S": "M",  "F": "P",  "N": id }
     x = requests.post(MPEC_URL, data=data, allow_redirects=False)
 
     # print(x.headers)
     url = x.headers["Location"]
-    verbose("MPEC", id, "URL =", url)
+    ic(id, url)
 
     return url
 
