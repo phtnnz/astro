@@ -234,3 +234,13 @@ Retrieve all ACK mails from INBOX.Archvie, query WAMO, and write results to ack-
 mpc-retrieve-ack.py -A -o ades-reports.json '\Users\someone\Asteroids\reports\'
 ```
 Retrieve all ADES report file from the given directory (recursively), query WAMO, and write results to ades-reports.json
+
+```
+mpc-retrieve-ack.py -f ARCHIVE -O -o report.txt
+```
+Retrieve all ACK mails from ARCHIVE folder, query WAMO, and write overview list to report.txt
+
+```
+mpc-retrieve-ack-py -f ARCHIVE -C -o report.csv
+```
+Retrieve all ACK mails from ARCHIVE folder, query WAMO, and write detailed data to CSV output report.csv
