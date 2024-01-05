@@ -24,7 +24,7 @@
 #               verbose(print-like-args)
 #               warning(print-like-args)
 #               error(print-like-args)
-#               .enable()
+#               .enable(flag=True)
 #               .disable()
 #               .set_prog(name)         global for all objects
 #               .set_errno(errno)       relevant only for error()
@@ -39,7 +39,7 @@ ic.disable()
 
 
 global VERSION, AUTHOR, NAME
-VERSION = "0.1 / 2023-11-04"
+VERSION = "1.0 / 2024-01-06"
 AUTHOR  = "Martin Junius"
 NAME    = "verbose"
 
