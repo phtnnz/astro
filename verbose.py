@@ -65,8 +65,8 @@ class Verbose:
         if self.abort:
             self._exit()
 
-    def enable(self):
-        self.enabled = True
+    def enable(self, flag=True):
+        self.enabled = flag
 
     def disable(self):
         self.enabled = False
