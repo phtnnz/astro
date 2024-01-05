@@ -217,7 +217,7 @@ def retrieve_from_imap(cf):
 
     if Config.list_folder:
         # Print list of mailboxes on server
-        print(NAME+":", "folders on IMAP server", cf.get_server())
+        print("Folders on IMAP server", cf.get_server())
         code, mailboxes = server.list()
         for mailbox in mailboxes:
             print("   ", mailbox.decode().split(' "." ')[1])
@@ -296,8 +296,9 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
                     msg_ids[m.group(2)] = m.group(1)
 
     if Config.list_msgs:
-        verbose(" ", msg_date)
-        verbose(" ", msg_subject)
+        nstr = "[{:03d}]".format(msg_n)
+        print(nstr, msg_date)
+        print(" " * len(nstr), msg_subject)
         if Config.csv:
             # CSV output: list of messages in mailbox
             CSVOutput.add_csv_fields([ "Folder", "Message#", "Date", "Subject" ])
@@ -631,15 +632,13 @@ def main():
     arg.add_argument("directory", nargs="*", help="read MPC reports from directory/file instead of ACK mails")
     arg.add_argument("-M", "--mpc1992-reports", action="store_true", help="read old MPC 1992 reports")
     arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports")
-    arg.add_argument("-o", "--output", help="write JSON to OUTPUT file")
+    arg.add_argument("-o", "--output", help="write JSON/CSV to OUTPUT file")
     arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format (instead of JSON)")
     arg.add_argument("-O", "--overview", action="store_true", help="create overview of objects and observations")
     args = arg.parse_args()
 
-    if args.verbose:
-        verbose.set_prog(NAME)
-        error.set_prog(NAME + ": ERROR")
-        verbose.enable()
+    verbose.set_prog(NAME)
+    verbose.enable(args.verbose)
     if args.debug:
         ic.enable()
 
