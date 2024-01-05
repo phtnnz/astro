@@ -176,6 +176,14 @@ class ObsOverview:
             for obs in sorted(list):
                 print("   ", obs)
 
+    
+    def write_overview(file):
+        with open(file, 'w') as f:
+            sys.stdout = f
+            ObsOverview.print_all()
+            Publication.print_publication_list()
+
+
 
 
 class JSONOutput:
@@ -671,13 +679,13 @@ def main():
         retrieve_from_imap(cf)
 
 
-    if Config.overview:
+    if Config.overview and not Config.output:
         ObsOverview.print_all()
 
-    Publication.print_publication_list()
-
     if Config.output:
-        if Config.csv:
+        if Config.overview:
+            ObsOverview.write_overview(Config.output)
+        elif Config.csv:
             CSVOutput.write_csv(Config.output)
         else:
             JSONOutput.write_json(Config.output)
