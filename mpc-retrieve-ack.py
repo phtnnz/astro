@@ -219,8 +219,10 @@ def retrieve_from_imap(cf):
         # Print list of mailboxes on server
         print("Folders on IMAP server", cf.get_server())
         code, mailboxes = server.list()
-        for mailbox in mailboxes:
-            print("   ", mailbox.decode().split(' "." ')[1])
+        mblist = [ mailbox.decode().split(' "." ')[1] for mailbox in mailboxes ]
+        mblist.sort()
+        for mb in mblist:
+            print("   ", mb)
         return
 
     # Select mailbox
