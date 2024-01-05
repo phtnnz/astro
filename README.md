@@ -32,7 +32,7 @@ Local modules:
 | Library   | Function                           |
 | --------- | ---------------------------------- |
 | mpcdata80 | Class for handling MPC 80-column data format |
-| verbose   | verbose() and error() messages               |
+| verbose   | verbose(), warning() and error() messages    |
 
 
 ## nina-create-sequence
