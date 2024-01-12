@@ -54,14 +54,14 @@ class Verbose:
         self.abort = abort
         self.errno = 1          # exit(1) for generic errors
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         if not self.enabled:
             return
         if Verbose.progname:
             print(Verbose.progname + ": ", end="")
         if self.prefix:
             print(self.prefix + ": ", end="")
-        print(*args)
+        print(*args, **kwargs)
         if self.abort:
             self._exit()
 
