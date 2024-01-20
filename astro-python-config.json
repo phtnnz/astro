@@ -1,5 +1,5 @@
 {
-    "##": "Data used by astro-countsubs.py"
+    "##": "Data used by astro-countsubs.py",
     "filter sets": {
         "##": "Filter sets and respective Astrobin equipments ids",
         "Astronomik 2in": {
