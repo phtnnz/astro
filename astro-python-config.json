@@ -1,6 +1,7 @@
 {
+    "##": "Data used by astro-countsubs.py"
     "filter sets": {
-        "_comment": "Filter sets and Astrobin equipments ids for astro-countsubs.py",
+        "##": "Filter sets and respective Astrobin equipments ids",
         "Astronomik 2in": {
             "Ha": 4663,
             "SII": 4844,
@@ -31,7 +32,7 @@
         }
     },
     "calibration": {
-        "_comment": "Number of calibration frames for astro-countsubs.py",
+        "##": "Number of calibration frames for IAS Remote, mode 1, gain 56, offset 30, bin 1x1",
         "masterbias": { 
             "*": 100 
         },
