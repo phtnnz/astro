@@ -32,7 +32,16 @@
         }
     },
     "calibration": {
-        "##": "Number of calibration frames for IAS Remote, mode 1, gain 56, offset 30, bin 1x1",
+        "##": "Settings and number of calibration frames for IAS Remote",
+        "settings": {
+            "mode": 1,
+            "gain": 56,
+            "offset": 30,
+            "binning": 1,
+            "sensorcooling": -10,
+            "fnumber": 4.5,
+            "bortle": 1
+        },
         "masterbias": { 
             "*": 100 
         },
