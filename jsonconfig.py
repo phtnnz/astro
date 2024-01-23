@@ -124,8 +124,14 @@ class JSONConfig:
     def get(self, key):
         return self.config[key] if key in self.config else None
 
+
     def get_keys(self):
         return self.config.keys()
+
+
+    def get_json(self):
+        # For backwards compatibility
+        return self.config
 
 
 
