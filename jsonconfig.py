@@ -17,23 +17,28 @@
 # ChangeLog
 # Version 0.1 / 2023-12-18
 #       First version of JSONConfig module
-#       Usage:  from jsonconfig import JSONConfig
+# version 0.2 / 2024-01-23
+#       Rewritten for multiple config files, global config object
+#
+#       Usage:  from jsonconfig import config
+#               from jsonconfig import JSONConfig
 #               class MyConfig(JSONConfig)
 
-import sys
 import os
-import errno
 import argparse
 import json
 
 # The following libs must be installed with pip
 from icecream import ic
 # Disable debugging
-ic.disable()
+
+# Local modules
+from verbose import verbose
+
 
 
 global VERSION, AUTHOR, NAME
-VERSION = "0.1 / 2023-12-18"
+VERSION = "0.2 / 2024-01-23"
 AUTHOR  = "Martin Junius"
 NAME    = "JSONConfig"
 
@@ -42,19 +47,32 @@ global CONFIGDIR, CONFIGFILE
 CONFIGDIR = "astro-python"
 CONFIGFILE = "astro-python-config.json"
 
-class JSCONConfig:
+#ic.enable()
+ic(CONFIGDIR, CONFIGFILE)
+
+class JSONConfig:
     """ JSONConfig base class """
 
-    def __init__(self, file=None):
-        self.obj    = None                      # JSON object
-        self.config = self.search_config(file)  # Config file, full path
-        self.read_json()
+    def __init__(self, file):
+        ic("config init", file)
+        self.config = {}
+        self.read_config(file)
 
 
-    def search_config(self, file=None):
-        # Default
-        file = file if file else CONFIGFILE
+    def read_config(self, file):
+        ic(file)
+        file1 = self.search_config(file)
+        if(file1):
+            json  = self.read_json(file1)
+            # Merge with existing config
+            self.config = self.config | json
 
+
+    def search_config(self, file):
+        # If full path use as is
+        if os.path.isfile(file):
+            return file
+        
         # Search config file in current directory, LOCALAPPDATA, APPDATA
         searchpath = []
 
@@ -67,18 +85,20 @@ class JSCONConfig:
             searchpath.append(path)
 
         appdata = os.environ.get('LOCALAPPDATA')
-        if not appdata:
-            id("environment LOCALAPPDATA not set!")
-        path = os.path.join(appdata, CONFIGDIR)
-        if os.path.isdir(path):
-            searchpath.append(path)
+        if appdata:
+            path = os.path.join(appdata, CONFIGDIR)
+            if os.path.isdir(path):
+                searchpath.append(path)
+        else:
+            ic("environment LOCALAPPDATA not set!")
 
         appdata = os.environ.get('APPDATA')
-        if not appdata:
-            id("environment APPDATA not set!")
-        path = os.path.join(appdata, CONFIGDIR)
-        if os.path.isdir(path):
-            searchpath.append(path)
+        if appdata:
+            path = os.path.join(appdata, CONFIGDIR)
+            if os.path.isdir(path):
+                searchpath.append(path)
+        else:
+            ic("environment APPDATA not set!")
 
         for path in searchpath:
             ic(path)
@@ -87,24 +107,30 @@ class JSCONConfig:
                 ic(file1)
                 return file1
 
-        ic("ERROR exit")    
-        sys.exit(errno.ENOENT)
+        verbose(f'config file {file} not found')    
+        return None
 
 
-    def read_json(self, file=None):
-        file = file if file else self.config
+    def read_json(self, file):
         with open(file, 'r') as f:
-            self.obj = json.load(f)
+            return json.load(f)
 
 
-    def write_json(self, file=None):
-        file = file if file else self.config
+    def write_json(self, file):
         with open(file, 'w') as f:
-            json.dump(self.obj, f, indent = 2)
+            json.dump(self.config, f, indent = 2)
 
 
-    def get_json(self):
-        return self.obj
+    def get(self, key):
+        return self.config[key] if key in self.config else None
+
+    def get_keys(self):
+        return self.config.keys()
+
+
+
+# Global config object
+config = JSONConfig(CONFIGFILE)
 
 
 
@@ -113,15 +139,22 @@ def main():
         prog        = NAME,
         description = "Test for module",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
+    arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
+    arg.add_argument("-c", "--config", help="read CONFIG file")
 
     args = arg.parse_args()
 
+    verbose.set_prog(NAME)
+    if args.verbose:
+        verbose.enable()
     if args.debug:
         ic.enable()
+    if args.config:
+        config.read_config(args.config)
 
-    config = JSCONConfig()
-    print("JSON Config =", json.dumps(config.get_json(), indent=4))
+    print("JSON config keys =", ", ".join(config.get_keys()))
+
 
 
 if __name__ == "__main__":
