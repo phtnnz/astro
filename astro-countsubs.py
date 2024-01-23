@@ -34,7 +34,7 @@ ic.disable()
 
 # Local modules
 from verbose import verbose, error
-from jsonconfig import JSCONConfig
+from jsonconfig import JSONConfig, config
 
 
 global VERSION, AUTHOR, NAME
@@ -62,7 +62,7 @@ DEFAULT_EXTRA = { "binning": 1, "gain": 56, "cooling": -10, "fnumber": 4.5, "bor
 
 
 # Read config with filter sets and calibration frames
-class AstroConfig(JSCONConfig):
+class AstroConfig(JSONConfig):
     def __init__(self, file=None):
         super().__init__(file)
 
@@ -94,7 +94,7 @@ class AstroConfig(JSCONConfig):
         
 
 # Get config with filter sets and calibration frames
-config = AstroConfig()
+config = AstroConfig("astro-countsubs-config.json")
 
 
 # CSV output
@@ -281,7 +281,6 @@ def main():
     args  = arg.parse_args()
 
     verbose.set_prog(NAME)
-    error.set_prog(NAME)
     if args.verbose:
         verbose.enable()
 
