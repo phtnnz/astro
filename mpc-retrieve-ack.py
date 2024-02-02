@@ -165,18 +165,23 @@ class ObsOverview:
     # obj_cache[object] = [ obs1, obs2, obs3, ... ]
     obj_cache = {}
 
-    def add_obs(obj, obs):
-        if obj in ObsOverview.obj_cache:
-            ObsOverview.obj_cache[obj].append(obs)
-        else:
-            ObsOverview.obj_cache[obj] = [ obs ]
+    def add_obs(obj, date, obs):
+        if not obj in ObsOverview.obj_cache:
+            ObsOverview.obj_cache[obj] = {}
+        d_dict = ObsOverview.obj_cache[obj]
+        if not date in d_dict:
+            d_dict[date] = []
+        d_dict[date].append(obs)
+
 
 
     def print_all():
-        for obj, list in sorted(ObsOverview.obj_cache.items(), key=natural_keys):
+        for obj, dates in sorted(ObsOverview.obj_cache.items(), key=natural_keys):
             print(obj)
-            for obs in sorted(list):
-                print("   ", obs)
+            for date, list in dates.items():
+                print("   ", date)
+                for obs in list:
+                    print("       ", obs)
 
     
     def write_overview(file):
@@ -351,7 +356,7 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
 
         if Config.overview:
             for wobj in wamo:
-                ObsOverview.add_obs(wobj["objID"], wobj["data"]["data"])
+                ObsOverview.add_obs(wobj["objID"], wobj["data"]["date_minus12"], wobj["data"]["data"])
        
     else:
         if Config.csv:
