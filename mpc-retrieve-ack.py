@@ -165,21 +165,21 @@ class ObsOverview:
     # obj_cache[object] = [ obs1, obs2, obs3, ... ]
     obj_cache = {}
 
-    def add_obs(obj, date, obs):
-        if not obj in ObsOverview.obj_cache:
-            ObsOverview.obj_cache[obj] = {}
-        d_dict = ObsOverview.obj_cache[obj]
-        if not date in d_dict:
-            d_dict[date] = []
-        d_dict[date].append(obs)
+    def add_obs(key1, key2, obs):
+        if not key1 in ObsOverview.obj_cache:
+            ObsOverview.obj_cache[key1] = {}
+        dict2 = ObsOverview.obj_cache[key1]
+        if not key2 in dict2:
+            dict2[key2] = []
+        dict2[key2].append(obs)
 
 
 
     def print_all():
-        for obj, dates in sorted(ObsOverview.obj_cache.items(), key=natural_keys):
-            print(obj)
-            for date, list in dates.items():
-                print("   ", date)
+        for key1, dict2 in sorted(ObsOverview.obj_cache.items(), key=natural_keys):
+            print(key1)
+            for key2, list in sorted(dict2.items(), key=natural_keys):
+                print("   ", key2)
                 for obs in list:
                     print("       ", obs)
 
