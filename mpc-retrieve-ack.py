@@ -670,7 +670,7 @@ def main():
     arg.add_argument("-o", "--output", help="write JSON/CSV to OUTPUT file")
     arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format (instead of JSON)")
     arg.add_argument("-O", "--overview", action="store_true", help="create overview of objects and observations")
-    arg.add_argument("-D", "--sort-by-date", action="store_true", help="sort overview by date (minus 12h)")
+    arg.add_argument("-D", "--sort-by-date", action="store_true", help="sort overview by observation date (minus 12h)")
     args = arg.parse_args()
 
     verbose.set_prog(NAME)
@@ -708,6 +708,7 @@ def main():
 
     if Config.overview and not Config.output:
         ObsOverview.print_all()
+        Publication.print_publication_list()
 
     if Config.output:
         if Config.overview:
