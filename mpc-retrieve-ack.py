@@ -434,14 +434,14 @@ def retrieve_from_mpc_wamo(ids):
                 data = m.group(1)
                 id   = m.group(2)
                 pub  = m.group(3)
-            verbose("       ", id, ":", data)
-            verbose("       ", " " * len(id), ":", pub)
-            data80 = MPCData80(data)
+                verbose("       ", id, ":", data)
+                verbose("       ", " " * len(id), ":", pub)
+                data80 = MPCData80(data)
 
-            wamo.append({"data":          data80.get_obj(),
-                         "observationID": id,
-                         "objID":         data80.get_col(6, 12),    # tracklet ID
-                         "publication":   pub  })
+                wamo.append({"data":          data80.get_obj(),
+                            "observationID": id,
+                            "objID":         data80.get_col(6, 12),    # tracklet ID
+                            "publication":   pub  })
 
         if not m:
             warning("unknown>", line)
