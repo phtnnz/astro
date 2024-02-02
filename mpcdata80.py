@@ -53,6 +53,8 @@
 import argparse
 import re
 import json
+from datetime import datetime, timedelta
+
 # The following libs must be installed with pip
 from icecream import ic
 # Disable debugging
@@ -193,7 +195,7 @@ class MPCData80:
         self.obj["discovery"] = discovery.strip()
         self.obj["note1"] = note1
         self.obj["note2"] = note2
-        self.obj["date"] = date.strip()         # FIXME: convert to proper date
+        self.obj["date"] = self.parse_date(date)
         self.obj["ra"] = ra.strip()
         self.obj["dec"] = dec.strip()
         self.obj["mag"] = mag.strip()
@@ -202,6 +204,18 @@ class MPCData80:
         self.obj["reference"] = ref if ref != "     " else ""
         self.obj["code"] = code
 
+
+    def parse_date(self, date):
+        m = re.search(r'^(\d\d\d\d) (\d\d) (\d\d)\.(\d+)', date)
+        if m:
+            ic(m.groups())
+            dt = datetime(int(m.group(1)), int(m.group(2)), int(m.group(3))) + timedelta(days=float("0."+m.group(4)))
+            dt_minus12 = dt - timedelta(hours=12)
+            ic(dt, dt_minus12)
+            date = str(dt)
+            self.obj["date_minus12"] = str(dt_minus12.date())
+        return date
+    
 
     def get_json(self, indent=4):
         return json.dumps(self.obj, indent=indent)
