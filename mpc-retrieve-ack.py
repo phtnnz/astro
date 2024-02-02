@@ -30,6 +30,8 @@
 #       Added -O --overview output, listing all objects and respective observations
 # Version 1.2 / 2024-01-06
 #       Some clean-up, improved output
+# Version 1.3 / 2024-02-02
+#       Added -D --sort-by-date option for overview output
 
 import sys
 import os
@@ -52,12 +54,10 @@ from verbose import verbose, warning, error
 from mpcdata80 import MPCData80
 
 
-global NAME, VERSION, AUTHOR
 NAME    = "mpc-retrieve-ack"
-VERSION = "1.2 / 2024-01-06"
+VERSION = "1.3 / 2024-02-02"
 AUTHOR  = "Martin Junius"
 
-global CONFIG, WAMO_URL, MPEC_URL
 CONFIG = "astro-python/imap-account.json"
 WAMO_URL = "https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo"
 MPEC_URL = "https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi"
@@ -77,6 +77,7 @@ class Config:
     output      = None      # -o --output
     csv         = False     # -C --csv
     overview    = False     # -O --overview
+    sort_by_date= False     # -D --sort-by-date
     
     def __init__(self, file=None):
         self.obj = None
@@ -356,7 +357,10 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
 
         if Config.overview:
             for wobj in wamo:
-                ObsOverview.add_obs(wobj["objID"], wobj["data"]["date_minus12"], wobj["data"]["data"])
+                if Config.sort_by_date:
+                    ObsOverview.add_obs(wobj["data"]["date_minus12"], wobj["objID"], wobj["data"]["data"])
+                else:
+                    ObsOverview.add_obs(wobj["objID"], wobj["data"]["date_minus12"], wobj["data"]["data"])
        
     else:
         if Config.csv:
@@ -666,6 +670,7 @@ def main():
     arg.add_argument("-o", "--output", help="write JSON/CSV to OUTPUT file")
     arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format (instead of JSON)")
     arg.add_argument("-O", "--overview", action="store_true", help="create overview of objects and observations")
+    arg.add_argument("-D", "--sort-by-date", action="store_true", help="sort overview by date (minus 12h)")
     args = arg.parse_args()
 
     verbose.set_prog(NAME)
@@ -685,6 +690,7 @@ def main():
     Config.output      = args.output
     Config.csv         = args.csv
     Config.overview    = args.overview
+    Config.sort_by_date= args.sort_by_date
 
     if args.directory:
         for dir in args.directory:
