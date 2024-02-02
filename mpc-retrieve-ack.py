@@ -444,7 +444,8 @@ def retrieve_from_mpc_wamo(ids):
                             "publication":   pub  })
 
         if not m:
-            warning("unknown>", line)
+            warning("unknown response:", line)
+            warning("corresponding observations:", ids)
 
     # Avoid high load on the MPC server
     time.sleep(0.5)
