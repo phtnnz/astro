@@ -444,6 +444,12 @@ def retrieve_from_mpc_wamo(ids):
                             "publication":   pub  })
 
         if not m:
+            m = re.search(r'^The obsID \'([A-Za-z0-9]+)\' has been deleted.$', line)
+            if m:
+                id = m.group(1)
+                warning(f"id {id} = observation \"{ids[id]}\" deleted")
+
+        if not m:
             warning("unknown response:", line)
             warning("corresponding observations:", ids)
 
