@@ -21,6 +21,9 @@
 #       Allow VdS-style filename, new exposure time option
 # Version 0.3 / 2023-12-18
 #       Refactored, output for Astrobin CSV
+# Version 0.4 / 2024-02-08
+#       Get settings from JSON config, -D --extra-data option removed,
+#       output calibration data also for text output
 
 import os
 import argparse
@@ -37,7 +40,6 @@ from verbose import verbose, error
 from jsonconfig import JSONConfig, config
 
 
-global VERSION, AUTHOR, NAME
 VERSION = "0.3 / 2023-10-29"
 AUTHOR  = "Martin Junius"
 NAME    = "astro-countsubs"
@@ -47,7 +49,6 @@ global FILTER, EXPOSURE
 FILTER = ["L", "R", "G", "B", "Ha", "OIII", "SII"]
 EXPOSURE = None
 
-global ASTROBIN_FIELDS
 # ASTROBIN_FIELDS = [ "date", "filter", "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
 #                    "darks", "flats", "flatDarks", "bias", "bortle", "meanSqm", "meanFwhm", "temperature"  ]
 ASTROBIN_FIELDS = [ "date", "filter", "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
@@ -55,10 +56,9 @@ ASTROBIN_FIELDS = [ "date", "filter", "number", "duration", "binning", "gain", "
 
 
 
-global KEY_FILTER_SETS, KEY_CALIBRATION, DEFAULT_EXTRA
 KEY_FILTER_SETS = "filter sets"
 KEY_CALIBRATION = "calibration"
-DEFAULT_EXTRA = { "binning": 1, "gain": 56, "cooling": -10, "fnumber": 4.5, "bortle": 1 }
+KEY_SETTINGS    = "settings"
 
 
 # Read config with filter sets and calibration frames
@@ -91,7 +91,28 @@ class AstroConfig(JSONConfig):
                 return ""
         else:
             error(f"no key \"{KEY_CALIBRATION}\" in config")
-        
+
+
+    def get_settings(self):
+        obj = self.get_json()
+        if not KEY_CALIBRATION in obj:
+            error(f"no key \"{KEY_CALIBRATION}\" in config")
+
+        cal = obj[KEY_CALIBRATION]
+        if not KEY_SETTINGS in cal:
+            error(f"no key \"{KEY_SETTINGS}\" in config")
+
+        return cal[KEY_SETTINGS]
+
+
+    def get_setting(self, key):
+        settings = self.get_settings()
+        if key in settings:
+            return settings[key]
+        else:
+            return ""
+
+
 
 # Get config with filter sets and calibration frames
 config = AstroConfig("astro-countsubs-config.json")
@@ -102,7 +123,6 @@ class CSVOutput:
     enabled = False
     output = None
     filter_set = None
-    extra = DEFAULT_EXTRA
 
     obj_cache = []
     fields = ASTROBIN_FIELDS
@@ -168,6 +188,8 @@ def walk_the_dir(dir):
 
 def print_filter_list(exp):
     total = {}
+    darks = {}
+    flats = {}
 
     for f in FILTER:
         total[f] = {}
@@ -175,15 +197,17 @@ def print_filter_list(exp):
     for date in exp.keys():
         print(date)
 
-        print("  ", end="")
         for f in exp[date].keys():
             if exp[date][f]:
-                print(f + ": ", end="")
+                print(f"   {f}:", end="")
 
             for time in exp[date][f].keys():
                 n = exp[date][f][time]
                 time = int(time)
-                print("%dx %ds   " % (n, time), end="")
+                print(f" {n}x {time}s", end="")
+
+                darks[str(time)+"s"] = config.get_calibration("masterdark", str(time)+"s")
+                flats[f] = config.get_calibration("masterflat", f)
 
                 if time in total[f]:
                     total[f][time] += n
@@ -192,38 +216,48 @@ def print_filter_list(exp):
         print("")
 
     print("Total")
-    print("  ", end="")
     for f in total.keys():
         if total[f]:
-            print(f + ": ", end="")
+            print(f"   {f}:", end="")
             for time in total[f].keys():
                 n = total[f][time]
                 time = int(time) 
-                print("%dx %ds   " % (n, time), end="")
-    print("")
+                print(f" {n}x {time}s", end="")
+    print()
 
     total1 = 0
-    print("  ", end="")
     for f in total.keys():
         if total[f]:
-            print(f + ": ", end="")
+            print(f"   {f}:", end="")
             for time in total[f].keys():
                 n = total[f][time]
                 time = int(time)
                 total1 += n * time
-                print("%ds   " % (n * time), end="")
-    print("")
+                print(f" {n*time}s", end="")
+    print()
 
     hours = int(total1 / 3600)
     mins  = int((total1 - hours*3600) / 60)
-    print("  %ds / %dh%d" % (total1, hours, mins))
+    print(f"   {total1}s / {hours:d}h{mins:02d}")
+
+    print("Darks")
+    for t, n in darks.items():
+        print(f"   {n}x {t}", end="")
+    print()
+    print("Flats")
+    for f, n in flats.items():
+        print(f"   {f}: {n}x", end="")
+    print()
+    print("Settings")
+    for key in ("mode", "gain", "offset", "sensorcooling"):
+        print(f"   {key}: {config.get_setting(key)}", end="")
+    print()
    
 
+
 def extra(key):
-    if key in CSVOutput.extra:
-        return CSVOutput.extra[key]
-    else:
-        return ""
+    return config.get_setting(key)
+
 
 def csv_list(exp):
     filter_set = CSVOutput.filter_set
@@ -275,7 +309,6 @@ def main():
     arg.add_argument("-C", "--csv", action="store_true", help="output CSV list")
     arg.add_argument("-o", "--output", help="write to file OUTPUT")
     arg.add_argument("-F", "--filter-set", help="name of filter set for Astrobin CSV (see config)")
-    arg.add_argument("-D", "--extra-data", help="KEY=VALUE,... pairs for setting gain, binning, &c.")
     arg.add_argument("dirname", help="directory name")
 
     args  = arg.parse_args()
@@ -300,11 +333,6 @@ def main():
     CSVOutput.enabled = args.csv
     CSVOutput.output  = args.output
     CSVOutput.filter_set = args.filter_set
-    if(args.extra_data):
-        for kv in args.extra_data.split(","):
-            (key, value) = kv.split("=")
-            verbose("extra data:", key, "=", value)
-        CSVOutput.extra[key] = value
 
     # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
     # see here https://bugs.python.org/issue39845
