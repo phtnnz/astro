@@ -190,6 +190,7 @@ def print_filter_list(exp):
     total = {}
     darks = {}
     flats = {}
+    bias = config.get_calibration("masterbias")
 
     for f in FILTER:
         total[f] = {}
@@ -248,6 +249,8 @@ def print_filter_list(exp):
     for f, n in flats.items():
         print(f"   {f}: {n}x", end="")
     print()
+    print("Bias")
+    print(f"   {bias}x")
     print("Settings")
     for key in ("mode", "gain", "offset", "sensorcooling"):
         print(f"   {key}: {config.get_setting(key)}", end="")
