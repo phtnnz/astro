@@ -292,7 +292,7 @@ def csv_list(exp):
                             extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
                             darks, flats, 0, bias,
                             extra("bortle") ]
-                print(",".join(map(str, fields)))
+                verbose(",".join(map(str, fields)))
                 CSVOutput.append_csv(fields)
 
     if CSVOutput.output:
