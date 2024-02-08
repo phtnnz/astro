@@ -40,7 +40,7 @@ from verbose import verbose, error
 from jsonconfig import JSONConfig, config
 
 
-VERSION = "0.3 / 2023-10-29"
+VERSION = "0.4 / 2024-02-08"
 AUTHOR  = "Martin Junius"
 NAME    = "astro-countsubs"
 
