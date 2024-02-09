@@ -252,7 +252,7 @@ def print_filter_list(exp):
     print("Bias")
     print(f"   {bias}x")
     print("Settings")
-    for key in ("mode", "gain", "offset", "sensorcooling"):
+    for key in ("mode", "gain", "offset", "cooling"):
         print(f"   {key}: {config.get_setting(key)}", end="")
     print()
    
