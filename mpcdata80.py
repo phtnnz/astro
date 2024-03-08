@@ -306,9 +306,10 @@ class MPCData80:
                 # now check for fragments
                 if m.group(9):
                     perm_id = perm_id + '-' + m.group(9).upper()
-                if m.group(11):
-                    frag = (m.group(10) + m.group(11)).strip().upper()
-                perm_id = perm_id + '-' + frag
+                ##FIXME: regex doesn't contain a group 11
+                # if m.group(11):
+                #     frag = (m.group(10) + m.group(11)).strip().upper()
+                # perm_id = perm_id + '-' + frag
 
             if m.group(3):
                 y = MPCData80.decode_single(m.group(3)) * 100 + int(m.group(4))
