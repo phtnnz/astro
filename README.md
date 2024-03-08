@@ -181,7 +181,7 @@ Version 0.1 / 2023-07-26 / Martin Junius
 Retrieve Minor Planets Center observation data from IMAP server with ACK mails, locally stored ADES and MPC1992 report files, and MPC WAMO service
 
 ```
-usage: mpc-retrieve-ack [-h] [-v] [-d] [-n] [-l] [-f IMAP_FOLDER] [-L] [-m MSGS] [-M] [-A] [-o OUTPUT] [-C] [-O] [directory ...]
+usage: mpc-retrieve-ack [-h] [-v] [-d] [-n] [-l] [-f IMAP_FOLDER] [-L] [-m MSGS] [-M] [-A] [-o OUTPUT] [-C] [-O] [-D] [directory ...]
 
 Retrieve MPC ACK data
 
@@ -205,11 +205,12 @@ options:
                         read old MPC 1992 reports
   -A, --ades-reports    read new ADES (PSV format) reports
   -o OUTPUT, --output OUTPUT
-                        write JSON to OUTPUT file
+                        write JSON/CSV to OUTPUT file
   -C, --csv             use CSV output format (instead of JSON)
   -O, --overview        create overview of objects and observations
+  -D, --sort-by-date    sort overview by observation date (minus 12h)
 
-Version 1.1 / 2023-12-06 / Martin Junius
+Version 1.3 / 2024-02-02 / Martin Junius
 ```
 
 Config data for IMAP mailbox is stored in %APPDATA%/astro-python/imap-account.json
@@ -238,7 +239,12 @@ Retrieve all ADES report file from the given directory (recursively), query WAMO
 ```
 mpc-retrieve-ack.py -f ARCHIVE -O -o report.txt
 ```
-Retrieve all ACK mails from ARCHIVE folder, query WAMO, and write overview list to report.txt
+Retrieve all ACK mails from ARCHIVE folder, query WAMO, and write overview list to report.txt (sorted by object)
+
+```
+mpc-retrieve-ack.py -f ARCHIVE -O -o report.txt -D
+```
+Retrieve all ACK mails from ARCHIVE folder, query WAMO, and write overview list to report.txt (sorted by date/time)
 
 ```
 mpc-retrieve-ack-py -f ARCHIVE -C -o report.csv
