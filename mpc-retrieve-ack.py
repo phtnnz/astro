@@ -450,6 +450,12 @@ def retrieve_from_mpc_wamo(ids):
                 warning(f"id {id} = observation \"{ids[id]}\" deleted")
 
         if not m:
+            m = re.search(r'^The obsID \'([A-Za-z0-9]+)\' was flagged as a near-duplicate.$', line)
+            if m:
+                id = m.group(1)
+                warning(f"id {id} = observation \"{ids[id]}\" flagged near-duplicate")
+
+        if not m:
             warning("unknown response:", line)
             warning("corresponding observations:", ids)
 
