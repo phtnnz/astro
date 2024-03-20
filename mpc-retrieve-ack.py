@@ -32,10 +32,11 @@
 #       Some clean-up, improved output
 # Version 1.3 / 2024-02-02
 #       Added -D --sort-by-date option for overview output
+# Version 1.4 / 2024-03-20
+#       Somewhat refactored, using jsonconfig module
 
 import sys
 import os
-import errno
 import argparse
 import json
 import imaplib
@@ -52,21 +53,22 @@ ic.disable()
 # Local modules
 from verbose import verbose, warning, error
 from mpcdata80 import MPCData80
+from jsonconfig import JSONConfig, config
+
 
 
 NAME    = "mpc-retrieve-ack"
-VERSION = "1.3 / 2024-02-02"
+VERSION = "1.4 / 2024-03-20"
 AUTHOR  = "Martin Junius"
 
-CONFIG = "astro-python/imap-account.json"
+CONFIG = "imap-account.json"
 WAMO_URL = "https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo"
 MPEC_URL = "https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi"
 
 
 
-class Config:
-    """ JSON Config for IMAP account """
-
+class Options:
+    """ Global command line options """
     no_wamo     = False     # -n --no-wamo-requests
     list_folder = False     # -l --list-folders-only
     list_msgs   = False     # -L --list-messages-only
@@ -78,53 +80,30 @@ class Config:
     csv         = False     # -C --csv
     overview    = False     # -O --overview
     sort_by_date= False     # -D --sort-by-date
-    
+
+
+
+class RetrieveConfig(JSONConfig):
+    """ JSON Config for IMAP account """
+
     def __init__(self, file=None):
-        self.obj = None
-        self.file = file
-
-        # get JSON config from %APPDATA%
-        appdata = os.environ.get('APPDATA')
-        if not appdata:
-            error("environment APPDATA not set!")
-            sys.exit(errno.ENOENT)
-        self.appdata = appdata.replace("\\", "/")
-
-        ##FIXME: use os.path
-        self.config = self.appdata + "/" + (file if file else CONFIG)
-        verbose("config file", self.config)
-        if not os.path.isfile(self.config):
-            error("config file", self.config, 
-                  "doesn't exist, must contain:\n   ",
-                  '{ "server": "<FQDN>", "account": "<ACCOUNT>", "password": "<PASSWORD>", "inbox": "<INBOX>" }')
-            sys.exit(errno.ENOENT)
-
-
-
-    def read_json(self, file=None):
-        file = self.config if not file else file
-        with open(file, 'r') as f:
-            data = json.load(f)
-        self.obj = data
-
-
-    def write_json(self, file=None):
-        file = self.config if not file else file
-        with open(file, 'w') as f:
-            json.dump(self.obj, f, indent = 2)
-
+        super().__init__(file)
 
     def get_server(self):
-        return self.obj["server"]
+        return self.config["server"]
 
     def get_account(self):
-        return self.obj["account"]
+        return self.config["account"]
 
     def get_password(self):
-        return self.obj["password"]
+        return self.config["password"]
 
     def get_inbox(self):
-        return self.obj["inbox"]
+        return self.config["inbox"]
+
+
+# Get config with IMAP account data
+config = RetrieveConfig(CONFIG)
 
 
 
@@ -133,7 +112,6 @@ class Publication:
 
     def add_publication(pub):
             Publication.pub_cache[pub] = True
-
 
     def print_publication_list():
         if Publication.pub_cache:
@@ -163,7 +141,6 @@ def natural_keys(*args):
 
 class ObsOverview:
     """ Store all objects with respective list of observatons """
-    # obj_cache[object] = [ obs1, obs2, obs3, ... ]
     obj_cache = {}
 
     def add_obs(key1, key2, obs):
@@ -173,8 +150,6 @@ class ObsOverview:
         if not key2 in dict2:
             dict2[key2] = []
         dict2[key2].append(obs)
-
-
 
     def print_all():
         for key1, dict2 in sorted(ObsOverview.obj_cache.items(), key=natural_keys):
@@ -193,7 +168,6 @@ class ObsOverview:
 
 
 
-
 class JSONOutput:
     obj_cache = []
 
@@ -203,6 +177,7 @@ class JSONOutput:
     def write_json(file):
         with open(file, 'w') as f:
             json.dump(JSONOutput.obj_cache, f, indent = 4)
+
 
 
 class CSVOutput:
@@ -224,6 +199,7 @@ class CSVOutput:
 
 
 
+
 def retrieve_from_imap(cf):
     """ Connect to IMAP server and retrieve ACK mails """
 
@@ -231,7 +207,7 @@ def retrieve_from_imap(cf):
     server = imaplib.IMAP4_SSL(cf.get_server())
     server.login(cf.get_account(), cf.get_password())
 
-    if Config.list_folder:
+    if Options.list_folder:
         # Print list of mailboxes on server
         print("Folders on IMAP server", cf.get_server())
         code, mailboxes = server.list()
@@ -242,11 +218,11 @@ def retrieve_from_imap(cf):
         return
 
     # Select mailbox
-    verbose("from folder(s)", Config.inbox)
-    if Config.msgs_list:
-        verbose("messages", Config.msgs_list)
+    verbose("from folder(s)", Options.inbox)
+    if Options.msgs_list:
+        verbose("messages", Options.msgs_list)
 
-    for folder in Config.inbox.split(","):
+    for folder in Options.inbox.split(","):
         server.select(folder)
         retrieve_from_folder(server, folder)
 
@@ -260,8 +236,8 @@ def retrieve_from_folder(server, folder):
 
     typ, data = server.search(None, 'ALL')
     for num in data[0].split():
-        if Config.msgs_list:
-            if not int(num) in Config.msgs_list:
+        if Options.msgs_list:
+            if not int(num) in Options.msgs_list:
                 continue
 
         typ, data = server.fetch(num, '(RFC822)')
@@ -313,11 +289,11 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
                 if m:    
                     msg_ids[m.group(2)] = m.group(1)
 
-    if Config.list_msgs:
+    if Options.list_msgs:
         nstr = "[{:03d}]".format(msg_n)
         print(nstr, msg_date)
         print(" " * len(nstr), msg_subject)
-        if Config.csv:
+        if Options.csv:
             # CSV output: list of messages in mailbox
             CSVOutput.add_csv_fields([ "Folder", "Message#", "Date", "Subject" ])
             CSVOutput.add_csv_obj([msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_subject.removeprefix("Subject: ")])
@@ -338,7 +314,7 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
     wamo = retrieve_from_mpc_wamo(msg_ids)
     if wamo:
         ack_obj["_wamo"].append(wamo)
-        if Config.csv:
+        if Options.csv:
             for wobj in wamo:
                 # CSV output: list of messages in mailbox with complete WAMO data
                 CSVOutput.add_csv_fields([ "Folder", "Message#", "Date", "ACK", "id", "objId", "publication",
@@ -355,15 +331,15 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
                                         wobj["data"]["reference"], wobj["data"]["code"]
                                        ])
 
-        if Config.overview:
+        if Options.overview:
             for wobj in wamo:
-                if Config.sort_by_date:
+                if Options.sort_by_date:
                     ObsOverview.add_obs(wobj["data"]["date_minus12"], wobj["objID"], wobj["data"]["data"])
                 else:
                     ObsOverview.add_obs(wobj["objID"], wobj["data"]["date_minus12"], wobj["data"]["data"])
        
     else:
-        if Config.csv:
+        if Options.csv:
             for id, obs in msg_ids.items():
                 # CSV output: list of messages in mailbox with id and obs
                 CSVOutput.add_csv_fields([ "Folder", "Message#", "Date", "ACK", "id", "obs" ])
@@ -377,7 +353,7 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
 def retrieve_from_mpc_wamo(ids):
     """ Retrieve observation data from minorplanetcenter WAMO """
 
-    if Config.no_wamo:
+    if Options.no_wamo:
         return None
     if not ids:
         # empty ids dict
@@ -502,14 +478,14 @@ def process_file(file):
 
         # Old MPC 1992 report format
         if line1.startswith("COD "):
-            if Config.mpc1992:
+            if Options.mpc1992:
                 verbose("Processing MPC1992", file)
                 format = "MPC1992"
                 obj = process_mpc1992(fh, line1)
 
         # New ADES (PSV) report format
         elif line1 == "# version=2017":
-            if Config.ades:
+            if Options.ades:
                 verbose("Processing ADES", file)
                 format = "ADES"
                 obj = process_ades(fh, line1)
@@ -660,11 +636,8 @@ def str_to_list(s):
 
 
 def main():
-    cf = Config()
-    cf.read_json()
-
-    if cf.get_inbox():
-        Config.inbox = cf.get_inbox()
+    if config.get_inbox():
+        Options.inbox = config.get_inbox()
 
     arg = argparse.ArgumentParser(
         prog        = NAME,
@@ -674,7 +647,7 @@ def main():
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("-n", "--no-wamo-requests", action="store_true", help="don't request observations from minorplanetcenter.net WAMO")
     arg.add_argument("-l", "--list-folders-only", action="store_true", help="list folders on IMAP server only")
-    arg.add_argument("-f", "--imap-folder", help="IMAP folder(s) (comma-separated) to retrieve mails from, default "+Config.inbox)
+    arg.add_argument("-f", "--imap-folder", help="IMAP folder(s) (comma-separated) to retrieve mails from, default "+Options.inbox)
     arg.add_argument("-L", "--list-messages-only", action="store_true", help="list messages in IMAP folder only")
     arg.add_argument("-m", "--msgs", help="retrieve messages in MSGS range only, e.g. \"1-3,5\", default all")
     arg.add_argument("directory", nargs="*", help="read MPC reports from directory/file instead of ACK mails")
@@ -691,19 +664,19 @@ def main():
     if args.debug:
         ic.enable()
 
-    Config.no_wamo     = args.no_wamo_requests
-    Config.list_folder = args.list_folders_only
-    Config.list_msgs   = args.list_messages_only
+    Options.no_wamo     = args.no_wamo_requests
+    Options.list_folder = args.list_folders_only
+    Options.list_msgs   = args.list_messages_only
     if args.imap_folder:
-        Config.inbox = args.imap_folder
+        Options.inbox = args.imap_folder
     if args.msgs:
-        Config.msgs_list = str_to_list(args.msgs)
-    Config.mpc1992     = args.mpc1992_reports
-    Config.ades        = args.ades_reports
-    Config.output      = args.output
-    Config.csv         = args.csv
-    Config.overview    = args.overview
-    Config.sort_by_date= args.sort_by_date
+        Options.msgs_list = str_to_list(args.msgs)
+    Options.mpc1992     = args.mpc1992_reports
+    Options.ades        = args.ades_reports
+    Options.output      = args.output
+    Options.csv         = args.csv
+    Options.overview    = args.overview
+    Options.sort_by_date= args.sort_by_date
 
     if args.directory:
         for dir in args.directory:
@@ -716,20 +689,20 @@ def main():
             if os.path.isfile(dir):
                 process_file(dir)
     else:
-        retrieve_from_imap(cf)
+        retrieve_from_imap(config)
 
 
-    if Config.overview and not Config.output:
+    if Options.overview and not Options.output:
         ObsOverview.print_all()
         Publication.print_publication_list()
 
-    if Config.output:
-        if Config.overview:
-            ObsOverview.write_overview(Config.output)
-        elif Config.csv:
-            CSVOutput.write_csv(Config.output)
+    if Options.output:
+        if Options.overview:
+            ObsOverview.write_overview(Options.output)
+        elif Options.csv:
+            CSVOutput.write_csv(Options.output)
         else:
-            JSONOutput.write_json(Config.output)
+            JSONOutput.write_json(Options.output)
 
 
 
