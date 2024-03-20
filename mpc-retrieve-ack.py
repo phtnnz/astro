@@ -159,12 +159,12 @@ class ObsOverview:
 
         for key1, dict2 in sorted(ObsOverview.obj_cache.items(), key=natural_keys):
             print(key1)
-            key1_count = key1_count + 1
+            key1_count += 1
 
             for key2, list in sorted(dict2.items(), key=natural_keys):
                 print("   ", key2)
-                key2_count = key2_count + 1
-                obs_count = obs_count + len(list)
+                key2_count += 1
+                obs_count += len(list)
 
                 for obs in list:
                     print("       ", obs)
