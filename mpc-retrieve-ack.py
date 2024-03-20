@@ -151,13 +151,31 @@ class ObsOverview:
             dict2[key2] = []
         dict2[key2].append(obs)
 
+
     def print_all():
+        key1_count = 0
+        key2_count = 0
+        obs_count = 0
+
         for key1, dict2 in sorted(ObsOverview.obj_cache.items(), key=natural_keys):
             print(key1)
+            key1_count = key1_count + 1
+
             for key2, list in sorted(dict2.items(), key=natural_keys):
                 print("   ", key2)
+                key2_count = key2_count + 1
+                obs_count = obs_count + len(list)
+
                 for obs in list:
                     print("       ", obs)
+
+        print()
+        if Options.sort_by_date:
+            print(f"Total observation dates:   {key1_count}")
+            print(f"Total single observations: {obs_count}")
+        else:
+            print(f"Total objects:             {key1_count}")
+            print(f"Total single observations: {obs_count}")
 
     
     def write_overview(file):
