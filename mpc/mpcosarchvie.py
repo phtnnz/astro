@@ -39,6 +39,7 @@
 
 import argparse
 import re
+import requests
 
 # The following libs must be installed with pip
 from icecream import ic
@@ -48,10 +49,18 @@ ic.disable()
 from verbose import verbose, warning, error
 
 
-global VERSION, AUTHOR, NAME
 VERSION = "0.0 / 2024-03-24"
 AUTHOR  = "Martin Junius"
 NAME    = "mpcosarchive"
+
+ARCHIVE_URL = "https://www.minorplanetcenter.net/iau/ECS/MPCArchive/MPCArchive.html"
+
+
+class MPCOSArchive:
+    """ MPC/MPO/MPS archive processing """
+
+    def __init__(self, url = ARCHIVE_URL):
+        ic(url)
 
 
 
