@@ -29,7 +29,6 @@ ic.disable()
 from verbose import verbose, warning, error
 
 
-global VERSION, AUTHOR, NAME
 VERSION = "0.0 / 2024-xx-xx"
 AUTHOR  = "Martin Junius"
 NAME    = "TEMPLATE"
