@@ -92,11 +92,12 @@ def date_yesterday():
 
 
 def scan_data_dir(datadir, zipdir, date=None):
+    # TARGET/YYYY-MM-DD directories
     dirs = [d for d in os.listdir(datadir) if os.path.isdir(os.path.join(datadir, d, date))]
     ic(dirs)
     if dirs:
         scan_targets(datadir, zipdir, dirs, date)
-
+    # TARGET-YYYY-MM-DD directories
     dirs = [d.replace("-" + date, "") for d in os.listdir(datadir) if d.endswith(date)]
     ic(dirs)
     if dirs:
@@ -115,7 +116,6 @@ def scan_targets(datadir, zipdir, targets, date):
             verbose("7z file", zipfile, "already exists")
         else:
             verbose("7z file", zipfile, "to be created ...")
-
             # TARGET-YYYY-MM-DD/ directories
             if os.path.isdir(os.path.join(datadir, target + "-" + date)):
                 verbose(f"{time_now()} archiving {target}/{date}")
