@@ -34,15 +34,22 @@ import platform
 import re
 # The following libs must be installed with pip
 import psutil
+from icecream import ic
+# Disable debugging
+ic.disable()
+
+# Local modules
+from verbose import verbose, warning, error
 
 
-global VERSION, AUTHOR
-VERSION = "0.1 / 2023-07-26"
+
+NAME    = "nina-zip-last-night"
+VERSION = "0.2 / 2024-05-01"
 AUTHOR  = "Martin Junius"
 
-global DATADIR, ZIPDIR, ZIPPROG, TIMER
+DRYRUN  = False
 DATADIR = "D:/Users/remote/Documents/NINA-Data"
-# use %ONEDRIVE%
+# FIXME: use %ONEDRIVE%
 ZIPDIR  = "C:/Users/remote/OneDrive/Remote-Upload"
 ZIPPROG = "C:/Program Files/7-Zip/7z.exe"
 TIMER   = 60
@@ -67,9 +74,8 @@ def set_priority():
         prio = psutil.IDLE_PRIORITY_CLASS           # low priority
         prio0 = proc.nice()
         proc.nice(prio)
-        if OPT_V:
-            print(proc)
-            print("System {}, setting process priority {} -> {}".format(system, prio0, prio))
+        verbose(f"{proc}")
+        verbose(f"system {system}, setting process priority {prio0} -> {prio}")
 
 
 
@@ -83,12 +89,12 @@ def date_yesterday():
 
 def scan_data_dir(datadir, zipdir, date=None):
     dirs = [d for d in os.listdir(datadir) if os.path.isdir(os.path.join(datadir, d, date))]
-    print(dirs)
+    ic(dirs)
     if dirs:
         scan_targets(datadir, zipdir, dirs, date)
 
     dirs = [d.replace("-" + date, "") for d in os.listdir(datadir) if d.endswith(date)]
-    print(dirs)
+    ic(dirs)
     if dirs:
         scan_targets(datadir, zipdir, dirs, date)
 
@@ -96,31 +102,27 @@ def scan_data_dir(datadir, zipdir, date=None):
 
 def scan_targets(datadir, zipdir, targets, date):
     for target in targets:
-        if OPT_V:
-            print("Target to archive:", target)
+        verbose("Target to archive:", target)
         zipfile1 = os.path.join(zipdir, target + ".7z")
         zipfile  = os.path.join(zipdir, target + "-" + date + ".7z")
         if os.path.exists(zipfile1):
-            if OPT_V:
-                print("  Zip file", zipfile1, "already exists")
+            verbose("7z file", zipfile1, "already exists")
         elif os.path.exists(zipfile):
-            if OPT_V:
-                print("  Zip file", zipfile, "already exists")
+            verbose("7z file", zipfile, "already exists")
         else:
-            if OPT_V:
-                print("  Zip file", zipfile, "must be created")
+            verbose("7z file", zipfile, "to be created ...")
 
             # TARGET-YYYY-MM-DD/ directories
             if os.path.isdir(os.path.join(datadir, target + "-" + date)):
-                print(f"{time_now()} archiving {target}/{date}")
+                verbose(f"{time_now()} archiving {target}/{date}")
                 create_zip_archive(target + "-" + date, datadir, zipfile)
             # TARGET/YYYY-MM-DD/ directories
             elif os.path.isdir(os.path.join(datadir, target, date)):
-                print(f"{time_now()} archiving {target}-{date}")
+                verbose(f"{time_now()} archiving {target}-{date}")
                 create_zip_archive(os.path.join(target, date), datadir, zipfile)
             # Unsupported
             else:
-                print(f"No supported directory structure for {target} {date} found!")            
+                warning(f"No supported directory structure for {target} {date} found!")            
 
 
 
@@ -132,24 +134,24 @@ def create_zip_archive(target, datadir, zipfile):
     #   -r      recurse subdirectories
     #   -spf    use fully qualified file paths
     args7z = [ ZIPPROG, "a", "-t7z", "-mx7", "-r", "-spf", zipfile, target ]
-    print("Run", " ".join(args7z))
-    if not OPT_N:
+    verbose("run", " ".join(args7z))
+    if not DRYRUN:
         subprocess.run(args=args7z, shell=False, cwd=datadir)
 
 
 
 def main():
-    global OPT_V, OPT_N
-    global DATADIR, ZIPDIR, ZIPPROG, TIMER
-
+    global DATADIR, ZIPDIR, ZIPPROG
+    
     arg = argparse.ArgumentParser(
-        prog        = "nina-zip-last-night",
+        prog        = NAME,
         description = "Zip target data in N.I.N.A data directory from last night",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
+    arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("-n", "--no-action", action="store_true", help="dry run")
     arg.add_argument("-l", "--low-priority", action="store_true", help="set process priority to low")
-    arg.add_argument("-d", "--date", help="archive target/DATE, default last night "+date_yesterday())
+    arg.add_argument("--date", help="archive target/DATE, default last night "+date_yesterday())
     arg.add_argument("-t", "--targets", help="archive TARGET[,TARGET] only")
     arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+DATADIR+")")
     arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+ZIPDIR+")")
@@ -158,8 +160,13 @@ def main():
     # arg.add_argument("filename", nargs="*", help="filename")
     args = arg.parse_args()
 
-    OPT_V = args.verbose
-    OPT_N = args.no_action
+    if args.verbose:
+        verbose.set_prog(NAME)
+        verbose.enable()
+    if args.debug:
+        ic.enable()
+
+    DRYRUN = args.no_action
 
     if args.data_dir:
         DATADIR = args.data_dir
@@ -173,11 +180,10 @@ def main():
     ZIPPROG = os.path.abspath(ZIPPROG)
 
     date = args.date if args.date else date_yesterday()
-    if OPT_V:
-        print("Data directory =", DATADIR)
-        print("ZIP directory  =", ZIPDIR)
-        print("ZIP program    =", ZIPPROG)
-        print("Date           =", date)
+    verbose("Data directory =", DATADIR)
+    verbose("ZIP directory  =", ZIPDIR)
+    verbose("ZIP program    =", ZIPPROG)
+    verbose("Date           =", date)
 
     # Set process priority
     if args.low_priority:
