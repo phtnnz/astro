@@ -23,14 +23,15 @@
 # ChangeLog
 # Version 0.1 / 2023-07-26
 #       First version, copy of nina-zip-ready-data
+# Version 0.2 / 2024-05-01
+#       Support TARGET-YYYY-MM-DD/ directory names
 
-import sys
 import os
 import argparse
 import subprocess
-import time
 import datetime
 import platform
+import re
 # The following libs must be installed with pip
 import psutil
 
@@ -79,10 +80,17 @@ def date_yesterday():
     return (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
 
 
+
 def scan_data_dir(datadir, zipdir, date=None):
     dirs = [d for d in os.listdir(datadir) if os.path.isdir(os.path.join(datadir, d, date))]
-    # print(dirs)
-    scan_targets(datadir, zipdir, dirs, date)
+    print(dirs)
+    if dirs:
+        scan_targets(datadir, zipdir, dirs, date)
+
+    dirs = [d.replace("-" + date, "") for d in os.listdir(datadir) if d.endswith(date)]
+    print(dirs)
+    if dirs:
+        scan_targets(datadir, zipdir, dirs, date)
 
 
 
@@ -101,8 +109,18 @@ def scan_targets(datadir, zipdir, targets, date):
         else:
             if OPT_V:
                 print("  Zip file", zipfile, "must be created")
-            print("{} archiving target {}/{}".format(time_now(), target, date))
-            create_zip_archive(os.path.join(target, date), datadir, zipfile)
+
+            # TARGET-YYYY-MM-DD/ directories
+            if os.path.isdir(os.path.join(datadir, target + "-" + date)):
+                print(f"{time_now()} archiving {target}/{date}")
+                create_zip_archive(target + "-" + date, datadir, zipfile)
+            # TARGET/YYYY-MM-DD/ directories
+            elif os.path.isdir(os.path.join(datadir, target, date)):
+                print(f"{time_now()} archiving {target}-{date}")
+                create_zip_archive(os.path.join(target, date), datadir, zipfile)
+            # Unsupported
+            else:
+                print(f"No supported directory structure for {target} {date} found!")            
 
 
 
