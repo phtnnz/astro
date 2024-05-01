@@ -47,12 +47,16 @@ NAME    = "nina-zip-last-night"
 VERSION = "0.2 / 2024-05-01"
 AUTHOR  = "Martin Junius"
 
-DRYRUN  = False
-DATADIR = "D:/Users/remote/Documents/NINA-Data"
-# FIXME: use %ONEDRIVE%
-ZIPDIR  = "C:/Users/remote/OneDrive/Remote-Upload"
-ZIPPROG = "C:/Program Files/7-Zip/7z.exe"
-TIMER   = 60
+
+
+# options
+class Options:
+    no_action = False                                       # -n --no_action
+    datadir   = "D:/Users/remote/Documents/NINA-Data"
+    # FIXME: use %ONEDRIVE%
+    zipdir   = "C:/Users/remote/OneDrive/Remote-Upload"
+    zipprog  = "C:/Program Files/7-Zip/7z.exe"
+    timer    = 60
 
 
 
@@ -133,16 +137,15 @@ def create_zip_archive(target, datadir, zipfile):
     #   -mx7    set compression level to maximum (5=normal, 7=maximum, 9=ultra)
     #   -r      recurse subdirectories
     #   -spf    use fully qualified file paths
-    args7z = [ ZIPPROG, "a", "-t7z", "-mx7", "-r", "-spf", zipfile, target ]
+    args7z = [ Options.zipprog, "a", "-t7z", "-mx7", "-r", "-spf", zipfile, target ]
     verbose("run", " ".join(args7z))
-    if not DRYRUN:
+    if not Options.no_action:
         subprocess.run(args=args7z, shell=False, cwd=datadir)
 
 
 
 def main():
-    global DATADIR, ZIPDIR, ZIPPROG
-    
+
     arg = argparse.ArgumentParser(
         prog        = NAME,
         description = "Zip target data in N.I.N.A data directory from last night",
@@ -153,9 +156,9 @@ def main():
     arg.add_argument("-l", "--low-priority", action="store_true", help="set process priority to low")
     arg.add_argument("--date", help="archive target/DATE, default last night "+date_yesterday())
     arg.add_argument("-t", "--targets", help="archive TARGET[,TARGET] only")
-    arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+DATADIR+")")
-    arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+ZIPDIR+")")
-    arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+ZIPPROG+")")
+    arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+Options.datadir+")")
+    arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+Options.zipdir+")")
+    arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+Options.zipprog+")")
     # nargs="+" for min 1 filename argument
     # arg.add_argument("filename", nargs="*", help="filename")
     args = arg.parse_args()
@@ -166,23 +169,23 @@ def main():
     if args.debug:
         ic.enable()
 
-    DRYRUN = args.no_action
+    Options.no_action = args.no_action
 
     if args.data_dir:
-        DATADIR = args.data_dir
+        Options.datadir = args.data_dir
     if args.zip_dir:
-        ZIPDIR  = args.zip_dir
+        Options.zipdir  = args.zip_dir
     if args.zip_prog:
-        ZIPPROG = args.zip_prog
+        Options.zipprog = args.zip_prog
 
-    DATADIR = os.path.abspath(DATADIR)
-    ZIPDIR  = os.path.abspath(ZIPDIR)
-    ZIPPROG = os.path.abspath(ZIPPROG)
+    Options.datadir = os.path.abspath(Options.datadir)
+    Options.zipdir  = os.path.abspath(Options.zipdir)
+    Options.zipprog = os.path.abspath(Options.zipprog)
 
     date = args.date if args.date else date_yesterday()
-    verbose("Data directory =", DATADIR)
-    verbose("ZIP directory  =", ZIPDIR)
-    verbose("ZIP program    =", ZIPPROG)
+    verbose("Data directory =", Options.datadir)
+    verbose("ZIP directory  =", Options.zipdir)
+    verbose("ZIP program    =", Options.zipprog)
     verbose("Date           =", date)
 
     # Set process priority
@@ -191,9 +194,9 @@ def main():
 
     if args.targets:
         targets = args.targets.split(",")
-        scan_targets(DATADIR, ZIPDIR, targets, date)
+        scan_targets(Options.datadir, Options.zipdir, targets, date)
     else:
-        scan_data_dir(DATADIR, ZIPDIR, date)
+        scan_data_dir(Options.datadir, Options.zipdir, date)
 
 
 
