@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!python
 
 # Copyright 2023-2024 Martin Junius
 #
@@ -31,7 +31,7 @@ import argparse
 import subprocess
 import datetime
 import platform
-import re
+import sys
 # The following libs must be installed with pip
 import psutil
 from icecream import ic
@@ -168,6 +168,7 @@ def main():
         verbose.enable()
     if args.debug:
         ic.enable()
+        ic(sys.version_info)
 
     Options.no_action = args.no_action
 
