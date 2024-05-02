@@ -98,7 +98,7 @@ def scan_data_dir(datadir, zipdir, date=None):
     if dirs:
         scan_targets(datadir, zipdir, dirs, date)
     # TARGET-YYYY-MM-DD directories
-    dirs = [d.replace("-" + date, "") for d in os.listdir(datadir) if d.endswith(date)]
+    dirs = [d.replace("-" + date, "").replace("_" + date, "") for d in os.listdir(datadir) if d.endswith(date)]
     ic(dirs)
     if dirs:
         scan_targets(datadir, zipdir, dirs, date)
@@ -118,11 +118,15 @@ def scan_targets(datadir, zipdir, targets, date):
             verbose("7z file", zipfile, "to be created ...")
             # TARGET-YYYY-MM-DD/ directories
             if os.path.isdir(os.path.join(datadir, target + "-" + date)):
-                verbose(f"{time_now()} archiving {target}/{date}")
+                verbose(f"{time_now()} archiving {target}-{date}")
                 create_zip_archive(target + "-" + date, datadir, zipfile)
+            # TARGET_YYYY-MM-DD/ directories
+            elif os.path.isdir(os.path.join(datadir, target + "_" + date)):
+                verbose(f"{time_now()} archiving {target}_{date}")
+                create_zip_archive(target + "_" + date, datadir, zipfile)
             # TARGET/YYYY-MM-DD/ directories
             elif os.path.isdir(os.path.join(datadir, target, date)):
-                verbose(f"{time_now()} archiving {target}-{date}")
+                verbose(f"{time_now()} archiving {target}/{date}")
                 create_zip_archive(os.path.join(target, date), datadir, zipfile)
             # Unsupported
             else:
