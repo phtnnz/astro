@@ -56,7 +56,7 @@ class Options:
     # FIXME: use %ONEDRIVE%
     zipdir   = "C:/Users/remote/OneDrive/Remote-Upload"
     zipprog  = "C:/Program Files/7-Zip/7z.exe"
-    timer    = 60
+    zipmx    = 5                                            # normal compression, -m --max => 7 = max compression
 
 
 
@@ -141,7 +141,7 @@ def create_zip_archive(target, datadir, zipfile):
     #   -mx7    set compression level to maximum (5=normal, 7=maximum, 9=ultra)
     #   -r      recurse subdirectories
     #   -spf    use fully qualified file paths
-    args7z = [ Options.zipprog, "a", "-t7z", "-mx7", "-r", "-spf", zipfile, target ]
+    args7z = [ Options.zipprog, "a", "-t7z", f"-mx{Options.zipmx}", "-r", "-spf", zipfile, target ]
     verbose("run", " ".join(args7z))
     if not Options.no_action:
         subprocess.run(args=args7z, shell=False, cwd=datadir)
@@ -163,6 +163,7 @@ def main():
     arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+Options.datadir+")")
     arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+Options.zipdir+")")
     arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+Options.zipprog+")")
+    arg.add_argument("-m", "--zip_max", action="store_true", help="7-zip max compression -mx7")
     # nargs="+" for min 1 filename argument
     # arg.add_argument("filename", nargs="*", help="filename")
     args = arg.parse_args()
@@ -182,6 +183,8 @@ def main():
         Options.zipdir  = args.zip_dir
     if args.zip_prog:
         Options.zipprog = args.zip_prog
+    if args.zip_max:
+        Options.zipmx   = 7
 
     Options.datadir = os.path.abspath(Options.datadir)
     Options.zipdir  = os.path.abspath(Options.zipdir)
