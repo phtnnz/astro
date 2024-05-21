@@ -181,7 +181,6 @@ class MPCData80:
         packed_ref     = self.get_col(73, 77)    # publication reference
         code           = self.get_col(78, 80)
 
-        ic(self)
         ic(packed_id, discovery, note1, note2, date, ra, dec, mag, band, cat, packed_ref, code)
 
         (perm_id, prov_id) = MPCData80.unpack_id(packed_id)
@@ -267,6 +266,7 @@ class MPCData80:
         perm_id = ""
         prov_id = ""
 
+        ic(packed)
         # Regex #1
         # Minor planet
         m = re.search(r'^(?: {5}|([0-9A-Za-z])(\d{4})|(~[0-9A-Za-z]{4}))' +
@@ -275,7 +275,7 @@ class MPCData80:
         #                        ^(4)   ^(5)   ^(6)      ^(7)         ^(8)   ^(9)
         if m:
             ic("match regex #1")
-            ic(m)
+            ic(m, m.groups())
             # permId
             if m.group(1) or m.group(3):
                 if m.group(1):
@@ -298,12 +298,14 @@ class MPCData80:
         # Regex #2
         # Comets
         m = re.search(r'^(?: {4}|(\d{4}))([APCDXI])' +
-        #                         ^(1)    ^(3)
-                      r'(?:([0-9A-Za-z])(\d{2})([A-HJ-Y])([a-zA-Z0-9])(\d)(?:0|([A-Z])|([a-z])))$', packed)
+        #                         ^(1)    ^(2)
+        ## regex fixed, 7 spaces are also an option
+        #              r'(?:([0-9A-Za-z])(\d{2})([A-HJ-Y])([a-zA-Z0-9])(\d)(?:0|([A-Z])|([a-z])))$', packed)
+                      r'(?: {7}|([0-9A-Za-z])(\d{2})([A-HJ-Y])([a-zA-Z0-9])(\d)(?:0|([A-Z])|([a-z])))$', packed)
         #                   ^(3)         ^(4)   ^(5)      ^(6)         ^(7)     ^(8)    ^(9)
         if m:
             ic("match regex #2")
-            ic(m)
+            ic(m, m.groups())
             type = m.group(2)
             if m.group(1):
                 n = int(m.group(1))
