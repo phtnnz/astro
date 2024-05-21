@@ -51,10 +51,10 @@ from icecream import ic
 ic.disable()
 
 # Local modules
-from verbose import verbose, warning, error
-from mpcdata80 import MPCData80
-from jsonconfig import JSONConfig, config
+from verbose          import verbose, warning, error
+from jsonconfig       import JSONConfig, config
 from mpc.mpcosarchive import MPCOSArchive
+from mpc.mpcdata80    import MPCData80
 
 
 
