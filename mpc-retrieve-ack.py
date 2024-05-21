@@ -114,15 +114,23 @@ class Publication:
     def add_publication(pub):
             Publication.pub_cache[pub] = True
 
+
     def print_publication_list():
         if Publication.pub_cache:
+            arc = MPCOSArchive()
+
             print("\nPublished:")
             for id in Publication.pub_cache.keys():
                 m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
                 if m:
                     print(id, ":", retrieve_from_mpc_mpec(m.group(1)))
                 else:
-                    print(id)
+                    r = arc.search_pub(id)
+                    if r:
+                        print(id, ":", r["pdf"])
+                    else:
+                        print(id, ": unknown")
+
 
 
 # Adapted from https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside
