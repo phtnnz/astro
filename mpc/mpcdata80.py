@@ -46,9 +46,11 @@
 
 
 # ChangeLog
-# Version 0.1 / 2023-1013
+# Version 0.1 / 2023-10-13
 #       Moved Data80 class from mpc-retrieve-ack to here, renamed to MPCData80
 #       Can be imported as a module or run as a command line script
+# Version 0.2 / 2024-05-21
+#       Moved to mpc/mpcdata80, some fixes
 
 import argparse
 import re
@@ -64,7 +66,7 @@ from verbose import verbose
 
 
 global VERSION, AUTHOR, NAME
-VERSION = "0.1 / 2023-10-13"
+VERSION = "0.2 / 2024-05-21"
 AUTHOR  = "Martin Junius"
 NAME    = "mpcdata80"
 
