@@ -267,12 +267,14 @@ class MPCData80:
         perm_id = ""
         prov_id = ""
 
+        # Regex #1
         # Minor planet
         m = re.search(r'^(?: {5}|([0-9A-Za-z])(\d{4})|(~[0-9A-Za-z]{4}))' +
         #                         ^(1)         ^(2)    ^(3)
                       r'(?: {7}|([I-K])(\d{2})([A-HJ-Y])([a-zA-Z0-9])(\d)(?:([A-HJ-Z])|0))$', packed)
         #                        ^(4)   ^(5)   ^(6)      ^(7)         ^(8)   ^(9)
         if m:
+            ic("match regex #1")
             ic(m)
             # permId
             if m.group(1) or m.group(3):
@@ -293,12 +295,15 @@ class MPCData80:
                 else:           # comet ID -- use A/
                     prov_id =  'A/' + y + ' ' + m.group(6) + ns
     
+        # Regex #2
         # Comets
         m = re.search(r'^(?: {4}|(\d{4}))([APCDXI])' +
         #                         ^(1)    ^(3)
                       r'(?:([0-9A-Za-z])(\d{2})([A-HJ-Y])([a-zA-Z0-9])(\d)(?:0|([A-Z])|([a-z])))$', packed)
         #                   ^(3)         ^(4)   ^(5)      ^(6)         ^(7)     ^(8)    ^(9)
         if m:
+            ic("match regex #2")
+            ic(m)
             type = m.group(2)
             if m.group(1):
                 n = int(m.group(1))
