@@ -24,6 +24,10 @@
 # Version 0.4 / 2024-02-08
 #       Get settings from JSON config, -D --extra-data option removed,
 #       output calibration data also for text output
+# Version 0.5 / 2024-06-18
+#       New option --calibration-set to select calibration data set from JSON config
+#       New option -d --debug
+#       Support OBJECT_YYYY-MM-DD subdirs
 
 import os
 import argparse
@@ -40,7 +44,7 @@ from verbose import verbose, error
 from jsonconfig import JSONConfig, config
 
 
-VERSION = "0.4 / 2024-02-08"
+VERSION = "0.5 / 2024-06-18"
 AUTHOR  = "Martin Junius"
 NAME    = "astro-countsubs"
 
@@ -57,8 +61,8 @@ ASTROBIN_FIELDS = [ "date", "filter", "number", "duration", "binning", "gain", "
 
 
 KEY_FILTER_SETS = "filter sets"
-KEY_CALIBRATION = "calibration"
-KEY_SETTINGS    = "settings"
+KEY_CALIBRATION_SETS = "calibration sets"
+KEY_SETTINGS = "settings"
 
 
 # Read config with filter sets and calibration frames
@@ -79,34 +83,39 @@ class AstroConfig(JSONConfig):
             error(f"no key \"{KEY_FILTER_SETS}\" in config")
 
 
-    def get_calibration(self, mastertype, param="*"):
+    def get_calibration(self, calibration_set, mastertype, param="*"):
         obj = self.get_json()
-        if KEY_CALIBRATION in obj:
-            cal = obj[KEY_CALIBRATION]
-            if mastertype in cal:
-                return cal[mastertype][param]
+        if KEY_CALIBRATION_SETS in obj:
+            sets = obj[KEY_CALIBRATION_SETS]
+            if calibration_set in sets:
+                cal = sets[calibration_set]
+                if mastertype in cal:
+                    return cal[mastertype][param]
+                else:
+                    ##FIXME: warning()
+                    verbose(f"unknown mastertype \"{mastertype}\"")
+                    return ""
             else:
-                ##FIXME: warning()
-                verbose(f"unknown mastertype \"{mastertype}\"")
-                return ""
+                error(f"unknown calibration set \"{calibration_set}\"")
         else:
-            error(f"no key \"{KEY_CALIBRATION}\" in config")
+            error(f"no key \"{KEY_CALIBRATION_SETS}\" in config")
 
 
-    def get_settings(self):
+    def get_settings(self, calibration_set):
         obj = self.get_json()
-        if not KEY_CALIBRATION in obj:
-            error(f"no key \"{KEY_CALIBRATION}\" in config")
-
-        cal = obj[KEY_CALIBRATION]
+        if not KEY_CALIBRATION_SETS in obj:
+            error(f"no key \"{KEY_CALIBRATION_SETS}\" in config")
+        sets = obj[KEY_CALIBRATION_SETS]
+        if calibration_set in sets:
+            cal = sets[calibration_set]
         if not KEY_SETTINGS in cal:
             error(f"no key \"{KEY_SETTINGS}\" in config")
 
         return cal[KEY_SETTINGS]
 
 
-    def get_setting(self, key):
-        settings = self.get_settings()
+    def get_setting(self, calibration_set, key):
+        settings = self.get_settings(calibration_set)
         if key in settings:
             return settings[key]
         else:
@@ -123,6 +132,7 @@ class CSVOutput:
     enabled = False
     output = None
     filter_set = None
+    calibration_set = None
 
     obj_cache = []
     fields = ASTROBIN_FIELDS
@@ -145,12 +155,17 @@ class CSVOutput:
 def walk_the_dir(dir):
     exposures = {}
 
+    if not os.path.isdir(dir):
+        error(f"no such directory {dir}")
+
     for dirName, subdirList, fileList in os.walk(dir):
         verbose('Found directory: %s' % dirName)
         # Test for Astro dir ...
         m = re.search(r'[\\/](\d\d\d\d-\d\d-\d\d)[\\/]LIGHT$', dirName)
         if not m:
             m = re.search(r'[\\/](\d\d\d\d-\d\d-\d\d)$', dirName)
+        if not m:
+            m = re.search(r'[\\/].+_(\d\d\d\d-\d\d-\d\d)$', dirName)
         if m:
             date = m.group(1)
             verbose("  Date:", date)
@@ -187,10 +202,12 @@ def walk_the_dir(dir):
 
 
 def print_filter_list(exp):
+    calibration_set = CSVOutput.calibration_set
+
     total = {}
     darks = {}
     flats = {}
-    bias = config.get_calibration("masterbias")
+    bias = config.get_calibration(calibration_set, "masterbias")
 
     for f in FILTER:
         total[f] = {}
@@ -207,8 +224,8 @@ def print_filter_list(exp):
                 time = int(time)
                 print(f" {n}x {time}s", end="")
 
-                darks[str(time)+"s"] = config.get_calibration("masterdark", str(time)+"s")
-                flats[f] = config.get_calibration("masterflat", f)
+                darks[str(time)+"s"] = config.get_calibration(calibration_set, "masterdark", str(time)+"s")
+                flats[f] = config.get_calibration(calibration_set, "masterflat", f)
 
                 if time in total[f]:
                     total[f][time] += n
@@ -253,17 +270,18 @@ def print_filter_list(exp):
     print(f"   {bias}x")
     print("Settings")
     for key in ("mode", "gain", "offset", "cooling"):
-        print(f"   {key}: {config.get_setting(key)}", end="")
+        print(f"   {key}: {extra(key)}", end="")
     print()
    
 
 
 def extra(key):
-    return config.get_setting(key)
+    return config.get_setting(CSVOutput.calibration_set, key)
 
 
 def csv_list(exp):
     filter_set = CSVOutput.filter_set
+    calibration_set = CSVOutput.calibration_set
 
     # CSV format as required by the Astrobin upload
     # For documentation see https://welcome.astrobin.com/importing-acquisitions-from-csv/
@@ -280,10 +298,10 @@ def csv_list(exp):
                 n = exp[date][f][time]
                 time = int(time)
                 filter = config.get_filter_id(filter_set, f)
-                darks = config.get_calibration("masterdark", str(time)+"s")
-                flats = config.get_calibration("masterflat", f)
+                darks = config.get_calibration(calibration_set, "masterdark", str(time)+"s")
+                flats = config.get_calibration(calibration_set, "masterflat", f)
                 # flatdarks = config.get_calibration("masterflatdark", f)
-                bias = config.get_calibration("masterbias")
+                bias = config.get_calibration(calibration_set, "masterbias")
                 # fields = [  date, filter, n, time, 
                 #             extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
                 #             darks, flats, 0, bias,
@@ -306,12 +324,14 @@ def main():
         description = "Traverse directory and count N.I.N.A subs",
         epilog      = "Version: " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
+    arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("-x", "--exclude", help="exclude filter, e.g. Ha,SII")
     arg.add_argument("-f", "--filter", help="filter list, e.g. L,R,G.B")
     arg.add_argument("-t", "--exposure-time", help="exposure time (sec) if not present in filename")
     arg.add_argument("-C", "--csv", action="store_true", help="output CSV list")
     arg.add_argument("-o", "--output", help="write to file OUTPUT")
     arg.add_argument("-F", "--filter-set", help="name of filter set for Astrobin CSV (see config)")
+    arg.add_argument("--calibration-set", help="name of calibration set")
     arg.add_argument("dirname", help="directory name")
 
     args  = arg.parse_args()
@@ -319,6 +339,8 @@ def main():
     verbose.set_prog(NAME)
     if args.verbose:
         verbose.enable()
+    if args.debug:
+        ic.enable()
 
     global FILTER, EXPOSURE
     EXPOSURE = args.exposure_time
@@ -336,6 +358,7 @@ def main():
     CSVOutput.enabled = args.csv
     CSVOutput.output  = args.output
     CSVOutput.filter_set = args.filter_set
+    CSVOutput.calibration_set = args.calibration_set
 
     # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
     # see here https://bugs.python.org/issue39845
