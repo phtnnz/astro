@@ -96,7 +96,7 @@ Use the batch files/wrappers with full path in N.I.N.A's "External Script" instr
 Count sub frames in directory structure and compute total exposure time. Relies on YYYY-MM-DD sub-directories and FITS filenames containing filter name and exposure time.
 
 ```
-usage: astro-countsubs [-h] [-v] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] dirname
+usage: astro-countsubs [-h] [-v] [-d] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] [-C] [-o OUTPUT] [-F FILTER_SET] [--calibration-set CALIBRATION_SET] dirname
 
 Traverse directory and count N.I.N.A subs
 
@@ -106,14 +106,22 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -v, --verbose         debug messages
+  -d, --debug           more debug messages
   -x EXCLUDE, --exclude EXCLUDE
                         exclude filter, e.g. Ha,SII
   -f FILTER, --filter FILTER
                         filter list, e.g. L,R,G.B
   -t EXPOSURE_TIME, --exposure-time EXPOSURE_TIME
                         exposure time (sec) if not present in filename
+  -C, --csv             output CSV list
+  -o OUTPUT, --output OUTPUT
+                        write to file OUTPUT
+  -F FILTER_SET, --filter-set FILTER_SET
+                        name of filter set for Astrobin CSV (see config)
+  --calibration-set CALIBRATION_SET
+                        name of calibration set
 
-Version: 0.2 / 2023-10-29 / Martin Junius
+Version: 0.5 / 2024-06-18 / Martin Junius
 ```
 
 ## nina-zip-ready-data
