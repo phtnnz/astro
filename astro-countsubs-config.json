@@ -31,35 +31,69 @@
             "SII": 5120
         }
     },
-    "calibration": {
-        "##": "Settings and number of calibration frames for IAS Remote",
-        "settings": {
-            "mode": 1,
-            "gain": 56,
-            "offset": 30,
-            "binning": 1,
-            "cooling": -10,
-            "fnumber": 4.5,
-            "bortle": 1
+    "calibration sets": {
+        "remote2": {
+            "##": "Settings and number of calibration frames for IAS Remote Box 2 (IAS 10\")",
+            "settings": {
+                "mode": 1,
+                "gain": 56,
+                "offset": 30,
+                "binning": 1,
+                "cooling": -10,
+                "fnumber": 4.5,
+                "bortle": 1
+            },
+            "masterbias": { 
+                "*": 100 
+            },
+            "masterflat": {
+                "L": 20,
+                "R": 20,
+                "G": 20,
+                "B": 20,
+                "Ha": 20,
+                "OIII": 20,
+                "SII": 20
+            },
+            "masterdark": {
+                "60s": 12,
+                "120s": 13,
+                "180s": 20,
+                "300s": 15,
+                "600s": 7
+            }
         },
-        "masterbias": { 
-            "*": 100 
-        },
-        "masterflat": {
-            "L": 20,
-            "R": 20,
-            "G": 20,
-            "B": 20,
-            "Ha": 20,
-            "OIII": 20,
-            "SII": 20
-        },
-        "masterdark": {
-            "60s": 12,
-            "120s": 13,
-            "180s": 20,
-            "300s": 15,
-            "600s": 7
+        "remote3": {
+            "##": "Settings and number of calibration frames for IAS Remote Box 3 (Lacerta 12\")",
+            "settings": {
+                "mode": 1,
+                "gain": 56,
+                "offset": 10,
+                "binning": 1,
+                "cooling": -5,
+                "fnumber": 4,
+                "bortle": 1
+            },
+            "masterbias": { 
+                "*": 50 
+            },
+            "masterflat": {
+                "L": 20,
+                "R": 20,
+                "G": 20,
+                "B": 20,
+                "Ha": 20,
+                "OIII": 20,
+                "SII": 20
+            },
+            "masterdark": {
+                "30s": 30,
+                "60s": 30,
+                "120s": 30,
+                "180s": 30,
+                "300s": 30,
+                "600s": 30
+            }
         }
     }
 }
