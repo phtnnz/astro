@@ -14,3 +14,4 @@ copy-to-remote-test.bat
 mpc-reports.txt
 measurements.txt
 __pycache__
+.config/
