@@ -1,0 +1,16 @@
+{
+    "##1": "Map hostname to specific directory settings, used by nina-zip-*.py",
+    "##2": "Sample settings",
+
+    "myhostname1": {
+        "##":       "Sample 1",
+        "data dir": "D:/Users/test/Documents/NINA-Data",
+        "zip dir":  "D:/Users/test/OneDrive/TEST"
+    },
+
+    "myhostname2": {
+        "##":       "Sample 2",
+        "data dir": "D:/Users/test2/Documents/NINA-Data",
+        "zip dir":  "C:/Users/test2/Archive"
+    }
+}
