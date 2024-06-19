@@ -17,12 +17,14 @@
 # ChangeLog
 # Version 0.1 / 2023-12-18
 #       First version of JSONConfig module
-# version 0.2 / 2024-01-23
+# Version 0.2 / 2024-01-23
 #       Rewritten for multiple config files, global config object
 #
 #       Usage:  from jsonconfig import config
 #               from jsonconfig import JSONConfig
 #               class MyConfig(JSONConfig)
+# Version 0.3 / 2024-06-19
+#       Search also in .config
 
 import os
 import argparse
@@ -37,14 +39,13 @@ from verbose import verbose
 
 
 
-global VERSION, AUTHOR, NAME
-VERSION = "0.2 / 2024-01-23"
+VERSION = "0.3 / 2024-06-19"
 AUTHOR  = "Martin Junius"
 NAME    = "JSONConfig"
 
 
-global CONFIGDIR, CONFIGFILE
-CONFIGDIR = "astro-python"
+CONFIG     = ".config"
+CONFIGDIR  = "astro-python"
 CONFIGFILE = "astro-python-config.json"
 
 #ic.enable()
@@ -80,7 +81,15 @@ class JSONConfig:
         if os.path.isdir(path):
             searchpath.append(path)
 
+        path = os.path.join(os.path.curdir, CONFIG)
+        if os.path.isdir(path):
+            searchpath.append(path)
+
         path = os.path.join(os.path.curdir, CONFIGDIR)
+        if os.path.isdir(path):
+            searchpath.append(path)
+
+        path = os.path.join(os.path.curdir, CONFIG, CONFIGDIR)
         if os.path.isdir(path):
             searchpath.append(path)
 
