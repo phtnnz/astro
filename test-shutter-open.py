@@ -21,6 +21,9 @@
 #       Updated help text
 # Version 0.3 / 2023-07-03
 #       Commented debug messages
+# Version 0.4 / 2024-06-20
+#       Option -P --parked to check for "parked" status
+#       Option -O --open to check for "open" status (default)
 
 import os
 import sys
@@ -30,7 +33,7 @@ import json
 import requests
 
 global VERSION, AUTHOR
-VERSION = "0.3 / 2023-07-03"
+VERSION = "0.4 / 2024-06-20"
 AUTHOR  = "Martin Junius"
 
 global CONFIG
@@ -75,9 +78,11 @@ class Config:
 def main():
     arg = argparse.ArgumentParser(
         prog        = "test-shutter-open",
-        description = "Test Hakos shutter (roof) status: returns exit code 0, if open, else 1",
+        description = "Test Hakos roof (shutter) status: returns exit code 0, if ok (open/parked), else 1",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
+    arg.add_argument("-P", "--parked", action="store_true", help="test for \"parked\" status")
+    arg.add_argument("-O", "--open", action="store_true", help="test for \"open\" status (default)")
 
     args = arg.parse_args()
 
@@ -109,10 +114,29 @@ def main():
         stext = status["stext"]
         print("stext =", stext)
         status_open = stext == "open"
-    
-    # exit code 0 == OK, if shutter status is "open"
-    sys.exit(0 if status_open else 1)
+        print("status_open =", status_open)
 
+    status_parked = False
+    # 'stat': 'i,152,512,776,319,774,1,0,0,1' -- last number is 0=parked, 1=not parked
+    #          0 1   2   3   4   5   6 7 8 9
+    if "stat" in status:
+        stat = status["stat"]
+        print("stat =", stat)
+        list = stat.split(",")
+        status_parked = int(list[9]) == 0
+        print("status_parked =", status_parked)
+
+    if not args.parked and not args.open:
+        args.open = True
+
+    if args.open:
+        # exit code 0 == OK, if shutter status is "open"
+        sys.exit(0 if status_open else 1)
+    if args.parked:
+        # exit code 0 == OK, if telescope status is "parked"
+        sys.exit(0 if status_parked else 1)
+    ## NOT REACHED
+    sys.exit(1)
 
 
 
