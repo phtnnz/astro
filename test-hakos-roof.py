@@ -98,6 +98,11 @@ def main():
         ic(stat, status_parked)
         verbose(f"status parked={status_parked}")
 
+    if "pos" in status:
+        pos = status["pos"]
+        ic(pos)
+        verbose(f"pos={pos}")
+
     if not args.parked and not args.open:
         args.open = True
 
