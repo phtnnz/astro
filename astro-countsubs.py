@@ -101,6 +101,25 @@ class AstroConfig(JSONConfig):
             error(f"no key \"{KEY_CALIBRATION_SETS}\" in config")
 
 
+    def get_calibration1(self, calibration_set, mastertype):
+        """ get first item from mastertype dict """
+        obj = self.get_json()
+        if KEY_CALIBRATION_SETS in obj:
+            sets = obj[KEY_CALIBRATION_SETS]
+            if calibration_set in sets:
+                cal = sets[calibration_set]
+                if mastertype in cal:
+                    kw = cal[mastertype]
+                    for param, n in kw.items():
+                        return (param, n)
+                else:
+                    return (False, False)
+            else:
+                error(f"unknown calibration set \"{calibration_set}\"")
+        else:
+            error(f"no key \"{KEY_CALIBRATION_SETS}\" in config")
+
+
     def get_settings(self, calibration_set):
         obj = self.get_json()
         if not KEY_CALIBRATION_SETS in obj:
@@ -213,6 +232,7 @@ def print_filter_list(exp):
     darks = {}
     flats = {}
     bias = config.get_calibration(calibration_set, "masterbias")
+    (secs, darkflats) = config.get_calibration1(calibration_set, "masterdarkflat")
 
     for f in FILTER:
         total[f] = {}
@@ -271,8 +291,10 @@ def print_filter_list(exp):
     for f, n in flats.items():
         print(f"   {f}: {n}x", end="")
     print()
-    print("Bias")
-    print(f"   {bias}x")
+    if bias:
+        print(f"Bias\n   {bias}x")
+    if darkflats:
+        print(f"Darkflats\n   {darkflats}x {secs}")
     print("Settings")
     for key in ("mode", "gain", "offset", "cooling"):
         print(f"   {key}: {extra(key)}", end="")
