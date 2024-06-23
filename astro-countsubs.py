@@ -182,6 +182,11 @@ def walk_the_dir(dir):
                     if not match:
                         # VdS "Piehler" style
                         match = re.search(r'_(' + f + r')_()\d{4}-\d{2}-\d{2}', fname)
+                    if not match:
+                        # OSC old naming without filter
+                        # eg LIGHT_NGC 6744_2024-06-04_01-30-36__-10.00__G120_O30_300.00s_0000.fits
+                        if f == FILTER[0]:
+                            match = re.search(r'_()_.+_(\d+)\.00s_', fname)
                     if match:
                         verbose("\t" + fname)
                         time = match.group(2) if match.group(2) else EXPOSURE
