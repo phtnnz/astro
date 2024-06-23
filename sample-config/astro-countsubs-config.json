@@ -12,6 +12,7 @@
             "L": 2906,
             "CLS": 4061
         },
+
         "Chroma 36mm": {
             "L": 5284,
             "R": 5311,
@@ -21,6 +22,7 @@
             "OIII": 5301,
             "SII": 5328
         },
+
         "Baader 36mm": {
             "L": 8483,
             "R": 2627,
@@ -30,6 +32,7 @@
             "OIII": 5071,
             "SII": 5120
         }
+
     },
     "calibration sets": {
         "remote2": {
@@ -93,6 +96,36 @@
                 "180s": 30,
                 "300s": 30,
                 "600s": 30
+            }
+        },
+
+        "ak3-asi294mc-2024": {
+            "##": "Settings and number of calibration frames for AK3 with ASI294MC Pro, June 2024",
+            "settings": {
+                "mode": "n/a",
+                "gain": 120,
+                "offset": 30,
+                "binning": 1,
+                "cooling": -10,
+                "fnumber": 3.7,
+                "bortle": 1
+            },
+            "masterbias": { 
+                "*": 0 
+            },
+            "masterflat": {
+                "L": 50
+            },
+            "masterdarkflat": {
+                "4s": 50
+            },
+            "masterdark": {
+                "4s": 50,
+                "30s": 40,
+                "60s": 40,
+                "120s": 40,
+                "180s": 40,
+                "300s": 40
             }
         }
     }
