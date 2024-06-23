@@ -233,12 +233,16 @@ def print_filter_list(exp):
     flats = {}
     bias = config.get_calibration(calibration_set, "masterbias")
     (secs, darkflats) = config.get_calibration1(calibration_set, "masterdarkflat")
+    single_filter = len(FILTER) == 1
 
     for f in FILTER:
         total[f] = {}
         
     for date in exp.keys():
-        print(date)
+        if single_filter:
+            print(date, end="")
+        else:
+            print(date)
 
         for f in exp[date].keys():
             if exp[date][f]:
@@ -271,13 +275,16 @@ def print_filter_list(exp):
     total1 = 0
     for f in total.keys():
         if total[f]:
-            print(f"   {f}:", end="")
+            if not single_filter:
+                print(f"   {f}:", end="")
             for time in total[f].keys():
                 n = total[f][time]
                 time = int(time)
                 total1 += n * time
-                print(f" {n*time}s", end="")
-    print()
+                if not single_filter:
+                    print(f" {n*time}s", end="")
+    if not single_filter:
+        print()
 
     hours = int(total1 / 3600)
     mins  = int((total1 - hours*3600) / 60)
