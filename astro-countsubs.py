@@ -232,7 +232,7 @@ def print_filter_list(exp):
     darks = {}
     flats = {}
     bias = config.get_calibration(calibration_set, "masterbias")
-    (secs, darkflats) = config.get_calibration1(calibration_set, "masterdarkflat")
+    (secs, flatdarks) = config.get_calibration1(calibration_set, "masterflatdark")
     single_filter = len(FILTER) == 1
 
     for f in FILTER:
@@ -300,8 +300,8 @@ def print_filter_list(exp):
     print()
     if bias:
         print(f"Bias\n   {bias}x")
-    if darkflats:
-        print(f"Darkflats\n   {darkflats}x {secs}")
+    if flatdarks:
+        print(f"Flatdarks\n   {flatdarks}x {secs}")
     print("Settings")
     for key in ("mode", "gain", "offset", "cooling"):
         print(f"   {key}: {extra(key)}", end="")
@@ -334,7 +334,9 @@ def csv_list(exp):
                 filter = config.get_filter_id(filter_set, f)
                 darks = config.get_calibration(calibration_set, "masterdark", str(time)+"s")
                 flats = config.get_calibration(calibration_set, "masterflat", f)
-                # flatdarks = config.get_calibration("masterflatdark", f)
+                (secs, flatdarks) = config.get_calibration1(calibration_set, "masterflatdark")
+                if not flatdarks:
+                    flatdarks = 0
                 bias = config.get_calibration(calibration_set, "masterbias")
                 # fields = [  date, filter, n, time, 
                 #             extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
@@ -342,7 +344,7 @@ def csv_list(exp):
                 #             extra("bortle"), extra("sqm"), extra("fwhm"), extra("temperature") ]
                 fields = [  date, filter, n, time, 
                             extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
-                            darks, flats, 0, bias,
+                            darks, flats, flatdarks, bias,
                             extra("bortle") ]
                 verbose(",".join(map(str, fields)))
                 CSVOutput.append_csv(fields)
