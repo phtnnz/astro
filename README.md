@@ -29,10 +29,11 @@ The following additional Python libraries must be installed:
 
 Local modules:
 
-| Library   | Function                           |
-| --------- | ---------------------------------- |
-| mpcdata80 | Class for handling MPC 80-column data format |
-| verbose   | verbose(), warning() and error() messages    |
+| Library          | Function                           |
+| ---------------- | ---------------------------------- |
+| mpc.mpcdata80    | Class for handling MPC 80-column data format |
+| mpc.mpcosarchive | Class for handling MPC/MPO/MPS archive |
+| mpc.verbose      | verbose(), warning() and error() messages, mpc modules copy |
 
 
 ## nina-create-sequence
@@ -70,33 +71,57 @@ Version: 1.0 / 2023-07-05 / Martin Junius
 ```
 
 ## test-shutter-open
-For Hakos remote observatories roll-off roof control only, tests whether the roof aka "shutter" is in state "open".
+For Hakos remote observatories roll-off roof control only, checks roof/mount status.
 
 ```
-usage: test-shutter-open [-h] [-v]
+usage: test-shutter-open [-h] [-v] [-P] [-O]
 
-Test Hakos shutter (roof) status: returns exit code 0, if open, else 1
+Test Hakos roof (shutter) status: returns exit code 0, if ok (open/parked), else 1
 
 options:
   -h, --help     show this help message and exit
   -v, --verbose  debug messages
+  -P, --parked   test for "parked" status
+  -O, --open     test for "open" status (default)
 
-Version 0.3 / 2023-07-03 / Martin Junius
+Version 0.4 / 2024-06-20 / Martin Junius
 ```
+
+## test-hakos-roof
+For Hakos remote observatories roll-off roof control only, refactored status queries
+
+```
+usage: test-hakos-roof [-h] [-v] [-d] [-P] [-O]
+
+Test Hakos roof (shutter) status: returns exit code 0, if ok (open/parked), else 1
+
+options:
+  -h, --help     show this help message and exit
+  -v, --verbose  debug messages
+  -d, --debug    more debug messages
+  -P, --parked   test for "parked" status
+  -O, --open     test for "open" status (default)
+
+Version 1.0 / 2024-06-20 / Martin Junius
+```
+
 
 ## N.I.N.A External Script
 Use the batch files/wrappers with full path in N.I.N.A's "External Script" instruction
 
 ```
 "D:\Users\remote\Documents\Scripts\test-shutter-open.bat"
+"D:\Users\remote\Documents\Scripts\test-hakos-roof.bat"
 "D:\Users\remote\Documents\Scripts\nina-flag-ready.bat" "TARGET"
 ```
 
+
 ## astro-countsubs
-Count sub frames in directory structure and compute total exposure time. Relies on YYYY-MM-DD sub-directories and FITS filenames containing filter name and exposure time.
+Count sub frames in directory structure and compute total exposure time. Relies on YYYY-MM-DD sub-directories and FITS filenames containing filter name and exposure time. Additional data on calibration from JSON config file.
 
 ```
-usage: astro-countsubs [-h] [-v] [-d] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] [-C] [-o OUTPUT] [-F FILTER_SET] [--calibration-set CALIBRATION_SET] dirname
+usage: astro-countsubs [-h] [-v] [-d] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] [-C] [-o OUTPUT] [-F FILTER_SET] [--calibration-set CALIBRATION_SET]
+                       dirname
 
 Traverse directory and count N.I.N.A subs
 
@@ -123,6 +148,20 @@ options:
 
 Version: 0.5 / 2024-06-18 / Martin Junius
 ```
+
+JSON config file astro-countsubs-config.json
+
+Examples:
+
+```
+astro-countsubs.py --filter-set "Astronomik 2in" --calibration-set ak3-asi294mc-2024 --filter L '\Images\NGC 6744\'
+```
+OSC with just an Astronomik L-2 filter, text output
+
+```
+astro-countsubs.py --filter-set "Baader 36mm" --calibration-set remote3 --csv -o tmp/NGC5139.csv '\Images\NGC 5139\' ```
+Mono camera with Baader filter set, output CSV file for Astrobin import
+
 
 ## nina-zip-ready-data
 Automatically archive N.I.N.A exposure when a target sequence has been completed,
@@ -163,16 +202,17 @@ Archive all N.I.N.A data from the last observation night (or date given by the -
 - If not, run 7z.exe to archive TARGET/YYYY-MM-DD data subdir in DATA to TARGET-YYYY-MM-DD.7z in ZIPDIR
 
 ```
-usage: nina-zip-last-night [-h] [-v] [-n] [-l] [-d DATE] [-t TARGETS] [-D DATA_DIR] [-Z ZIP_DIR] [-z ZIP_PROG]
+usage: nina-zip-last-night [-h] [-v] [-d] [-n] [-l] [--date DATE] [-t TARGETS] [-D DATA_DIR] [-Z ZIP_DIR] [-z ZIP_PROG] [-m]
 
 Zip target data in N.I.N.A data directory from last night
 
 options:
   -h, --help            show this help message and exit
   -v, --verbose         debug messages
+  -d, --debug           more debug messages
   -n, --no-action       dry run
   -l, --low-priority    set process priority to low
-  -d DATE, --date DATE  archive target/DATE, default last night 2023-07-25
+  --date DATE           archive target/DATE, default last night 2024-06-25
   -t TARGETS, --targets TARGETS
                         archive TARGET[,TARGET] only
   -D DATA_DIR, --data-dir DATA_DIR
@@ -181,8 +221,9 @@ options:
                         directory for zip (.7z) files (default C:/Users/remote/OneDrive/Remote-Upload)
   -z ZIP_PROG, --zip-prog ZIP_PROG
                         full path of 7-zip.exe (default C:/Program Files/7-Zip/7z.exe)
+  -m, --zip_max         7-zip max compression -mx7
 
-Version 0.1 / 2023-07-26 / Martin Junius
+Version 0.2 / 2024-05-01 / Martin Junius
 ```
 
 ## mpc-retrieve-ack
@@ -218,8 +259,7 @@ options:
   -O, --overview        create overview of objects and observations
   -D, --sort-by-date    sort overview by observation date (minus 12h)
 
-Version 1.3 / 2024-02-02 / Martin Junius
-```
+Version 1.4 / 2024-03-20 / Martin Junius```
 
 Config data for IMAP mailbox is stored in %APPDATA%/astro-python/imap-account.json
 
