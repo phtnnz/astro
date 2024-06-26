@@ -121,8 +121,7 @@ Use the batch files/wrappers with full path in N.I.N.A's "External Script" instr
 Count sub frames in directory structure and compute total exposure time. Relies on YYYY-MM-DD sub-directories and FITS filenames containing filter name and exposure time. Additional data on calibration from JSON config file.
 
 ```
-usage: astro-countsubs [-h] [-v] [-d] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] [-C] [-o OUTPUT] [-F FILTER_SET] [--calibration-set CALIBRATION_SET]
-                       dirname
+usage: astro-countsubs [-h] [-v] [-d] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] [-C] [-o OUTPUT] [-F FILTER_SET] [--calibration-set CALIBRATION_SET] dirname
 
 Traverse directory and count N.I.N.A subs
 
@@ -160,7 +159,8 @@ astro-countsubs.py --filter-set "Astronomik 2in" --calibration-set ak3-asi294mc-
 OSC with just an Astronomik L-2 filter, text output
 
 ```
-astro-countsubs.py --filter-set "Baader 36mm" --calibration-set remote3 --csv -o tmp/NGC5139.csv '\Images\NGC 5139\' ```
+astro-countsubs.py --filter-set "Baader 36mm" --calibration-set remote3 --csv -o tmp/NGC5139.csv '\Images\NGC 5139\'
+```
 Mono camera with Baader filter set, output CSV file for Astrobin import
 
 
@@ -227,16 +227,14 @@ options:
 Version 0.2 / 2024-05-01 / Martin Junius
 ```
 
+
 ## mpc-retrieve-ack
-Retrieve Minor Planets Center observation data from IMAP server with ACK mails, locally stored ADES and MPC1992 report files, and MPC WAMO service
+Retrieve Minor Planets Center observation data from IMAP server with ACK mails, and MPC WAMO service
 
 ```
-usage: mpc-retrieve-ack [-h] [-v] [-d] [-n] [-l] [-f IMAP_FOLDER] [-L] [-m MSGS] [-M] [-A] [-o OUTPUT] [-C] [-O] [-D] [directory ...]
+usage: mpc-retrieve-ack [-h] [-v] [-d] [-n] [-l] [-f IMAP_FOLDER] [-L] [-m MSGS] [-o OUTPUT] [-C] [-O] [-D]
 
-Retrieve MPC ACK data
-
-positional arguments:
-  directory             read MPC reports from directory/file instead of ACK mails
+Retrieve MPC ACK mails
 
 options:
   -h, --help            show this help message and exit
@@ -251,18 +249,16 @@ options:
   -L, --list-messages-only
                         list messages in IMAP folder only
   -m MSGS, --msgs MSGS  retrieve messages in MSGS range only, e.g. "1-3,5", default all
-  -M, --mpc1992-reports
-                        read old MPC 1992 reports
-  -A, --ades-reports    read new ADES (PSV format) reports
   -o OUTPUT, --output OUTPUT
                         write JSON/CSV to OUTPUT file
   -C, --csv             use CSV output format (instead of JSON)
   -O, --overview        create overview of objects and observations
   -D, --sort-by-date    sort overview by observation date (minus 12h)
 
-Version 1.4 / 2024-03-20 / Martin Junius```
+Version 1.5 / 2024-06-26 / Martin Junius
+```
 
-Config data for IMAP mailbox is stored in %APPDATA%/astro-python/imap-account.json
+Config data for IMAP mailbox is stored in imap-account.json
 
 Examples:
 ```
@@ -281,11 +277,6 @@ mpc-retrieve-ack.py -f INBOX.Archive -o ack-mails.json
 Retrieve all ACK mails from INBOX.Archvie, query WAMO, and write results to ack-mails.json
 
 ```
-mpc-retrieve-ack.py -A -o ades-reports.json '\Users\someone\Asteroids\reports\'
-```
-Retrieve all ADES report file from the given directory (recursively), query WAMO, and write results to ades-reports.json
-
-```
 mpc-retrieve-ack.py -f ARCHIVE -O -o report.txt
 ```
 Retrieve all ACK mails from ARCHIVE folder, query WAMO, and write overview list to report.txt (sorted by object)
@@ -299,3 +290,41 @@ Retrieve all ACK mails from ARCHIVE folder, query WAMO, and write overview list 
 mpc-retrieve-ack-py -f ARCHIVE -C -o report.csv
 ```
 Retrieve all ACK mails from ARCHIVE folder, query WAMO, and write detailed data to CSV output report.csv
+
+
+## mpc-retrieve-reports
+Retrieve Minor Planets Center observation data from locally stored MPC1992/ADES report txt files, and MPC WAMO service
+
+```
+usage: mpc-retrieve-reports [-h] [-v] [-d] [-n] [-M] [-A] [-o OUTPUT] [-C] [-O] [-D] directory [directory ...]
+
+Retrieve MPC reports
+
+positional arguments:
+  directory             read MPC reports from directory/file instead of ACK mails
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         verbose messages
+  -d, --debug           more debug messages
+  -n, --no-wamo-requests
+                        don't request observations from minorplanetcenter.net WAMO
+  -M, --mpc1992-reports
+                        read old MPC 1992 reports
+  -A, --ades-reports    read new ADES (PSV format) reports
+  -o OUTPUT, --output OUTPUT
+                        write JSON/CSV to OUTPUT file
+  -C, --csv             use CSV output format (instead of JSON)
+  -O, --overview        create overview of objects and observations
+  -D, --sort-by-date    sort overview by observation date (minus 12h)
+
+Version 1.5 / 2024-06-26 / Martin Junius
+```
+
+Examples:
+
+```
+mpc-retrieve-reports.py -A -o ades-reports.json '\Users\someone\Asteroids\reports\'
+```
+Retrieve all ADES report file from the given directory (recursively), query WAMO, and write results to ades-reports.json
+
