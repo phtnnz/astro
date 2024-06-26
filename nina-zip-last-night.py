@@ -1,4 +1,4 @@
-#!python
+#!/usr/bin/env python
 
 # Copyright 2023-2024 Martin Junius
 #
