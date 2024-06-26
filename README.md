@@ -34,6 +34,7 @@ Local modules:
 | mpc.mpcdata80    | Class for handling MPC 80-column data format |
 | mpc.mpcosarchive | Class for handling MPC/MPO/MPS archive |
 | mpc.verbose      | verbose(), warning() and error() messages, mpc modules copy |
+| jsonconfig       | Read/write JSON config files for the astro scripts |
 | verbose          | verbose(), warning() and error() messages |
 
 
