@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # Archive all N.I.N.A exposure data from the previous night, i.e. date=yesterday
-# - Search all TARGET/YYYY-MM-DD directories in DATADIR
+# - Search all TARGET*YYYY-MM-DD directories in DATADIR
 # - Look for corresponding TARGET-YYYY-MM-DD.7z archive in ZIPDIR
 # - If exists, skip
 # - If not, run 7z.exe to archive TARGET/YYYY-MM-DD data subdir in DATA to TARGET-YYYY-MM-DD.7z in ZIPDIR
@@ -201,8 +201,6 @@ def main():
     arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+Options.zipdir+")")
     arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+Options.zipprog+")")
     arg.add_argument("-m", "--zip_max", action="store_true", help="7-zip max compression -mx7")
-    # nargs="+" for min 1 filename argument
-    # arg.add_argument("filename", nargs="*", help="filename")
     args = arg.parse_args()
 
     if args.verbose:
