@@ -24,7 +24,10 @@
 # Version 0.1 / 2023-07-26
 #       First version, copy of nina-zip-ready-data
 # Version 0.2 / 2024-05-01
-#       Support TARGET-YYYY-MM-DD/ directory names
+#       Support TARGET-YYYY-MM-DD/ or TARGET_YYYY-MM-DD/ directory names
+# Version 0.3 / 2024-06-28
+#       Read JSON config for default directories
+
 
 import os
 import argparse
@@ -32,6 +35,8 @@ import subprocess
 import datetime
 import platform
 import sys
+import socket
+
 # The following libs must be installed with pip
 import psutil
 from icecream import ic
@@ -40,23 +45,55 @@ ic.disable()
 
 # Local modules
 from verbose import verbose, warning, error
+from jsonconfig import JSONConfig
 
 
 
 NAME    = "nina-zip-last-night"
-VERSION = "0.2 / 2024-05-01"
+VERSION = "0.3 / 2024-06-28"
 AUTHOR  = "Martin Junius"
+
+
+
+CONFIG = "nina-zip-config.json"
+
+class ZipConfig(JSONConfig):
+    """ JSON Config for data / zip directory """
+
+    def __init__(self, file=None):
+        super().__init__(file)
+
+    def _get_dirs(self):
+        hostname = socket.gethostname()
+        ic(hostname)
+        if hostname in self.config:
+            return self.config[hostname]
+        error(f"no directory config for hostname {hostname}")
+
+    def data_dir(self):
+        dirs = self._get_dirs()
+        return dirs["data dir"]
+
+    def zip_dir(self):
+        dirs = self._get_dirs()
+        return dirs["zip dir"]
+
+    def zip_prog(self):
+        dirs = self._get_dirs()
+        return dirs["zip program"]
+
+
+config = ZipConfig(CONFIG)
 
 
 
 # options
 class Options:
     no_action = False                                       # -n --no_action
-    datadir   = "D:/Users/remote/Documents/NINA-Data"
-    # FIXME: use %ONEDRIVE%
-    zipdir   = "C:/Users/remote/OneDrive/Remote-Upload"
-    zipprog  = "C:/Program Files/7-Zip/7z.exe"
-    zipmx    = 5                                            # normal compression, -m --max => 7 = max compression
+    datadir   = config.data_dir()
+    zipdir    = config.zip_dir()
+    zipprog   = config.zip_prog()
+    zipmx     = 5                                            # normal compression, -m --max => 7 = max compression
 
 
 
