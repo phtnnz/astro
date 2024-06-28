@@ -28,7 +28,7 @@
       {
         "$id": "5",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 0.6-remote3-discord / 2023-07-03 / Martin Junius",
+        "Text": "Version 0.6-remote3-discord / 2024-06-28 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -161,7 +161,7 @@
             {
               "$id": "20",
               "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-              "Text": "Waiting for astronomical dusk",
+              "Text": "Waiting for nautical dusk",
               "Parent": {
                 "$ref": "12"
               },
