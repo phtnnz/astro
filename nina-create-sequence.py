@@ -31,11 +31,13 @@
 #       Cleaner handling of SelectedProvider references in completed sequence
 #       Process External Script with TARGET
 #       General clean-up
+# Version 1.1 / 2024-06-28
+#       Changes for Remote3, added -3 --remote3 option
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
 global VERSION, AUTHOR
-VERSION = "1.0 / 2023-07-05"
+VERSION = "1.1 / 2024-06-28"
 AUTHOR  = "Martin Junius"
 
 
@@ -54,11 +56,9 @@ SHGFP_TYPE_CURRENT = 0   # Get current, not default value
 buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
 ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
 
-global DEFAULT_NINA_DIR, DEFAULT_TARGETS_DIR
 DEFAULT_NINA_DIR = buf.value.replace("\\", "/") + "/N.I.N.A"
 DEFAULT_TARGETS_DIR = DEFAULT_NINA_DIR + "/Targets/tmp"
 
-global DEFAULT_TEMPLATE, DEFAULT_TARGET
 DEFAULT_TEMPLATE = "./NINA-Templates-IAS/Base NEO nautical.json"
 DEFAULT_TARGET = "./NINA-Templates-IAS/Target NEO.json"
 
@@ -468,6 +468,7 @@ def main(argv):
     arg.add_argument("-p", "--prefix-target", action="store_true", help="prefix all target names with YYYY-MM-DD NNN")
     arg.add_argument("-n", "--no-output", action="store_true", help="dry run, don't create output files")
     arg.add_argument("-N", "--add-number", action="store_true", help="add number of frames (nNNN) to target name")
+    arg.add_argument("-3", "--remote3", action="store_true", help="use templates for Remote3")
     arg.add_argument("filename", nargs="+", help="CSV target data list")
    
     args = arg.parse_args()
@@ -477,6 +478,11 @@ def main(argv):
     NINABase.prefix_target = args.prefix_target
     NINABase.no_output = args.no_output
     NINABase.add_number = args.add_number
+
+    global DEFAULT_TARGET, DEFAULT_TEMPLATE
+    if args.remote3:
+        DEFAULT_TEMPLATE = "./NINA-Templates-IAS3/Base NEO nautical 3-Discord.json"
+        DEFAULT_TARGET   = "./NINA-Templates-IAS3/Target NEO 3-Discord.template.json"
 
     if args.target_template:
         target_template = args.target_template
