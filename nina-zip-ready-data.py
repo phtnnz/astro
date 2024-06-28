@@ -108,7 +108,7 @@ def create_zip_archive(target, datadir, zipfile):
     #   -mx7    set compression level to maximum (5=normal, 7=maximum, 9=ultra)
     #   -r      recurse subdirectories
     #   -spf    use fully qualified file paths
-    subprocess.run(args=[ZIPPROG, "a", "-t7z", "-mx7", "-r", "-spf", zipfile, target], shell=False, cwd=datadir)
+    subprocess.run(args=[ZIPPROG, "a", "-t7z", "-mx5", "-r", "-spf", zipfile, target], shell=False, cwd=datadir)
 
 
 
