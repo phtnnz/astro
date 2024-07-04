@@ -18,7 +18,7 @@
       {
         "$id": "4",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "IAS remote telescope startup template / VERSION for test-shutter-open script WITHOUT MANUAL CONFIRMATION",
+        "Text": "IAS remote telescope startup template / using test-hakos-roof script WITHOUT MANUAL CONFIRMATION",
         "Parent": {
           "$ref": "1"
         },
@@ -28,7 +28,7 @@
       {
         "$id": "5",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 0.6-remote3-discord / 2023-07-03 / Martin Junius",
+        "Text": "Version 1.0-remote3-discord / 2024-07-03 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -172,9 +172,9 @@
               "$id": "21",
               "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTime, NINA.Sequencer",
               "Hours": 19,
-              "Minutes": 39,
+              "Minutes": 41,
               "MinutesOffset": 0,
-              "Seconds": 38,
+              "Seconds": 26,
               "SelectedProvider": {
                 "$id": "22",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.DuskProvider, NINA.Sequencer"
@@ -198,7 +198,7 @@
             {
               "$id": "24",
               "$type": "NINA.Sequencer.SequenceItem.Utility.ExternalScript, NINA.Sequencer",
-              "Script": "\"D:\\Users\\remote\\Documents\\Scripts\\test-shutter-open.bat\"",
+              "Script": "\"D:\\Users\\remote\\Documents\\Scripts\\test-hakos-roof.bat\" -v --open",
               "Parent": {
                 "$ref": "12"
               },
