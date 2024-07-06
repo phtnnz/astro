@@ -37,6 +37,8 @@
 # Version 1.5 / 2024-06-26
 #       Refactored, removed all code for reading report txt files, this will be
 #       handled in mpc-retrieve-reports
+# Version 1.6 / 2024-07-06
+#       More refactoring, moved WAMO request to new module mpcwamo
 
 import sys
 import os
@@ -58,11 +60,11 @@ from verbose          import verbose, warning, error
 from jsonconfig       import JSONConfig, config
 from mpc.mpcosarchive import MPCOSArchive
 from mpc.mpcdata80    import MPCData80
-
+from mpc.mpcwamo      import retrieve_from_wamo
 
 
 NAME    = "mpc-retrieve-ack"
-VERSION = "1.5 / 2024-06-26"
+VERSION = "1.6 / 2024-07-06"
 AUTHOR  = "Martin Junius"
 
 CONFIG = "imap-account.json"
@@ -339,8 +341,15 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
     ack_obj["ack"] = msg_ack
     ack_obj["submission"] = msg_submission
 
-    wamo = retrieve_from_mpc_wamo(msg_ids)
+    # mpc.mpcwamo module
+    wamo = retrieve_from_wamo(msg_ids)
     if wamo:
+        # Get publications and add to global list
+        for obs in wamo:
+            pub = obs["publication"]
+            if pub:
+                Publication.add_publication(pub)
+
         ack_obj["_wamo"].append(wamo)
         if Options.csv:
             for wobj in wamo:
@@ -375,102 +384,6 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
     verbose("JSON =", json.dumps(ack_obj, indent=4))
 
     return ack_obj
-
-
-
-def retrieve_from_mpc_wamo(ids):
-    """ Retrieve observation data from minorplanetcenter WAMO """
-
-    if Options.no_wamo:
-        return None
-    if not ids:
-        # empty ids dict
-        return None
-
-    # Use WAMO API, see https://data.minorplanetcenter.net/wamo-api/
-    WAMO_URL = "https://data.minorplanetcenter.net/api/wamo"
-    # result = requests.get(WAMO_URL, json=list(ids.keys()))
-    # observations = result.json()
-    # ic(observations)
-
-    # The Flask endpoint can also provide the original WAMO string
-    result = requests.get(WAMO_URL, json={'return_type': 'string', 'obs': list(ids.keys())})
-    observations = result.text
-    ic(observations)
-
-    wamo = []
-    for line in observations.splitlines():
-        ic(line)
-        if line == "":
-            continue
-
-        m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) has been identified as (.+) and published in (.+)\.$', line)
-        pending = False
-        if not m:
-            m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) has been identified as (.+), (publication is pending).$', line)
-            pending = True
-        if m:    
-            data = m.group(1)
-            id   = m.group(2)
-            obj  = m.group(3)
-            pub  = m.group(4)
-            verbose("       ", id, ":", data)
-            verbose("       ", " " * len(id), ":", obj)
-            verbose("       ", " " * len(id), ":", pub)
-            if pending:
-                pub = "pending"
-            else:
-                Publication.add_publication(pub)
-
-            data80 = MPCData80(data)
-
-            wamo.append({"data":          data80.get_obj(),
-                         "observationID": id,
-                         "objID":         obj,
-                         "publication":   pub  })
-
-        if not m:
-            m = re.search(r'The obsID \'(.+)\' is in the \'(.+)\' processing queue.$', line)
-            if m:
-                id = m.group(1)
-                pub = "Processing queue " + m.group(2)
-                verbose("       ", id, ":", pub)
-
-        if not m:
-            m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) is on the (NEOCP/PCCP).$', line)
-            if m:
-                data = m.group(1)
-                id   = m.group(2)
-                pub  = m.group(3)
-                verbose("       ", id, ":", data)
-                verbose("       ", " " * len(id), ":", pub)
-                data80 = MPCData80(data)
-
-                wamo.append({"data":          data80.get_obj(),
-                            "observationID": id,
-                            "objID":         data80.get_col(6, 12),    # tracklet ID
-                            "publication":   pub  })
-
-        if not m:
-            m = re.search(r'^The obsID \'([A-Za-z0-9]+)\' has been deleted.$', line)
-            if m:
-                id = m.group(1)
-                warning(f"id {id} = observation \"{ids[id]}\" deleted")
-
-        if not m:
-            m = re.search(r'^The obsID \'([A-Za-z0-9]+)\' was flagged as a near-duplicate.$', line)
-            if m:
-                id = m.group(1)
-                warning(f"id {id} = observation \"{ids[id]}\" flagged near-duplicate")
-
-        if not m:
-            warning("unknown response:", line)
-            warning("corresponding observations:", ids)
-
-    # Avoid high load on the MPC server
-    time.sleep(0.5)
-
-    return wamo
 
 
 
