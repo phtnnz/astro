@@ -28,7 +28,7 @@ from icecream import ic
 # Disable debugging
 ic.disable()
 # Local modules
-from mpc.verbose   import verbose, warning, error
+from verbose       import verbose, warning, error
 from mpc.mpcdata80 import MPCData80
 
 
