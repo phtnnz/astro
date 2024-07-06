@@ -28,11 +28,15 @@
 #       New option --calibration-set to select calibration data set from JSON config
 #       New option -d --debug
 #       Support OBJECT_YYYY-MM-DD subdirs
+# Version 1.0 / 2024-07-06
+#       Version bumped to 1.0, fully working now
+#       Allow -C option without -o, write CSV to stdout
 
 import os
 import argparse
 import re
 import csv
+import sys
 
 # The following libs must be installed with pip
 from icecream import ic
@@ -44,7 +48,7 @@ from verbose import verbose, error
 from jsonconfig import JSONConfig, config
 
 
-VERSION = "0.5 / 2024-06-18"
+VERSION = "1.0 / 2024-07-06"
 AUTHOR  = "Martin Junius"
 NAME    = "astro-countsubs"
 
@@ -162,12 +166,18 @@ class CSVOutput:
     def set_csv_fields(fields):
         CSVOutput.fields = fields
 
+    def _write(f):            
+        writer = csv.writer(f, dialect="excel")
+        if CSVOutput.fields:
+            writer.writerow(CSVOutput.fields)
+        writer.writerows(CSVOutput.obj_cache)
+
     def write_csv(file):
-        with open(file, 'w', newline='') as f:
-            writer = csv.writer(f, dialect="excel")
-            if CSVOutput.fields:
-                writer.writerow(CSVOutput.fields)
-            writer.writerows(CSVOutput.obj_cache)
+        if file:
+            with open(file, 'w', newline='') as f:
+                CSVOutput._write(f)
+        else:
+                CSVOutput._write(sys.stdout)
 
 
 
@@ -349,7 +359,7 @@ def csv_list(exp):
                 verbose(",".join(map(str, fields)))
                 CSVOutput.append_csv(fields)
 
-    if CSVOutput.output:
+    if CSVOutput.enabled:
         CSVOutput.write_csv(CSVOutput.output)
 
    
@@ -364,10 +374,10 @@ def main():
     arg.add_argument("-x", "--exclude", help="exclude filter, e.g. Ha,SII")
     arg.add_argument("-f", "--filter", help="filter list, e.g. L,R,G.B")
     arg.add_argument("-t", "--exposure-time", help="exposure time (sec) if not present in filename")
-    arg.add_argument("-C", "--csv", action="store_true", help="output CSV list")
-    arg.add_argument("-o", "--output", help="write to file OUTPUT")
+    arg.add_argument("-C", "--csv", action="store_true", help="output CSV list for Astrobin")
+    arg.add_argument("-o", "--output", help="write CSV to file OUTPUT (default: stdout)")
     arg.add_argument("-F", "--filter-set", help="name of filter set for Astrobin CSV (see config)")
-    arg.add_argument("--calibration-set", help="name of calibration set")
+    arg.add_argument("--calibration-set", help="name of calibration set (see config)")
     arg.add_argument("dirname", help="directory name")
 
     args  = arg.parse_args()
