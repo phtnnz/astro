@@ -387,15 +387,19 @@ def retrieve_from_mpc_wamo(ids):
         # empty ids dict
         return None
 
-    # Example
-    # curl -v -d "obs=LdY91I230000FGdd010000001" https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo
+    # Use WAMO API, see https://data.minorplanetcenter.net/wamo-api/
+    WAMO_URL = "https://data.minorplanetcenter.net/api/wamo"
+    # result = requests.get(WAMO_URL, json=list(ids.keys()))
+    # observations = result.json()
+    # ic(observations)
 
-    ##FIXME: use API
-    data = { "obs": "\r\n".join(ids.keys())}
-    x = requests.post(WAMO_URL, data=data)
+    # The Flask endpoint can also provide the original WAMO string
+    result = requests.get(WAMO_URL, json={'return_type': 'string', 'obs': list(ids.keys())})
+    observations = result.text
+    ic(observations)
 
     wamo = []
-    for line in x.text.splitlines():
+    for line in observations.splitlines():
         ic(line)
         if line == "":
             continue
