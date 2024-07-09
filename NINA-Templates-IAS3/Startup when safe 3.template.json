@@ -28,7 +28,7 @@
       {
         "$id": "5",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.0-remote3 / 2024-07-03 / Martin Junius",
+        "Text": "Version 1.1-remote3 / 2024-07-07 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -142,9 +142,9 @@
               "$id": "18",
               "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTime, NINA.Sequencer",
               "Hours": 19,
-              "Minutes": 41,
+              "Minutes": 42,
               "MinutesOffset": 0,
-              "Seconds": 44,
+              "Seconds": 41,
               "SelectedProvider": {
                 "$id": "19",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.DuskProvider, NINA.Sequencer"
@@ -186,6 +186,16 @@
             },
             {
               "$id": "23",
+              "$type": "NINA.Sequencer.SequenceItem.Telescope.SetTracking, NINA.Sequencer",
+              "TrackingMode": 5,
+              "Parent": {
+                "$ref": "10"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            },
+            {
+              "$id": "24",
               "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTimeSpan, NINA.Sequencer",
               "Time": 10.0,
               "Parent": {
@@ -197,7 +207,7 @@
           ]
         },
         "Triggers": {
-          "$id": "24",
+          "$id": "25",
           "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
           "$values": []
         },
@@ -210,7 +220,7 @@
     ]
   },
   "Triggers": {
-    "$id": "25",
+    "$id": "26",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
     "$values": []
   },
