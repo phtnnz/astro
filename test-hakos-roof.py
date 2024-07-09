@@ -106,14 +106,19 @@ def main():
     if not args.parked and not args.open:
         args.open = True
 
+    # exit code 1 == ERROR
+    exit_code = 1
     if args.open:
         # exit code 0 == OK, if shutter status is "open"
-        sys.exit(0 if status_open else 1)
+        if status_open:
+            exit_code = 0
     if args.parked:
         # exit code 0 == OK, if telescope status is "parked"
-        sys.exit(0 if status_parked else 1)
-    ## NOT REACHED ##
-    sys.exit(1)
+        if status_parked:
+            exit_code = 0
+    
+    verbose(f"exit={exit_code} ({"not" if exit_code else ""} ok)")
+    sys.exit(exit_code)
 
 
 
