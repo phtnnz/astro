@@ -197,7 +197,7 @@ def walk_the_dir(dir):
         error(f"no such directory {dir}")
 
     for dirName, subdirList, fileList in os.walk(dir):
-        verbose('Found directory: %s' % dirName)
+        verbose(f"found directory {dirName}")
         # Test for Astro dir ...
         m = re.search(r'[\\/](\d\d\d\d-\d\d-\d\d)[\\/]LIGHT$', dirName)
         if not m:
@@ -206,11 +206,13 @@ def walk_the_dir(dir):
             m = re.search(r'[\\/].+_(\d\d\d\d-\d\d-\d\d)$', dirName)
         if m:
             date = m.group(1)
-            verbose("  Date:", date)
-            exposures[date] = {}
+            verbose(f"date {date}")
+            if not date in exposures:
+                exposures[date] = {}
             
             for f in FILTER:
-                exposures[date][f] = {}
+                if not f in exposures[date]:
+                    exposures[date][f] = {}
             
                 for fname in fileList:
                     # Match extra pattern
