@@ -31,6 +31,8 @@
 # Version 1.0 / 2024-07-06
 #       Version bumped to 1.0, fully working now
 #       Allow -C option without -o, write CSV to stdout
+# Version 1.1 / 2024-07-13
+#       Added -m --match option
 
 import os
 import argparse
@@ -48,7 +50,7 @@ from verbose import verbose, error
 from jsonconfig import JSONConfig, config
 
 
-VERSION = "1.0 / 2024-07-06"
+VERSION = "1.1 / 2024-07-12"
 AUTHOR  = "Martin Junius"
 NAME    = "astro-countsubs"
 
@@ -150,6 +152,13 @@ class AstroConfig(JSONConfig):
 config = AstroConfig("astro-countsubs-config.json")
 
 
+
+# Options
+class Options:
+    match = None        # -m --match
+
+
+
 # CSV output
 class CSVOutput:
     enabled = False
@@ -204,6 +213,10 @@ def walk_the_dir(dir):
                 exposures[date][f] = {}
             
                 for fname in fileList:
+                    # Match extra pattern
+                    if Options.match and not Options.match in fname:
+                        continue
+
                     # Test for proper sub name ...
                     match = re.search(r'_(' + f + r')_(\d+)\.00s_', fname)
                     if not match:
@@ -378,6 +391,7 @@ def main():
     arg.add_argument("-o", "--output", help="write CSV to file OUTPUT (default: stdout)")
     arg.add_argument("-F", "--filter-set", help="name of filter set for Astrobin CSV (see config)")
     arg.add_argument("--calibration-set", help="name of calibration set (see config)")
+    arg.add_argument("-m", "--match", help="filename must contain MATCH")
     arg.add_argument("dirname", help="directory name")
 
     args  = arg.parse_args()
@@ -405,6 +419,7 @@ def main():
     CSVOutput.output  = args.output
     CSVOutput.filter_set = args.filter_set
     CSVOutput.calibration_set = args.calibration_set
+    Options.match = args.match
 
     # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
     # see here https://bugs.python.org/issue39845
