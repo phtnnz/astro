@@ -35,6 +35,7 @@
 #       Added -m --match option
 # Version 1.2 / 2024-07-15
 #       Added -T --total-only / -N --no-calibration options
+#       Use new module csvoutput
 
 import os
 import argparse
@@ -50,6 +51,7 @@ ic.disable()
 # Local modules
 from verbose import verbose, error
 from jsonconfig import JSONConfig, config
+from csvoutput import CSVOutput
 
 
 VERSION = "1.2 / 2024-07-15"
@@ -160,37 +162,10 @@ class Options:
     match = None                # -m --match
     total_only = False          # -T --total-only
     no_calibration = False      # -N --no-calibration
-
-
-
-# CSV output
-class CSVOutput:
-    enabled = False
-    output = None
-    filter_set = None
-    calibration_set = None
-
-    obj_cache = []
-    fields = ASTROBIN_FIELDS
-
-    def append_csv(obj):
-        CSVOutput.obj_cache.append(obj)
-
-    def set_csv_fields(fields):
-        CSVOutput.fields = fields
-
-    def _write(f):            
-        writer = csv.writer(f, dialect="excel")
-        if CSVOutput.fields:
-            writer.writerow(CSVOutput.fields)
-        writer.writerows(CSVOutput.obj_cache)
-
-    def write_csv(file):
-        if file:
-            with open(file, 'w', newline='') as f:
-                CSVOutput._write(f)
-        else:
-                CSVOutput._write(sys.stdout)
+    csv = False                 # -C --csv
+    output = None               # -o --output
+    filter_set = None           # -F --filter-set
+    calibration_set = None      # --calibration-set
 
 
 
@@ -247,7 +222,7 @@ def walk_the_dir(dir):
                         else:
                             exposures[date][f][time] = 1
 
-    if CSVOutput.enabled:
+    if Options.csv:
         csv_list(exposures)
     else:
         print_filter_list(exposures)
@@ -255,7 +230,7 @@ def walk_the_dir(dir):
 
 
 def print_filter_list(exp):
-    calibration_set = CSVOutput.calibration_set
+    calibration_set = Options.calibration_set
 
     total = {}
     darks = {}
@@ -344,12 +319,12 @@ def print_filter_list(exp):
 
 
 def extra(key):
-    return config.get_setting(CSVOutput.calibration_set, key)
+    return config.get_setting(Options.calibration_set, key)
 
 
 def csv_list(exp):
-    filter_set = CSVOutput.filter_set
-    calibration_set = CSVOutput.calibration_set
+    filter_set = Options.filter_set
+    calibration_set = Options.calibration_set
 
     # CSV format as required by the Astrobin upload
     # For documentation see https://welcome.astrobin.com/importing-acquisitions-from-csv/
@@ -381,10 +356,11 @@ def csv_list(exp):
                             darks, flats, flatdarks, bias,
                             extra("bortle") ]
                 verbose(",".join(map(str, fields)))
-                CSVOutput.append_csv(fields)
+                CSVOutput.add_row(fields)
 
-    if CSVOutput.enabled:
-        CSVOutput.write_csv(CSVOutput.output)
+    if Options.csv:
+        CSVOutput.add_fields(ASTROBIN_FIELDS)
+        CSVOutput.write(Options.output, set_locale=False)
 
    
    
@@ -428,10 +404,10 @@ def main():
 
     verbose("filter =", FILTER)
 
-    CSVOutput.enabled = args.csv
-    CSVOutput.output  = args.output
-    CSVOutput.filter_set = args.filter_set
-    CSVOutput.calibration_set = args.calibration_set
+    Options.csv = args.csv
+    Options.output  = args.output
+    Options.filter_set = args.filter_set
+    Options.calibration_set = args.calibration_set
     Options.match = args.match
     Options.total_only = args.total_only
     Options.no_calibration = args.no_calibration
