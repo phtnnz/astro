@@ -1,8 +1,12 @@
 # Astro
 
-Python scripts for creating N.I.N.A JSON sequences and targets, from object data in CSV format and N.I.N.A templates
+Python scripts for automation of NEO observations with N.I.N.A (and more)
+- Build JSON sequences from target templates and observation data in CSV format
+- Test Hakos roof and parked status
+- Data packing with 7-zip and upload
+- Count # of frames in data directory, output CSV for Astrobin import
 
-Copyright 2023 Martin Junius
+Copyright 2023-2024 Martin Junius
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,9 +37,13 @@ Local modules:
 | ---------------- | ---------------------------------- |
 | mpc.mpcdata80    | Class for handling MPC 80-column data format |
 | mpc.mpcosarchive | Class for handling MPC/MPO/MPS archive |
-| mpc.verbose      | verbose(), warning() and error() messages, mpc modules copy |
+| mpc.mpcwamo      | Functions for handling WAMO requests |
 | jsonconfig       | Read/write JSON config files for the astro scripts |
 | verbose          | verbose(), warning() and error() messages |
+| csvoutput        | Handle output to CSV file |
+| discordmsg       | Send message via Discord webhook |
+| jsonoutput       | Handle output to JSON file |
+| ovoutput         | Handle output to overview text file |
 
 
 ## nina-create-sequence
