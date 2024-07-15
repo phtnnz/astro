@@ -169,7 +169,6 @@ def process_mpc1992(fh, line1):
             break
 
     wamo = retrieve_from_wamo(ids)
-
     if wamo:
         mpc1992_obj["_wamo"] = wamo
         # Get publications and add to global list
@@ -181,7 +180,8 @@ def process_mpc1992(fh, line1):
                 OverviewOutput.add(obs["data"]["date_minus12"], obs["objID"], obs["data"]["data"])
             else:
                 OverviewOutput.add(obs["objID"], obs["data"]["date_minus12"], obs["data"]["data"])
-
+    else:
+        warning("data from MPC1992 report not found in WAMO, submitted ADES instead?")
 
     # verbose("JSON =", json.dumps(mpc1992_obj, indent=4))
 
@@ -236,7 +236,6 @@ def process_ades(fh, line1):
     ades_obj["_ids"] = ids
 
     wamo = retrieve_from_wamo(ids)
-
     if wamo:
         ades_obj["_wamo"] = wamo
         # Get publications and add to global list
@@ -248,6 +247,8 @@ def process_ades(fh, line1):
                 OverviewOutput.add(obs["data"]["date_minus12"], obs["objID"], obs["data"]["data"])
             else:
                 OverviewOutput.add(obs["objID"], obs["data"]["date_minus12"], obs["data"]["data"])
+    else:
+        warning("data from ADES report not found in WAMO, submitted MPC1992 instead?")
        
     # verbose("JSON =", json.dumps(ades_obj, indent=4))
 
