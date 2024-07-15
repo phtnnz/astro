@@ -5,6 +5,8 @@ Python scripts for automation of NEO observations with N.I.N.A (and more)
 - Test Hakos roof and parked status
 - Data packing with 7-zip and upload
 - Count # of frames in data directory, output CSV for Astrobin import
+- Process MPC ACK mails and retrieve observations from MPC WAMO
+- Process MPC 1992 and ADES reports, retrieve observations from MPC WAMO
 
 Copyright 2023-2024 Martin Junius
 
@@ -49,9 +51,9 @@ Local modules:
 ## nina-create-sequence
 Builds a complete N.I.N.A sequence for the observation night, using a base template (with empty Sequence Target Area) and a target template (repeated for every single object), from a CSV list of targets exported by NEO Planner.
 
-The directory NINA-Templates-IAS/ contains the necessary N.I.N.A templates.
+The directories NINA-Templates-IAS/ and NINA-Templates-IAS3/ contains the necessary N.I.N.A templates.
 
-Currently used for the M49, the IAS Remote Telescope
+Currently used for the M49, the IAS Remote Telescopes at Hakos, Namibia
 
 ```
 usage: nina-create-sequence [-h] [-v] [-T TARGET_TEMPLATE] [-S SEQUENCE_TEMPLATE] [-D DESTINATION_DIR] [-o OUTPUT] [-t] [-p] [-n] [-N] filename [filename ...]
