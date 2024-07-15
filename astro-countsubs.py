@@ -33,6 +33,8 @@
 #       Allow -C option without -o, write CSV to stdout
 # Version 1.1 / 2024-07-13
 #       Added -m --match option
+# Version 1.2 / 2024-07-15
+#       Added -T --total-only / -N --no-calibration options
 
 import os
 import argparse
@@ -50,7 +52,7 @@ from verbose import verbose, error
 from jsonconfig import JSONConfig, config
 
 
-VERSION = "1.1 / 2024-07-12"
+VERSION = "1.2 / 2024-07-15"
 AUTHOR  = "Martin Junius"
 NAME    = "astro-countsubs"
 
@@ -155,7 +157,9 @@ config = AstroConfig("astro-countsubs-config.json")
 
 # Options
 class Options:
-    match = None        # -m --match
+    match = None                # -m --match
+    total_only = False          # -T --total-only
+    no_calibration = False      # -N --no-calibration
 
 
 
@@ -264,19 +268,22 @@ def print_filter_list(exp):
         total[f] = {}
         
     for date in exp.keys():
-        if single_filter:
-            print(date, end="")
-        else:
-            print(date)
+        if not Options.total_only:
+            if single_filter:
+                print(date, end="")
+            else:
+                print(date)
 
         for f in exp[date].keys():
             if exp[date][f]:
-                print(f"   {f}:", end="")
+                if not Options.total_only:
+                    print(f"   {f}:", end="")
 
             for time in exp[date][f].keys():
                 n = exp[date][f][time]
                 time = int(time)
-                print(f" {n}x {time}s", end="")
+                if not Options.total_only:
+                    print(f" {n}x {time}s", end="")
 
                 darks[str(time)+"s"] = config.get_calibration(calibration_set, "masterdark", str(time)+"s")
                 flats[f] = config.get_calibration(calibration_set, "masterflat", f)
@@ -285,7 +292,8 @@ def print_filter_list(exp):
                     total[f][time] += n
                 else:
                     total[f][time] = n
-        print("")
+        if not Options.total_only:
+            print("")
 
     print("Total")
     for f in total.keys():
@@ -315,23 +323,24 @@ def print_filter_list(exp):
     mins  = int((total1 - hours*3600) / 60)
     print(f"   {total1}s / {hours:d}h{mins:02d}")
 
-    print("Darks")
-    for t, n in darks.items():
-        print(f"   {n}x {t}", end="")
-    print()
-    print("Flats")
-    for f, n in flats.items():
-        print(f"   {f}: {n}x", end="")
-    print()
-    if bias:
-        print(f"Bias\n   {bias}x")
-    if flatdarks:
-        print(f"Flatdarks\n   {flatdarks}x {secs}")
-    print("Settings")
-    for key in ("mode", "gain", "offset", "cooling"):
-        print(f"   {key}: {extra(key)}", end="")
-    print()
-   
+    if not Options.no_calibration and not Options.total_only:
+        print("Darks")
+        for t, n in darks.items():
+            print(f"   {n}x {t}", end="")
+        print()
+        print("Flats")
+        for f, n in flats.items():
+            print(f"   {f}: {n}x", end="")
+        print()
+        if bias:
+            print(f"Bias\n   {bias}x")
+        if flatdarks:
+            print(f"Flatdarks\n   {flatdarks}x {secs}")
+        print("Settings")
+        for key in ("mode", "gain", "offset", "cooling"):
+            print(f"   {key}: {extra(key)}", end="")
+        print()
+
 
 
 def extra(key):
@@ -394,6 +403,8 @@ def main():
     arg.add_argument("-F", "--filter-set", help="name of filter set for Astrobin CSV (see config)")
     arg.add_argument("--calibration-set", help="name of calibration set (see config)")
     arg.add_argument("-m", "--match", help="filename must contain MATCH")
+    arg.add_argument("-T", "--total-only", action="store_true", help="list total only")
+    arg.add_argument("-N", "--no-calibration", action="store_true", help="don't list calibration data")
     arg.add_argument("dirname", help="directory name")
 
     args  = arg.parse_args()
@@ -422,6 +433,8 @@ def main():
     CSVOutput.filter_set = args.filter_set
     CSVOutput.calibration_set = args.calibration_set
     Options.match = args.match
+    Options.total_only = args.total_only
+    Options.no_calibration = args.no_calibration
 
     # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
     # see here https://bugs.python.org/issue39845
