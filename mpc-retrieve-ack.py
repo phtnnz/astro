@@ -39,7 +39,7 @@
 #       handled in mpc-retrieve-reports
 # Version 1.6 / 2024-07-15
 #       More refactoring, moved WAMO request to new module mpcwamo, moved Publication
-#       class to mpcosarchive
+#       class to mpcosarchive, moved ObsOverview to ovoutput
 
 import sys
 import argparse
@@ -59,7 +59,7 @@ from verbose          import verbose, warning, error
 from jsonconfig       import JSONConfig, config
 from mpc.mpcosarchive import Publication
 from mpc.mpcwamo      import retrieve_from_wamo
-
+from ovoutput         import OverviewOutput
 
 NAME    = "mpc-retrieve-ack"
 VERSION = "1.6 / 2024-07-06"
@@ -107,65 +107,6 @@ config = RetrieveConfig(CONFIG)
 
 
 
-# Adapted from https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside
-def atoi(text):
-    return int(text) if text.isdigit() else text
-
-def natural_keys(*args):
-    # This one is a bit tricky when using sorted() with dict.items()
-    text, val = args[0]
-    '''
-    alist.sort(key=natural_keys) sorts in human order
-    http://nedbatchelder.com/blog/200712/human_sorting.html
-    (See Toothy's implementation in the comments)
-    '''
-    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
-
-
-class ObsOverview:
-    """ Store all objects with respective list of observations """
-    obj_cache = {}
-
-    def add_obs(key1, key2, obs):
-        if not key1 in ObsOverview.obj_cache:
-            ObsOverview.obj_cache[key1] = {}
-        dict2 = ObsOverview.obj_cache[key1]
-        if not key2 in dict2:
-            dict2[key2] = []
-        dict2[key2].append(obs)
-
-
-    def print_all():
-        key1_count = 0
-        key2_count = 0
-        obs_count = 0
-
-        for key1, dict2 in sorted(ObsOverview.obj_cache.items(), key=natural_keys):
-            print(key1)
-            key1_count += 1
-
-            for key2, list in sorted(dict2.items(), key=natural_keys):
-                print("   ", key2)
-                key2_count += 1
-                obs_count += len(list)
-
-                for obs in list:
-                    print("       ", obs)
-
-        print()
-        if Options.sort_by_date:
-            print(f"Total observation dates:   {key1_count}")
-            print(f"Total single observations: {obs_count}")
-        else:
-            print(f"Total objects:             {key1_count}")
-            print(f"Total single observations: {obs_count}")
-
-    
-    def write_overview(file):
-        with open(file, 'w') as f:
-            sys.stdout = f
-            ObsOverview.print_all()
-            Publication.print_list()
 
 
 
@@ -342,9 +283,9 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
         if Options.overview:
             for wobj in wamo:
                 if Options.sort_by_date:
-                    ObsOverview.add_obs(wobj["data"]["date_minus12"], wobj["objID"], wobj["data"]["data"])
+                    OverviewOutput.add(wobj["data"]["date_minus12"], wobj["objID"], wobj["data"]["data"])
                 else:
-                    ObsOverview.add_obs(wobj["objID"], wobj["data"]["date_minus12"], wobj["data"]["data"])
+                    OverviewOutput.add(wobj["objID"], wobj["data"]["date_minus12"], wobj["data"]["data"])
        
     else:
         if Options.csv:
@@ -403,15 +344,24 @@ def main():
     Options.overview    = args.overview
     Options.sort_by_date= args.sort_by_date
 
+    if Options.sort_by_date:
+        OverviewOutput.set_description1("Total observation dates:  ")
+        OverviewOutput.set_description2("Total single observations:")
+    else:
+        OverviewOutput.set_description1("Total objects:             ")
+        OverviewOutput.set_description2("Total single observations: ")
+
     retrieve_from_imap(config)
 
     if Options.overview and not Options.output:
-        ObsOverview.print_all()
-        Publication.print_list()
+        OverviewOutput.print()
+        Publication.print()
 
     if Options.output:
         if Options.overview:
-            ObsOverview.write_overview(Options.output)
+            with open(Options.output, 'w', newline='', encoding="utf-8") as f:
+                OverviewOutput.print(f)
+                Publication.print(f)
         elif Options.csv:
             CSVOutput.write_csv(Options.output)
         else:
