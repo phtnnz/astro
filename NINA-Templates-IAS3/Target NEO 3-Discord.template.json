@@ -62,7 +62,7 @@
       {
         "$id": "9",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 0.4-remote3-discord / 2024-06-28 / Martin Junius",
+        "Text": "Version 1.0 remote3-discord / 2024-07-15 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -200,7 +200,7 @@
               "Hours": 6,
               "Minutes": 43,
               "MinutesOffset": 0,
-              "Seconds": 50,
+              "Seconds": 20,
               "SelectedProvider": {
                 "$id": "26",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.NauticalDawnProvider, NINA.Sequencer"
