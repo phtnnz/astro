@@ -39,17 +39,14 @@
 #       handled in mpc-retrieve-reports
 # Version 1.6 / 2024-07-15
 #       More refactoring, moved WAMO request to new module mpcwamo, moved Publication
-#       class to mpcosarchive, moved ObsOverview to ovoutput
+#       class to mpcosarchive, moved ObsOverview to ovoutput, use csvoutput
 
-import sys
 import argparse
 import json
 import imaplib
 import re
-import csv
 
 # The following libs must be installed with pip
-import requests
 from icecream import ic
 # Disable debugging
 ic.disable()
@@ -61,6 +58,7 @@ from mpc.mpcosarchive import Publication
 from mpc.mpcwamo      import retrieve_from_wamo
 from ovoutput         import OverviewOutput
 from csvoutput        import CSVOutput
+from jsonoutput       import JSONOutput
 
 
 NAME    = "mpc-retrieve-ack"
@@ -106,22 +104,6 @@ class RetrieveConfig(JSONConfig):
 
 # Get config with IMAP account data
 config = RetrieveConfig(CONFIG)
-
-
-
-
-
-
-class JSONOutput:
-    obj_cache = []
-
-    def add_json_obj(obj):
-        JSONOutput.obj_cache.append(obj)
-
-    def write_json(file):
-        with open(file, 'w') as f:
-            json.dump(JSONOutput.obj_cache, f, indent = 4)
-
 
 
 
@@ -171,7 +153,7 @@ def retrieve_from_folder(server, folder):
         msg = data[0][1].decode()
         obj = retrieve_from_msg(folder, n, msg)
         if obj:
-            JSONOutput.add_json_obj(obj)
+            JSONOutput.add_obj(obj)
 
 
 
@@ -348,7 +330,7 @@ def main():
         elif Options.csv:
             CSVOutput.write_csv(Options.output)
         else:
-            JSONOutput.write_json(Options.output)
+            JSONOutput.write(Options.output)
 
 
 
