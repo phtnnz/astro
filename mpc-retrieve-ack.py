@@ -37,16 +37,15 @@
 # Version 1.5 / 2024-06-26
 #       Refactored, removed all code for reading report txt files, this will be
 #       handled in mpc-retrieve-reports
-# Version 1.6 / 2024-07-06
-#       More refactoring, moved WAMO request to new module mpcwamo
+# Version 1.6 / 2024-07-15
+#       More refactoring, moved WAMO request to new module mpcwamo, moved Publication
+#       class to mpcosarchive
 
 import sys
-import os
 import argparse
 import json
 import imaplib
 import re
-import time
 import csv
 
 # The following libs must be installed with pip
@@ -58,8 +57,7 @@ ic.disable()
 # Local modules
 from verbose          import verbose, warning, error
 from jsonconfig       import JSONConfig, config
-from mpc.mpcosarchive import MPCOSArchive
-from mpc.mpcdata80    import MPCData80
+from mpc.mpcosarchive import Publication
 from mpc.mpcwamo      import retrieve_from_wamo
 
 
@@ -68,8 +66,6 @@ VERSION = "1.6 / 2024-07-06"
 AUTHOR  = "Martin Junius"
 
 CONFIG = "imap-account.json"
-WAMO_URL = "https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo"
-MPEC_URL = "https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi"
 
 
 
@@ -111,31 +107,6 @@ config = RetrieveConfig(CONFIG)
 
 
 
-class Publication:
-    pub_cache = {}
-
-    def add_publication(pub):
-            Publication.pub_cache[pub] = True
-
-
-    def print_publication_list():
-        if Publication.pub_cache:
-            arc = MPCOSArchive()
-
-            print("\nPublished:")
-            for id in Publication.pub_cache.keys():
-                m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
-                if m:
-                    print(id, ":", retrieve_from_mpc_mpec(m.group(1)))
-                else:
-                    r = arc.search_pub(id)
-                    if r:
-                        print(id, ":", r["pdf"])
-                    else:
-                        print(id, ": unknown")
-
-
-
 # Adapted from https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside
 def atoi(text):
     return int(text) if text.isdigit() else text
@@ -152,7 +123,7 @@ def natural_keys(*args):
 
 
 class ObsOverview:
-    """ Store all objects with respective list of observatons """
+    """ Store all objects with respective list of observations """
     obj_cache = {}
 
     def add_obs(key1, key2, obs):
@@ -194,7 +165,7 @@ class ObsOverview:
         with open(file, 'w') as f:
             sys.stdout = f
             ObsOverview.print_all()
-            Publication.print_publication_list()
+            Publication.print_list()
 
 
 
@@ -348,7 +319,7 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
         for obs in wamo:
             pub = obs["publication"]
             if pub:
-                Publication.add_publication(pub)
+                Publication.add(pub)
 
         ack_obj["_wamo"].append(wamo)
         if Options.csv:
@@ -384,25 +355,6 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
     verbose("JSON =", json.dumps(ack_obj, indent=4))
 
     return ack_obj
-
-
-
-def retrieve_from_mpc_mpec(id):
-    """ Retrieve MPEC from minorplanetcenter """
-
-    # Example
-    # curl -v -d "S=M&F=P&N=2023-P25" https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi
-    # yields 302 redirect
-    # Location: https://www.minorplanetcenter.net/mpec/K23/K23P25.html
-
-    data = { "S": "M",  "F": "P",  "N": id }
-    x = requests.post(MPEC_URL, data=data, allow_redirects=False)
-
-    # print(x.headers)
-    url = x.headers["Location"]
-    ic(id, url)
-
-    return url
 
 
 
@@ -455,7 +407,7 @@ def main():
 
     if Options.overview and not Options.output:
         ObsOverview.print_all()
-        Publication.print_publication_list()
+        Publication.print_list()
 
     if Options.output:
         if Options.overview:

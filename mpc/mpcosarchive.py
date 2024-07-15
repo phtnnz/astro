@@ -55,6 +55,7 @@ AUTHOR  = "Martin Junius"
 NAME    = "mpcosarchive"
 
 ARCHIVE_URL = "https://www.minorplanetcenter.net/iau/ECS/MPCArchive/MPCArchive.html"
+MPEC_URL = "https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi"
 
 
 
@@ -146,6 +147,48 @@ class MPCOSArchive:
         list.append({"lo": int(lo), "hi": int(hi), "pdf": pdf, "year": year, "date": date})
 
                 
+
+class Publication:
+    _cache = {}
+
+
+    def add(pub):
+            Publication._cache[pub] = True
+
+
+    def print_list():
+        if Publication._cache:
+            arc = MPCOSArchive()
+
+            print("\nPublished:")
+            for id in Publication._cache.keys():
+                m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
+                if m:
+                    print(id, ":", Publication._MPEC_link(m.group(1), m.group(2), m.group(3)))
+                else:
+                    r = arc.search_pub(id)
+                    if r:
+                        print(id, ":", r["pdf"])
+                    else:
+                        print(id, ": unknown")
+
+
+    def _mpec_link(cent, year, id):
+        # Example
+        # curl -v -d "S=M&F=P&N=2023-P25" https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi
+        # yields 302 redirect
+        # Location: https://www.minorplanetcenter.net/mpec/K23/K23P25.html
+
+        data = { "S": "M",  "F": "P",  "N": id }
+        x = requests.post(MPEC_URL, data=data, allow_redirects=False)
+
+        # print(x.headers)
+        url = x.headers["Location"]
+        ic(id, url)
+
+        return url
+
+
 
 
 ### Test run as a command line script ###
