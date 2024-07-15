@@ -40,8 +40,6 @@
 import os
 import argparse
 import re
-import csv
-import sys
 
 # The following libs must be installed with pip
 from icecream import ic
