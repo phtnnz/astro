@@ -41,6 +41,7 @@
 import argparse
 import re
 import requests
+import sys
 
 # The following libs must be installed with pip
 from icecream import ic
@@ -156,21 +157,21 @@ class Publication:
             Publication._cache[pub] = True
 
 
-    def print_list():
+    def print(file=sys.stdout):
         if Publication._cache:
             arc = MPCOSArchive()
 
-            print("\nPublished:")
+            print("\nPublished:", file=file)
             for id in Publication._cache.keys():
                 m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
                 if m:
-                    print(id, ":", Publication._MPEC_link(m.group(1), m.group(2), m.group(3)))
+                    print(id, ":", Publication._MPEC_link(m.group(1), m.group(2), m.group(3)), file=file)
                 else:
                     r = arc.search_pub(id)
                     if r:
-                        print(id, ":", r["pdf"])
+                        print(id, ":", r["pdf"], file=file)
                     else:
-                        print(id, ": unknown")
+                        print(id, ": unknown", file=file)
 
 
     def _mpec_link(cent, year, id):
