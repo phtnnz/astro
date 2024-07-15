@@ -129,8 +129,15 @@ def retrieve_from_wamo(ids):
                 warning(f"id {id} = observation \"{ids[id]}\" flagged near-duplicate")
 
         if not m:
-            warning("unknown response:", line)
-            warning("corresponding observations:", ids)
+            m = re.search(r'(.*) was not found\.$', line)
+            if m:
+                warning(f"not found: {m.group(1)}")
+
+        if not m:
+            warning(f"unknown response: {line}")
+            warning("corresponding observations:")
+            for obs in ids.keys():
+                warning(f"    {obs}")
 
     # Avoid high load on the MPC server
     time.sleep(0.2)
