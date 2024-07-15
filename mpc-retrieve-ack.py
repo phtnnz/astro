@@ -39,10 +39,10 @@
 #       handled in mpc-retrieve-reports
 # Version 1.6 / 2024-07-15
 #       More refactoring, moved WAMO request to new module mpcwamo, moved Publication
-#       class to mpcosarchive, moved ObsOverview to ovoutput, use csvoutput
+#       class to mpcosarchive, moved ObsOverview to ovoutput, use csvoutput, moved
+#       JSONOutput to jsonoutput, fixed output
 
 import argparse
-import json
 import imaplib
 import re
 
@@ -258,7 +258,6 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
                 # CSV output: list of messages in mailbox with id and obs
                 CSVOutput.add_fields([ "Folder", "Message#", "Date", "ACK", "id", "obs" ])
                 CSVOutput.add_row([ msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_ack, id, obs ])
-    verbose("JSON =", json.dumps(ack_obj, indent=4))
 
     return ack_obj
 
@@ -318,19 +317,19 @@ def main():
 
     retrieve_from_imap(config)
 
-    if Options.overview and not Options.output:
-        OverviewOutput.print()
-        Publication.print()
-
-    if Options.output:
-        if Options.overview:
+    if Options.overview:
+        if Options.output:
             with open(Options.output, 'w', newline='', encoding="utf-8") as f:
                 OverviewOutput.print(f)
                 Publication.print(f)
-        elif Options.csv:
-            CSVOutput.write_csv(Options.output)
         else:
-            JSONOutput.write(Options.output)
+            OverviewOutput.print()
+            Publication.print()
+
+    elif Options.csv:
+        CSVOutput.write(Options.output)
+    else:
+        JSONOutput.write(Options.output)
 
 
 
