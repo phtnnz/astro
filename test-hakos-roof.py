@@ -117,7 +117,7 @@ def main():
         if status_parked:
             exit_code = 0
     
-    verbose(f"exit={exit_code} ({"not " if exit_code else ""}ok)")
+    verbose(f'exit={exit_code} ({"not " if exit_code else ""}ok)')
     sys.exit(exit_code)
 
 
