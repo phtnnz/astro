@@ -167,18 +167,18 @@ class Publication:
             for id in Publication._cache.keys():
                 m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
                 if m:
-                    print(id, ":", Publication._MPEC_link(m.group(1)), file=file)
+                    print(f"{id}:", Publication._MPEC_link(m.group(1)), file=file)
                     continue
                 if id == "NEOCP/PCCP":
-                    print(id, NEOCP_URL)
-                    print("     or   ", PCCP_URL)
+                    print(f"{id}:", NEOCP_URL)
+                    print("     or   :", PCCP_URL)
                     continue
 
                 r = arc.search_pub(id)
                 if r:
-                    print(id, ":", r["pdf"], file=file)
+                    print(f"{id}:", r["pdf"], file=file)
                 else:
-                    print(id, ": unknown", file=file)
+                    print(f"{id}: unknown", file=file)
 
 
     def _MPEC_link(id):
