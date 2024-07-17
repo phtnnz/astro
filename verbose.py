@@ -19,6 +19,8 @@
 #       First version of verbose module
 # Version 0.2 / 2023-12-18
 #       Added warning(), error() with abort
+# Version 1.0 / 2024-01-06
+#       Version bumped to 1.0
 #
 #       Usage:  from verbose import verbose, warning, error
 #               verbose(print-like-args)
