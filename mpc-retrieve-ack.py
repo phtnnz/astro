@@ -41,6 +41,8 @@
 #       More refactoring, moved WAMO request to new module mpcwamo, moved Publication
 #       class to mpcosarchive, moved ObsOverview to ovoutput, use csvoutput, moved
 #       JSONOutput to jsonoutput, fixed output
+# Version 1.7 / 2024-07-17
+#       Added -m --match, -J --json options
 
 import argparse
 import imaplib
@@ -62,7 +64,7 @@ from jsonoutput       import JSONOutput
 
 
 NAME    = "mpc-retrieve-ack"
-VERSION = "1.6 / 2024-07-06"
+VERSION = "1.7 / 2024-07-17"
 AUTHOR  = "Martin Junius"
 
 CONFIG = "imap-account.json"
@@ -80,6 +82,8 @@ class Options:
     csv         = False     # -C --csv
     overview    = False     # -O --overview
     sort_by_date= False     # -D --sort-by-date
+    match       = None      # -m --match
+    json        = False     # -J --json
 
 
 
@@ -196,6 +200,10 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
                 if m:    
                     msg_ids[m.group(2)] = m.group(1)
 
+    if Options.match:
+        if not Options.match in msg_subject:
+            return None
+                    
     if Options.list_msgs:
         nstr = "[{:03d}]".format(msg_n)
         print(nstr, msg_date)
@@ -285,8 +293,10 @@ def main():
     arg.add_argument("-f", "--imap-folder", help="IMAP folder(s) (comma-separated) to retrieve mails from, default "+Options.inbox)
     arg.add_argument("-L", "--list-messages-only", action="store_true", help="list messages in IMAP folder only")
     arg.add_argument("-m", "--msgs", help="retrieve messages in MSGS range only, e.g. \"1-3,5\", default all")
-    arg.add_argument("-o", "--output", help="write JSON/CSV to OUTPUT file")
-    arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format (instead of JSON)")
+    arg.add_argument("-M", "--match", help="retrieve messages with subject containing MATCH")
+    arg.add_argument("-o", "--output", help="write to OUTPUT file")
+    arg.add_argument("-J", "--json", action="store_true", help="use JSON output format")
+    arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format")
     arg.add_argument("-O", "--overview", action="store_true", help="create overview of objects and observations")
     arg.add_argument("-D", "--sort-by-date", action="store_true", help="sort overview by observation date (minus 12h)")
     args = arg.parse_args()
@@ -307,6 +317,8 @@ def main():
     Options.csv         = args.csv
     Options.overview    = args.overview
     Options.sort_by_date= args.sort_by_date
+    Options.match       = args.match
+    Options.json        = args.json
 
     if Options.sort_by_date:
         OverviewOutput.set_description1("Total observation dates:  ")
@@ -328,7 +340,7 @@ def main():
 
     elif Options.csv:
         CSVOutput.write(Options.output)
-    else:
+    elif Options.json:
         JSONOutput.write(Options.output)
 
 
