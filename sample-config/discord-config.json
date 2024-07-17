@@ -1,0 +1,9 @@
+{
+    "##": "Config for sending messages to Discord channel via webhook",
+
+    "channels": {
+        "#alerts": "https://discord.com/api/webhooks/...",
+        "#alerts2": "..."
+    }
+
+}

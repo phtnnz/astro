@@ -46,13 +46,19 @@
 
 
 # ChangeLog
-# Version 0.1 / 2023-1013
+# Version 0.1 / 2023-10-13
 #       Moved Data80 class from mpc-retrieve-ack to here, renamed to MPCData80
 #       Can be imported as a module or run as a command line script
+# Version 0.2 / 2024-05-21
+#       Moved to mpc/mpcdata80, some fixes
+# Version 1.0 / 2024-07-17
+#       Bumped version number to 1.0
 
 import argparse
 import re
 import json
+from datetime import datetime, timedelta
+
 # The following libs must be installed with pip
 from icecream import ic
 # Disable debugging
@@ -62,7 +68,7 @@ from verbose import verbose
 
 
 global VERSION, AUTHOR, NAME
-VERSION = "0.1 / 2023-10-13"
+VERSION = "1.0 / 2024-07-17"
 AUTHOR  = "Martin Junius"
 NAME    = "mpcdata80"
 
@@ -179,7 +185,6 @@ class MPCData80:
         packed_ref     = self.get_col(73, 77)    # publication reference
         code           = self.get_col(78, 80)
 
-        ic(self)
         ic(packed_id, discovery, note1, note2, date, ra, dec, mag, band, cat, packed_ref, code)
 
         (perm_id, prov_id) = MPCData80.unpack_id(packed_id)
@@ -193,7 +198,7 @@ class MPCData80:
         self.obj["discovery"] = discovery.strip()
         self.obj["note1"] = note1
         self.obj["note2"] = note2
-        self.obj["date"] = date.strip()         # FIXME: convert to proper date
+        self.obj["date"] = self.parse_date(date)
         self.obj["ra"] = ra.strip()
         self.obj["dec"] = dec.strip()
         self.obj["mag"] = mag.strip()
@@ -202,6 +207,18 @@ class MPCData80:
         self.obj["reference"] = ref if ref != "     " else ""
         self.obj["code"] = code
 
+
+    def parse_date(self, date):
+        m = re.search(r'^(\d\d\d\d) (\d\d) (\d\d)\.(\d+)', date)
+        if m:
+            ic(m.groups())
+            dt = datetime(int(m.group(1)), int(m.group(2)), int(m.group(3))) + timedelta(days=float("0."+m.group(4)))
+            dt_minus12 = dt - timedelta(hours=12)
+            ic(dt, dt_minus12)
+            date = str(dt)
+            self.obj["date_minus12"] = str(dt_minus12.date())
+        return date
+    
 
     def get_json(self, indent=4):
         return json.dumps(self.obj, indent=indent)
@@ -253,13 +270,16 @@ class MPCData80:
         perm_id = ""
         prov_id = ""
 
+        ic(packed)
+        # Regex #1
         # Minor planet
         m = re.search(r'^(?: {5}|([0-9A-Za-z])(\d{4})|(~[0-9A-Za-z]{4}))' +
         #                         ^(1)         ^(2)    ^(3)
                       r'(?: {7}|([I-K])(\d{2})([A-HJ-Y])([a-zA-Z0-9])(\d)(?:([A-HJ-Z])|0))$', packed)
         #                        ^(4)   ^(5)   ^(6)      ^(7)         ^(8)   ^(9)
         if m:
-            ic(m)
+            ic("match regex #1")
+            ic(m, m.groups())
             # permId
             if m.group(1) or m.group(3):
                 if m.group(1):
@@ -279,12 +299,17 @@ class MPCData80:
                 else:           # comet ID -- use A/
                     prov_id =  'A/' + y + ' ' + m.group(6) + ns
     
+        # Regex #2
         # Comets
         m = re.search(r'^(?: {4}|(\d{4}))([APCDXI])' +
-        #                         ^(1)    ^(3)
-                      r'(?:([0-9A-Za-z])(\d{2})([A-HJ-Y])([a-zA-Z0-9])(\d)(?:0|([A-Z])|([a-z])))$', packed)
+        #                         ^(1)    ^(2)
+        ## regex fixed, 7 spaces are also an option
+        #              r'(?:([0-9A-Za-z])(\d{2})([A-HJ-Y])([a-zA-Z0-9])(\d)(?:0|([A-Z])|([a-z])))$', packed)
+                      r'(?: {7}|([0-9A-Za-z])(\d{2})([A-HJ-Y])([a-zA-Z0-9])(\d)(?:0|([A-Z])|([a-z])))$', packed)
         #                   ^(3)         ^(4)   ^(5)      ^(6)         ^(7)     ^(8)    ^(9)
         if m:
+            ic("match regex #2")
+            ic(m, m.groups())
             type = m.group(2)
             if m.group(1):
                 n = int(m.group(1))
@@ -292,9 +317,10 @@ class MPCData80:
                 # now check for fragments
                 if m.group(9):
                     perm_id = perm_id + '-' + m.group(9).upper()
-                if m.group(11):
-                    frag = (m.group(10) + m.group(11)).strip().upper()
-                perm_id = perm_id + '-' + frag
+                ##FIXME: regex doesn't contain a group 11
+                # if m.group(11):
+                #     frag = (m.group(10) + m.group(11)).strip().upper()
+                # perm_id = perm_id + '-' + frag
 
             if m.group(3):
                 y = MPCData80.decode_single(m.group(3)) * 100 + int(m.group(4))

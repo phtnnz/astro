@@ -17,13 +17,23 @@
 # ChangeLog
 # Version 0.1 / 2023-11-04
 #       First version of verbose module
-#       Usage:  from verbose import verbose
+# Version 0.2 / 2023-12-18
+#       Added warning(), error() with abort
+# Version 1.0 / 2024-01-06
+#       Version bumped to 1.0
+#
+#       Usage:  from verbose import verbose, warning, error
 #               verbose(print-like-args)
-#               verbose.enable()
-#               verbose.disabled()
-#               verbose.set_name(name)
+#               warning(print-like-args)
+#               error(print-like-args)
+#               .enable(flag=True)
+#               .disable()
+#               .set_prog(name)         global for all objects
+#               .set_errno(errno)       relevant only for error()
 
 import argparse
+import sys
+
 # The following libs must be installed with pip
 from icecream import ic
 # Disable debugging
@@ -31,37 +41,55 @@ ic.disable()
 
 
 global VERSION, AUTHOR, NAME
-VERSION = "0.0 / 2023-11-04"
+VERSION = "1.0 / 2024-01-06"
 AUTHOR  = "Martin Junius"
 NAME    = "verbose"
 
 
 
 class Verbose:
+    progname = None             # global program name
 
-    def __init__(self, flag=False):
+    def __init__(self, flag=False, prefix=None, abort=False):
         self.enabled = flag
-        self.progname = None
+        self.prefix = prefix
+        self.abort = abort
+        self.errno = 1          # exit(1) for generic errors
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         if not self.enabled:
             return
-        if self.progname:
-            print(self.progname + ": ", end="")
-        print(*args)
+        if Verbose.progname:
+            print(Verbose.progname + ": ", end="")
+        if self.prefix:
+            print(self.prefix + ": ", end="")
+        print(*args, **kwargs)
+        if self.abort:
+            self._exit()
 
-    def enable(self):
-        self.enabled = True
+    def enable(self, flag=True):
+        self.enabled = flag
 
     def disable(self):
         self.enabled = False
 
     def set_prog(self, name):
-        self.progname = name
+        Verbose.progname = name
+
+    def set_errno(self, errno):
+        self.errno = errno
+
+    def _exit(self):
+        if Verbose.progname:
+            print(Verbose.progname + ": ", end="")
+        print(f"exiting ({self.errno})")
+        sys.exit(self.errno)
 
 
 verbose = Verbose()
-error   = Verbose(True)
+warning = Verbose(True, "WARNING")
+error   = Verbose(True, "ERROR", True)
+
 
 
 
@@ -75,9 +103,8 @@ def main():
 
     args = arg.parse_args()
 
+    verbose.set_prog(NAME)
     if args.verbose:
-        verbose.set_prog(NAME)
-        error.set_prog(NAME + ": ERROR")
         verbose.enable()
     if args.debug:
         ic.enable()
@@ -85,11 +112,15 @@ def main():
     ic(args)
     verbose("Test", "1", "for", "verbose()")
     verbose("Test", "2", "for more", "verbose()", "with some formatting {:04d}".format(11+12))
+    verbose("Changing progname")
+    verbose.set_prog(NAME+"2")
+    warning("A", "warning", "message", " --- but no abort here!")
+    warning.set_prog(NAME+"3")
+    warning("Another change to progname occurred")
+    error.set_errno(99)
     error("Error test", "for Verbose module")
 
     
-
-
 
 if __name__ == "__main__":
     main()

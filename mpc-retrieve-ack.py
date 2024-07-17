@@ -23,128 +23,91 @@
 #       First somewhat usable version, retrieves ACK mails and WAMO data
 # Version 0.2 / 2023-08-14
 #       List MPECs with published measurements separately
+# Version 1.0 / 2023-12-02
+#       Bumped version to 1.0 as most functions are there, 
+#       new --csv option generating CSV output from ACK mails (and WAMO)
+# Version 1.1 / 2023-12-06
+#       Added -O --overview output, listing all objects and respective observations
+# Version 1.2 / 2024-01-06
+#       Some clean-up, improved output
+# Version 1.3 / 2024-02-02
+#       Added -D --sort-by-date option for overview output
+# Version 1.4 / 2024-03-20
+#       Somewhat refactored, using jsonconfig module
+# Version 1.5 / 2024-06-26
+#       Refactored, removed all code for reading report txt files, this will be
+#       handled in mpc-retrieve-reports
+# Version 1.6 / 2024-07-15
+#       More refactoring, moved WAMO request to new module mpcwamo, moved Publication
+#       class to mpcosarchive, moved ObsOverview to ovoutput, use csvoutput, moved
+#       JSONOutput to jsonoutput, fixed output
+# Version 1.7 / 2024-07-17
+#       Added -m --match, -J --json options
 
-import sys
-import os
-import errno
 import argparse
-import json
 import imaplib
 import re
-import time
-import csv
 
 # The following libs must be installed with pip
-import requests
 from icecream import ic
 # Disable debugging
 ic.disable()
 
 # Local modules
-from verbose import verbose, error
-from mpcdata80 import MPCData80
+from verbose          import verbose, warning, error
+from jsonconfig       import JSONConfig, config
+from mpc.mpcosarchive import Publication
+from mpc.mpcwamo      import retrieve_from_wamo
+from ovoutput         import OverviewOutput
+from csvoutput        import CSVOutput
+from jsonoutput       import JSONOutput
 
 
-global NAME, VERSION, AUTHOR
 NAME    = "mpc-retrieve-ack"
-VERSION = "0.2 / 2023-08-14"
+VERSION = "1.7 / 2024-07-17"
 AUTHOR  = "Martin Junius"
 
-global CONFIG, WAMO_URL, MPEC_URL
-CONFIG = "astro-python/imap-account.json"
-WAMO_URL = "https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo"
-MPEC_URL = "https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi"
+CONFIG = "imap-account.json"
 
 
 
-class Config:
-    """ JSON Config for IMAP account """
-
+class Options:
+    """ Global command line options """
     no_wamo     = False     # -n --no-wamo-requests
     list_folder = False     # -l --list-folders-only
     list_msgs   = False     # -L --list-messages-only
     inbox       = "INBOX"   # -F --imap-folder
     msgs_list   = None      # -m --msgs
-    mpc1992     = False     # -M --mpc1992-reports
-    ades        = False     # -A --ades-reports
     output      = None      # -o --output
+    csv         = False     # -C --csv
+    overview    = False     # -O --overview
+    sort_by_date= False     # -D --sort-by-date
+    match       = None      # -m --match
+    json        = False     # -J --json
+    submitted   = False     # -S --submitted
+
+
+class RetrieveConfig(JSONConfig):
+    """ JSON Config for IMAP account """
 
     def __init__(self, file=None):
-        self.obj = None
-        self.file = file
-
-        # get JSON config from %APPDATA%
-        appdata = os.environ.get('APPDATA')
-        if not appdata:
-            error("environment APPDATA not set!")
-            sys.exit(errno.ENOENT)
-        self.appdata = appdata.replace("\\", "/")
-
-        ##FIXME: use os.path
-        self.config = self.appdata + "/" + (file if file else CONFIG)
-        verbose("config file", self.config)
-        if not os.path.isfile(self.config):
-            error("config file", self.config, 
-                  "doesn't exist, must contain:\n   ",
-                  '{ "server": "<FQDN>", "account": "<ACCOUNT>", "password": "<PASSWORD>", "inbox": "<INBOX>" }')
-            sys.exit(errno.ENOENT)
-
-
-
-    def read_json(self, file=None):
-        file = self.config if not file else file
-        with open(file, 'r') as f:
-            data = json.load(f)
-        self.obj = data
-
-
-    def write_json(self, file=None):
-        file = self.config if not file else file
-        with open(file, 'w') as f:
-            json.dump(self.obj, f, indent = 2)
-
+        super().__init__(file)
 
     def get_server(self):
-        return self.obj["server"]
+        return self.config["server"]
 
     def get_account(self):
-        return self.obj["account"]
+        return self.config["account"]
 
     def get_password(self):
-        return self.obj["password"]
+        return self.config["password"]
 
     def get_inbox(self):
-        return self.obj["inbox"]
+        return self.config["inbox"]
 
 
-
-class Publication:
-    mpec_cache = {}
-
-    def add_publication(pub):
-            Publication.mpec_cache[pub] = True
-
-
-    def print_publication_list():
-        for id in Publication.mpec_cache.keys():
-            m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
-            if m:
-                print(id, ":", retrieve_from_mpc_mpec(m.group(1)))
-            else:
-                print(id)
-
-
-
-class JSONOutput:
-    obj_cache = []
-
-    def add_json_obj(obj):
-        JSONOutput.obj_cache.append(obj)
-
-    def write_json(file):
-        with open(file, 'w') as f:
-            json.dump(JSONOutput.obj_cache, f, indent = 4)
-
+# Get config with IMAP account data
+config = RetrieveConfig(CONFIG)
 
 
 
@@ -155,43 +118,50 @@ def retrieve_from_imap(cf):
     server = imaplib.IMAP4_SSL(cf.get_server())
     server.login(cf.get_account(), cf.get_password())
 
-    if Config.list_folder:
+    if Options.list_folder:
         # Print list of mailboxes on server
-        print(NAME+":", "folders on IMAP server", cf.get_server())
+        print("Folders on IMAP server", cf.get_server())
         code, mailboxes = server.list()
-        for mailbox in mailboxes:
-            print("   ", mailbox.decode().split(' "." ')[1])
+        mblist = [ mailbox.decode().split(' "." ')[1] for mailbox in mailboxes ]
+        mblist.sort()
+        for mb in mblist:
+            print("   ", mb)
         return
 
     # Select mailbox
-    verbose("from inbox", Config.inbox)
-    if Config.msgs_list:
-        print(NAME+":", "messages", Config.msgs_list)
-    server.select(Config.inbox)
+    verbose("from folder(s)", Options.inbox)
+    if Options.msgs_list:
+        verbose("messages", Options.msgs_list)
 
-    typ, data = server.search(None, 'ALL')
-    for num in data[0].split():
-        if Config.msgs_list:
-            if not int(num) in Config.msgs_list:
-                continue
-
-        typ, data = server.fetch(num, '(RFC822)')
-        n = int(num.decode())
-        # print("Message", num.decode("utf-8"))
-        print("Message", n)
-        msg = data[0][1].decode()
-        obj = retrieve_from_msg(n, msg)
-        if obj:
-            JSONOutput.add_json_obj(obj)
+    for folder in Options.inbox.split(","):
+        server.select(folder)
+        retrieve_from_folder(server, folder)
 
     # Cleanup
     server.close()
     server.logout()
 
 
+def retrieve_from_folder(server, folder):
+    server.select(folder)
+
+    typ, data = server.search(None, 'ALL')
+    for num in data[0].split():
+        if Options.msgs_list:
+            if not int(num) in Options.msgs_list:
+                continue
+
+        typ, data = server.fetch(num, '(RFC822)')
+        n = int(num.decode())
+        verbose("Folder", folder, "/ message", n)
+        msg = data[0][1].decode()
+        obj = retrieve_from_msg(folder, n, msg)
+        if obj:
+            JSONOutput.add_obj(obj)
 
 
-def retrieve_from_msg(msg_n, msg):
+
+def retrieve_from_msg(msg_folder, msg_n, msg):
     ack_obj = {}
     ack_obj["_wamo"] = []
 
@@ -230,15 +200,24 @@ def retrieve_from_msg(msg_n, msg):
                 if m:    
                     msg_ids[m.group(2)] = m.group(1)
 
-    if Config.list_msgs:
-        print(" ", msg_date)
-        print(" ", msg_subject)
+    if Options.match:
+        if not Options.match in msg_subject:
+            return None
+                    
+    if Options.list_msgs:
+        nstr = "[{:03d}]".format(msg_n)
+        print(nstr, msg_date)
+        print(" " * len(nstr), msg_subject)
+        if Options.csv:
+            # CSV output: list of messages in mailbox
+            CSVOutput.add_fields([ "Folder", "Message#", "Date", "Subject" ])
+            CSVOutput.add_row([msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_subject.removeprefix("Subject: ")])
         return None
     
-    print(" ", msg_date)
-    print(" ", msg_subject)
-    print(" ", msg_ack)
-    print(" ", msg_submission)
+    verbose(" ", msg_date)
+    verbose(" ", msg_subject)
+    verbose(" ", msg_ack)
+    verbose(" ", msg_submission)
     for id, obs in msg_ids.items():
         verbose(id, ":", obs)
     ack_obj["message"] = msg_n
@@ -247,262 +226,56 @@ def retrieve_from_msg(msg_n, msg):
     ack_obj["ack"] = msg_ack
     ack_obj["submission"] = msg_submission
 
-    wamo = retrieve_from_mpc_wamo(msg_ids)
+    # mpc.mpcwamo module
+    wamo = retrieve_from_wamo(msg_ids)
     if wamo:
+        # Get publications and add to global list
+        for obs in wamo:
+            pub = obs["publication"]
+            if pub:
+                Publication.add(pub)
+
         ack_obj["_wamo"].append(wamo)
-    verbose("JSON =", json.dumps(ack_obj, indent=4))
+        if Options.csv:
+            for wobj in wamo:
+                # CSV output: list of messages in mailbox with complete WAMO data
+                CSVOutput.add_fields([ "Folder", "Message#", "Date", "ACK", "id", "objId", "publication",
+                                           "obs80", "permId", "provId", "discovery", "note1", "note2",
+                                           "obs_date", "ra", "dec", "mag", "band", "catalog",
+                                           "reference", "code" ])
+                CSVOutput.add_row([ msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_ack, 
+                                        wobj["observationID"], wobj["objID"], wobj["publication"],
+                                        wobj["data"]["data"],
+                                        wobj["data"]["permId"], wobj["data"]["provId"], wobj["data"]["discovery"],
+                                        wobj["data"]["note1"], wobj["data"]["note2"], 
+                                        wobj["data"]["date"], wobj["data"]["ra"], wobj["data"]["dec"], 
+                                        wobj["data"]["mag"], wobj["data"]["band"], wobj["data"]["catalog"], 
+                                        wobj["data"]["reference"], wobj["data"]["code"]
+                                       ])
+
+        if Options.overview:
+            # for wobj in wamo:
+            for wobj, orig in zip(wamo, msg_ids.values()):
+                text     = wobj["data"]["data"]
+                key_id   = wobj["objID"]
+                key_date = wobj["data"]["date_minus12"]
+                if Options.sort_by_date:
+                    OverviewOutput.add(key_date, key_id, text)
+                    if Options.submitted:
+                        OverviewOutput.add(key_date, key_id, f"{orig}    << submitted (ACK mail)")
+                else:
+                    OverviewOutput.add(key_id, key_date, text)
+                    if Options.submitted:
+                        OverviewOutput.add(key_id, key_date, f"{orig}    << submitted (ACK mail)")
+       
+    else:
+        if Options.csv:
+            for id, obs in msg_ids.items():
+                # CSV output: list of messages in mailbox with id and obs
+                CSVOutput.add_fields([ "Folder", "Message#", "Date", "ACK", "id", "obs" ])
+                CSVOutput.add_row([ msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_ack, id, obs ])
 
     return ack_obj
-
-
-
-def retrieve_from_mpc_wamo(ids):
-    """ Retrieve observation data from minorplanetcenter WAMO """
-
-    if Config.no_wamo:
-        return None
-    if not ids:
-        # empty ids dict
-        return None
-
-    # Example
-    # curl -v -d "obs=LdY91I230000FGdd010000001" https://www.minorplanetcenter.net/cgi-bin/cgipy/wamo
-
-    data = { "obs": "\r\n".join(ids.keys())}
-    x = requests.post(WAMO_URL, data=data)
-
-    wamo = []
-    for line in x.text.splitlines():
-        ic("WAMO>", line)
-        if line == "":
-            continue
-
-        m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) has been identified as (.+) and published in (.+)\.$', line)
-        pending = False
-        if not m:
-            m = re.search(r'^(.+) \(([A-Za-z0-9]+)\) has been identified as (.+), (publication is pending).$', line)
-            pending = True
-        if m:    
-            data = m.group(1)
-            id   = m.group(2)
-            obj  = m.group(3)
-            pub  = m.group(4)
-            print("       ", id, ":", data)
-            print("       ", " " * len(id), ":", obj)
-            print("       ", " " * len(id), ":", pub)
-            if pending:
-                pub = "pending"
-            else:
-                Publication.add_publication(pub)
-
-            data80 = MPCData80(data)
-
-            wamo.append({"data":          data80.get_obj(),
-                         "observationID": id,
-                         "objID":         obj,
-                         "publication":   pub  })
-
-        if not m:
-            m = re.search(r'The obsID \'(.+)\' is in the \'(.+)\' processing queue.$', line)
-            if m:
-                id   = m.group(1)
-                pub  = "Processing queue " + m.group(2)
-                print("       ", id, ":", pub)
-
-        if not m:
-            print("unknown>", line)
-
-    # Avoid high load on the MPC server
-    time.sleep(0.5)
-
-    return wamo
-
-
-
-def retrieve_from_mpc_mpec(id):
-    """ Retrieve MPEC from minorplanetcenter """
-
-    # Example
-    # curl -v -d "S=M&F=P&N=2023-P25" https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi
-    # yields 302 redirect
-    # Location: https://www.minorplanetcenter.net/mpec/K23/K23P25.html
-
-    verbose("retrieving MPEC", id)
-    data = { "S": "M",  "F": "P",  "N": id }
-    x = requests.post(MPEC_URL, data=data, allow_redirects=False)
-
-    # print(x.headers)
-    url = x.headers["Location"]
-    verbose("MPEC", id, "URL =", url)
-
-    return url
-
-
-
-def retrieve_from_directory(root):
-    for dir, subdirs, files in os.walk(root):
-        verbose("Processing directory", dir)
-        for f in files:
-            if f.endswith(".txt") or f.endswith(".TXT"):
-                # print("f =", f)
-                process_file(os.path.join(dir, f))
-
-
-
-def process_file(file):
-    with open(file, "r") as fh:
-        line1 = fh.readline().strip()
-        obj = None
-
-        # Old MPC 1992 report format
-        if line1.startswith("COD "):
-            if Config.mpc1992:
-                verbose("Processing MPC1992", file)
-                format = "MPC1992"
-                obj = process_mpc1992(fh, line1)
-
-        # New ADES (PSV) report format
-        elif line1 == "# version=2017":
-            if Config.ades:
-                verbose("Processing ADES", file)
-                format = "ADES"
-                obj = process_ades(fh, line1)
-
-        else:
-            verbose("Not processing", file)
-
-        if obj:
-            obj["_file"] = file.replace("\\", "/")
-            obj["_format"] = format
-            JSONOutput.add_json_obj(obj)
-
-
-
-def process_mpc1992(fh, line1):
-    mpc1992_obj = {}
-    mpc1992_obj["_observations"] = []
-    ids = {}
-
-    line = line1
-    while line:
-        # meta data header
-        m = re.match(r'^([A-Z0-9]{3}) (.+)$', line)
-        if m:
-            ic(m.groups())
-            (m1, m2) = m.groups()
-            # requires Python >= 3.10!
-            match m1:
-                case "COD":
-                    mpc1992_obj["observatory"] = {"mpcCode": m2}
-                case "CON":
-                    mpc1992_obj["submitter"] = {"name": m2}
-                case "OBS":
-                    mpc1992_obj["observers"] = {"name": m2}
-                case "MEA":
-                    mpc1992_obj["measurers"] = {"name": m2}
-                case "TEL":
-                    ## ADES
-                    # # telescope
-                    # ! design reflector
-                    # ! aperture 0.25
-                    # ! fRatio 4.5
-                    # ! detector CMO
-                    ## MPC1992
-                    # TEL 0.25-m f/4.5 reflector + CMO
-                    # sometimes f/X is missing
-                    ic(m2)
-                    mtel = re.match(r'^([0-9.]+)-m f/([0-9.]+) (.+) \+ (.+)$', m2)
-                    if not mtel:
-                        mtel = re.match(r'^([0-9.]+)-m ()(.+) \+ (.+)$', m2)
-                    if mtel:
-                        ic(mtel.groups())
-                        mpc1992_obj["telescope"] = {"aperture": mtel.group(1), 
-                                                    "fRatio":   mtel.group(2),
-                                                    "design":   mtel.group(3), 
-                                                    "detector": mtel.group(4)}
-                    else:
-                        mpc1992_obj["telescope"] = {"_description": m2}      ##FIXME: split as in ADES report
-                case "NUM":
-                    mpc1992_obj["_number"] = int(m2)
-                case "ACK":
-                    mpc1992_obj["_ack_line"] = m2
-                case "AC2":
-                    mpc1992_obj["_ac2_line"] = m2
-                case "COM":
-                    mpc1992_obj["_comment"] = m2
-                case "NET":
-                    mpc1992_obj["_catalog"] = m2
-
-        # data lines
-        else:
-            data = MPCData80(line)
-            mpc1992_obj["_observations"].append(data.get_obj())
-            ids[line] = True
-
-        line = fh.readline().rstrip()
-        if line.startswith("----- end"):
-            break
-
-    wamo = retrieve_from_mpc_wamo(ids)
-    if wamo:
-        mpc1992_obj["_wamo"] = wamo
-    verbose("JSON =", json.dumps(mpc1992_obj, indent=4))
-
-    return mpc1992_obj
-
-
-
-def dict_remove_ws(dict):
-    """ Remove white space for dict keys and values """
-    return {k.strip():v.strip() for k, v in dict.items()}
-
-
-def process_ades(fh, line1):
-    ades_obj = {}
-
-    # Read report txt file
-    key1 = None
-    key2 = None
-    while True:
-        pos = fh.tell()
-        line = fh.readline()
-        if not line:
-            break
-
-        # meta data header
-        m = re.match(r'^(#|!) (\w+) ?(.+)?$', line.strip())
-        if m:
-            ic(m.groups())
-            (m1, m2, m3) = m.groups()
-            if m1 == "#":
-                key1 =  m2
-                ades_obj[key1] ={}
-            if m1 == "!":
-                key2 = m2
-                ades_obj[key1][key2] = m3
-
-        # PSV from this line on
-        else:
-            fh.seek(pos)
-            ades_obj["_observations"] = []
-            reader = csv.DictReader(fh, delimiter='|', quoting=csv.QUOTE_NONE)
-            for row in reader:
-                row1 = dict_remove_ws(row)
-                ic(row1)
-                ades_obj["_observations"].append(row1)
-            break
-
-    # Get trackIds and mpcCode to query WAMO
-    ids = {}
-    for trk in ades_obj["_observations"]:
-        ids[trk["trkSub"] + " " + trk["stn"]] = True
-    ades_obj["_ids"] = ids
-    wamo = retrieve_from_mpc_wamo(ids)
-    if wamo:
-        ades_obj["_wamo"] = wamo
-    verbose("JSON =", json.dumps(ades_obj, indent=4))
-
-    return ades_obj
 
 
 
@@ -514,65 +287,71 @@ def str_to_list(s):
 
 
 def main():
-    cf = Config()
-    cf.read_json()
-
-    if cf.get_inbox():
-        Config.inbox = cf.get_inbox()
+    if config.get_inbox():
+        Options.inbox = config.get_inbox()
 
     arg = argparse.ArgumentParser(
         prog        = NAME,
-        description = "Retrieve MPC ACK data",
+        description = "Retrieve MPC ACK mails",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="verbose messages")
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("-n", "--no-wamo-requests", action="store_true", help="don't request observations from minorplanetcenter.net WAMO")
     arg.add_argument("-l", "--list-folders-only", action="store_true", help="list folders on IMAP server only")
-    arg.add_argument("-f", "--imap-folder", help="IMAP folder to retrieve mails, default "+Config.inbox)
+    arg.add_argument("-f", "--imap-folder", help="IMAP folder(s) (comma-separated) to retrieve mails from, default "+Options.inbox)
     arg.add_argument("-L", "--list-messages-only", action="store_true", help="list messages in IMAP folder only")
     arg.add_argument("-m", "--msgs", help="retrieve messages in MSGS range only, e.g. \"1-3,5\", default all")
-    arg.add_argument("directory", nargs="*", help="read MPC reports from directory/file instead of ACK mails")
-    arg.add_argument("-M", "--mpc1992-reports", action="store_true", help="read old MPC 1992 reports")
-    arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports")
-    arg.add_argument("-o", "--output", help="write JSON to OUTPUT file")
+    arg.add_argument("-M", "--match", help="retrieve messages with subject containing MATCH")
+    arg.add_argument("-o", "--output", help="write to OUTPUT file")
+    arg.add_argument("-J", "--json", action="store_true", help="use JSON output format")
+    arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format")
+    arg.add_argument("-O", "--overview", action="store_true", help="create overview of objects and observations")
+    arg.add_argument("-S", "--submitted", action="store_true", help="add submitted observation to overview")
+    arg.add_argument("-D", "--sort-by-date", action="store_true", help="sort overview by observation date (minus 12h)")
     args = arg.parse_args()
 
-    if args.verbose:
-        verbose.set_prog(NAME)
-        error.set_prog(NAME + ": ERROR")
-        verbose.enable()
+    verbose.set_prog(NAME)
+    verbose.enable(args.verbose)
     if args.debug:
         ic.enable()
 
-    Config.no_wamo     = args.no_wamo_requests
-    Config.list_folder = args.list_folders_only
-    Config.list_msgs   = args.list_messages_only
+    Options.no_wamo     = args.no_wamo_requests
+    Options.list_folder = args.list_folders_only
+    Options.list_msgs   = args.list_messages_only
     if args.imap_folder:
-        Config.inbox = args.imap_folder
+        Options.inbox = args.imap_folder
     if args.msgs:
-        Config.msgs_list = str_to_list(args.msgs)
-    Config.mpc1992     = args.mpc1992_reports
-    Config.ades        = args.ades_reports
-    Config.output      = args.output
+        Options.msgs_list = str_to_list(args.msgs)
+    Options.output      = args.output
+    Options.csv         = args.csv
+    Options.overview    = args.overview
+    Options.sort_by_date= args.sort_by_date
+    Options.match       = args.match
+    Options.json        = args.json
+    Options.submitted   = args.submitted
 
-    if args.directory:
-        for dir in args.directory:
-            # quick hack: Windows PowerShell adds a stray " to the end of dirname 
-            # if it ends with a backslash \ AND contains a space!!!
-            # see here https://bugs.python.org/issue39845
-            dir = dir.rstrip("\"")
-            if os.path.isdir(dir):
-                retrieve_from_directory(dir)
-            if os.path.isfile(dir):
-                process_file(dir)
+    if Options.sort_by_date:
+        OverviewOutput.set_description1("Total observation dates:  ")
+        OverviewOutput.set_description2("Total single observations:")
     else:
-        retrieve_from_imap(cf)
+        OverviewOutput.set_description1("Total objects:             ")
+        OverviewOutput.set_description2("Total single observations: ")
 
-    print("\nPublished:")
-    Publication.print_publication_list()
+    retrieve_from_imap(config)
 
-    if Config.output:
-        JSONOutput.write_json(Config.output)
+    if Options.overview:
+        if Options.output:
+            with open(Options.output, 'w', newline='', encoding="utf-8") as f:
+                OverviewOutput.print(f)
+                Publication.print(f)
+        else:
+            OverviewOutput.print()
+            Publication.print()
+
+    elif Options.csv:
+        CSVOutput.write(Options.output)
+    elif Options.json:
+        JSONOutput.write(Options.output)
 
 
 

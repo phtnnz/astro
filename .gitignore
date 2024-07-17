@@ -9,8 +9,8 @@ test-env-config.py
 test1/test.json
 astro.code-workspace
 notizen.txt
-copy-to-onedrive.bat
-copy-to-remote-test.bat
+copy-to-*.bat
 mpc-reports.txt
 measurements.txt
 __pycache__
+.config/

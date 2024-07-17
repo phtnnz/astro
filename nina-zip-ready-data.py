@@ -28,28 +28,77 @@
 #       First version of script
 # Version 0.2 / 2023-07-09
 #       Added process priority setting, -l option
+# Version 0.3 / 2024-07-12
+#       Refactored, reusing nina-zip-last-night.py code, same JSON config
 
-import sys
+##FIXME: combine nina-zip-last-night and nina-zip-ready-data, lots of duplicated code
+
 import os
 import argparse
 import subprocess
-import time
 import datetime
 import platform
+import sys
+import socket
+import time
+
 # The following libs must be installed with pip
 import psutil
+from icecream import ic
+# Disable debugging
+ic.disable()
+
+# Local modules
+from verbose import verbose, warning, error
+from jsonconfig import JSONConfig
 
 
-global VERSION, AUTHOR
-VERSION = "0.2 / 2023-07-09"
+
+NAME    = "nina-zip-ready-data"
+VERSION = "0.3 / 2024-07-12"
 AUTHOR  = "Martin Junius"
 
-global DATADIR, ZIPDIR, ZIPPROG, TIMER
-DATADIR = "D:/Users/remote/Documents/NINA-Data"
-# use %ONEDRIVE%
-ZIPDIR  = "C:/Users/remote/OneDrive/Remote-Upload"
-ZIPPROG = "C:/Program Files/7-Zip/7z.exe"
 TIMER   = 60
+
+CONFIG = "nina-zip-config.json"
+
+class ZipConfig(JSONConfig):
+    """ JSON Config for data / zip directory """
+
+    def __init__(self, file=None):
+        super().__init__(file)
+
+    def _get_dirs(self):
+        hostname = socket.gethostname()
+        ic(hostname)
+        if hostname in self.config:
+            return self.config[hostname]
+        error(f"no directory config for hostname {hostname}")
+
+    def data_dir(self):
+        dirs = self._get_dirs()
+        return dirs["data dir"]
+
+    def zip_dir(self):
+        dirs = self._get_dirs()
+        return dirs["zip dir"]
+
+    def zip_prog(self):
+        dirs = self._get_dirs()
+        return dirs["zip program"]
+
+
+config = ZipConfig(CONFIG)
+
+
+
+# options
+class Options:
+    no_action = False                                       # -n --no_action
+    datadir   = config.data_dir()
+    zipdir    = config.zip_dir()
+    zipprog   = config.zip_prog()
+    zipmx     = 5                                            # normal compression, -m --max => 7 = max compression
 
 
 
@@ -71,9 +120,8 @@ def set_priority():
         prio = psutil.IDLE_PRIORITY_CLASS           # low priority
         prio0 = proc.nice()
         proc.nice(prio)
-        if OPT_V:
-            print(proc)
-            print("System {}, setting process priority {} -> {}".format(system, prio0, prio))
+        verbose(f"{proc}")
+        verbose(f"system {system}, setting process priority {prio0} -> {prio}")
 
 
 
@@ -87,15 +135,13 @@ def scan_data_dir(datadir, zipdir):
     # print(ready)
 
     for target in ready:
-        if OPT_V:
-            print("Target ready:", target)
+        verbose("Target ready:", target)
         zipfile = os.path.join(zipdir, target + ".7z")
         if os.path.exists(zipfile):
-            if OPT_V:
-                print("  Zip file", zipfile, "already exists")
+            # verbose("  Zip file", zipfile, "already exists")
+            pass
         else:
-            if OPT_V:
-                print("  Zip file", zipfile, "must be created")
+            verbose("  Zip file", zipfile, "must be created")
             print("{} archiving target {}".format(time_now(), target))
             create_zip_archive(target, datadir, zipfile)
 
@@ -108,50 +154,58 @@ def create_zip_archive(target, datadir, zipfile):
     #   -mx7    set compression level to maximum (5=normal, 7=maximum, 9=ultra)
     #   -r      recurse subdirectories
     #   -spf    use fully qualified file paths
-    subprocess.run(args=[ZIPPROG, "a", "-t7z", "-mx7", "-r", "-spf", zipfile, target], shell=False, cwd=datadir)
+    args7z = [ Options.zipprog, "a", "-t7z", f"-mx{Options.zipmx}", "-r", "-spf", zipfile, target ]
+    verbose("run", " ".join(args7z))
+    if not Options.no_action:
+        subprocess.run(args=args7z, shell=False, cwd=datadir)
 
 
 
 def main():
-    global OPT_V
-    global DATADIR, ZIPDIR, ZIPPROG, TIMER
+    global TIMER
 
     arg = argparse.ArgumentParser(
         prog        = "nina-zip-ready-data",
         description = "Zip target data in N.I.N.A data directory marked as ready",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
+    arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
+    arg.add_argument("-n", "--no-action", action="store_true", help="dry run")
     arg.add_argument("-l", "--low-priority", action="store_true", help="set process priority to low")
-    arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+DATADIR+")")
-    arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+ZIPDIR+")")
+    arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+Options.datadir+")")
+    arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+Options.zipdir+")")
     arg.add_argument("-t", "--time-interval", type=int, help="time interval for checking data directory (default 60s)")
-    arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+ZIPPROG+")")
-    # nargs="+" for min 1 filename argument
-    # arg.add_argument("filename", nargs="*", help="filename")
+    arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+Options.zipprog+")")
+    arg.add_argument("-m", "--zip_max", action="store_true", help="7-zip max compression -mx7")
     args = arg.parse_args()
 
-    OPT_V = args.verbose
+    if args.verbose:
+        verbose.set_prog(NAME)
+        verbose.enable()
+    if args.debug:
+        ic.enable()
+        ic(sys.version_info)
+
+    Options.no_action = args.no_action
 
     if args.data_dir:
-        DATADIR = args.data_dir
+        Options.datadir = args.data_dir
     if args.zip_dir:
-        ZIPDIR = args.zip_dir
-    if args.time_interval:
-        TIMER = args.time_interval
+        Options.zipdir  = args.zip_dir
     if args.zip_prog:
-        ZIPPROG = args.zip_prog
+        Options.zipprog = args.zip_prog
+    if args.zip_max:
+        Options.zipmx   = 7
 
-    DATADIR = os.path.abspath(DATADIR)
-    ZIPDIR = os.path.abspath(ZIPDIR)
-    ZIPPROG = os.path.abspath(ZIPPROG)
+    Options.datadir = os.path.abspath(Options.datadir)
+    Options.zipdir  = os.path.abspath(Options.zipdir)
+    Options.zipprog = os.path.abspath(Options.zipprog)
 
-    if OPT_V:
-        print("Data directory =", DATADIR)
-        print("ZIP directory  =", ZIPDIR)
-        print("ZIP program    =", ZIPPROG)
-    else:
-        print("Waiting for ready data ... (Ctrl-C to interrupt)")
+    verbose("Data directory =", Options.datadir)
+    verbose("ZIP directory  =", Options.zipdir)
+    verbose("ZIP program    =", Options.zipprog)
 
+    print("Waiting for ready data ... (Ctrl-C to interrupt)")
 
     # Set process priority
     if args.low_priority:
@@ -159,9 +213,9 @@ def main():
 
     try:
         while True:
-            scan_data_dir(DATADIR, ZIPDIR)
-            if OPT_V:
-                print("Waiting ... ({:d}s, Ctrl-C to interrupt)".format(TIMER))
+            scan_data_dir(Options.datadir, Options.zipdir)
+            # if verbose.enabled:
+            #     print("Waiting ... ({:d}s, Ctrl-C to interrupt)".format(TIMER))
             time.sleep(TIMER)
     except:
         print("Terminating ...")

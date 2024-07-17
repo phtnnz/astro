@@ -1,0 +1,8 @@
+{
+    "##": "IMAP account for MPC ACK mails (mpc-retrieve-ack.py)",
+
+    "server": "host.do.main",
+    "account": "user@mail.do.main",
+    "password": "abcd1234",
+    "inbox": "INBOX"
+}
