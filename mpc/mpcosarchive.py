@@ -56,7 +56,9 @@ AUTHOR  = "Martin Junius"
 NAME    = "mpcosarchive"
 
 ARCHIVE_URL = "https://www.minorplanetcenter.net/iau/ECS/MPCArchive/MPCArchive.html"
-MPEC_URL = "https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi"
+MPEC_URL    = "https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi"
+NEOCP_URL   = "https://www.minorplanetcenter.net/iau/NEO/toconfirm_tabular.html"
+PCCP_URL    = "https://www.minorplanetcenter.net/iau/NEO/pccp_tabular.html"
 
 
 
@@ -87,7 +89,7 @@ class MPCOSArchive:
         verbose(f"search for {pub}")
         m = re.search('([A-Z]+) *(\d+)$', pub)
         if not m:
-            raise ValueError
+            return None
         mpx = m.group(1)
         n   = int(m.group(2))
         ic(mpx, n)
@@ -166,12 +168,17 @@ class Publication:
                 m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
                 if m:
                     print(id, ":", Publication._MPEC_link(m.group(1)), file=file)
+                    continue
+                if id == "NEOCP/PCCP":
+                    print(id, NEOCP_URL)
+                    print("     or   ", PCCP_URL)
+                    continue
+
+                r = arc.search_pub(id)
+                if r:
+                    print(id, ":", r["pdf"], file=file)
                 else:
-                    r = arc.search_pub(id)
-                    if r:
-                        print(id, ":", r["pdf"], file=file)
-                    else:
-                        print(id, ": unknown", file=file)
+                    print(id, ": unknown", file=file)
 
 
     def _MPEC_link(id):
