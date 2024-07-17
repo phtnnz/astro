@@ -17,6 +17,8 @@
 # ChangeLog
 # Version 0.1 / 2024-06-07
 #       Retrieve observations from MPC WAMO
+# Version 1.0 / 2024-07-17
+#       Bumped version number to 1.0
 
 import argparse
 import re
@@ -33,7 +35,7 @@ from mpc.mpcdata80 import MPCData80
 
 
 
-VERSION = "0.1 / 2024-07-06"
+VERSION = "1.0 / 2024-07-17"
 AUTHOR  = "Martin Junius"
 NAME    = "mpcwamo"
 

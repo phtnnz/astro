@@ -51,6 +51,8 @@
 #       Can be imported as a module or run as a command line script
 # Version 0.2 / 2024-05-21
 #       Moved to mpc/mpcdata80, some fixes
+# Version 1.0 / 2024-07-17
+#       Bumped version number to 1.0
 
 import argparse
 import re
@@ -66,7 +68,7 @@ from verbose import verbose
 
 
 global VERSION, AUTHOR, NAME
-VERSION = "0.2 / 2024-05-21"
+VERSION = "1.0 / 2024-07-17"
 AUTHOR  = "Martin Junius"
 NAME    = "mpcdata80"
 

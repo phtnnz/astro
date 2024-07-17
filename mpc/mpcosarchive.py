@@ -17,6 +17,8 @@
 # ChangeLog
 # Version 0.0 / 2024-03-24
 #       MPC module to retrieve PDF from MPC/MPO/MPS archive
+# Version 1.0 / 2024-07-17
+#       Improvements, added Publication class
 
 # Web page for MPC archive:
 # https://www.minorplanetcenter.net/iau/ECS/MPCArchive/MPCArchive.html
@@ -51,7 +53,7 @@ ic.disable()
 from verbose import verbose, warning, error
 
 
-VERSION = "0.0 / 2024-03-24"
+VERSION = "1.0 / 2024-07-17"
 AUTHOR  = "Martin Junius"
 NAME    = "mpcosarchive"
 
