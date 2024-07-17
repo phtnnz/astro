@@ -51,12 +51,13 @@ Local modules:
 ## nina-create-sequence
 Builds a complete N.I.N.A sequence for the observation night, using a base template (with empty Sequence Target Area) and a target template (repeated for every single object), from a CSV list of targets exported by NEO Planner.
 
-The directories NINA-Templates-IAS/ and NINA-Templates-IAS3/ contains the necessary N.I.N.A templates.
+The directories NINA-Templates-IAS/ and NINA-Templates-IAS3/ contain the necessary N.I.N.A templates.
 
 Currently used for the M49, the IAS Remote Telescopes at Hakos, Namibia
 
 ```
-usage: nina-create-sequence [-h] [-v] [-T TARGET_TEMPLATE] [-S SEQUENCE_TEMPLATE] [-D DESTINATION_DIR] [-o OUTPUT] [-t] [-p] [-n] [-N] filename [filename ...]
+usage: nina-create-sequence [-h] [-v] [-T TARGET_TEMPLATE] [-S SEQUENCE_TEMPLATE] [-D DESTINATION_DIR] [-o OUTPUT] [-t] [-p] [-n] [-N] [-3]
+                            filename [filename ...]
 
 Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV
 
@@ -78,12 +79,14 @@ options:
   -p, --prefix-target   prefix all target names with YYYY-MM-DD NNN
   -n, --no-output       dry run, don't create output files
   -N, --add-number      add number of frames (nNNN) to target name
+  -3, --remote3         use templates for Remote3
 
-Version: 1.0 / 2023-07-05 / Martin Junius
+Version: 1.1 / 2024-06-28 / Martin Junius
 ```
 
 ## test-shutter-open
 For Hakos remote observatories roll-off roof control only, checks roof/mount status.
+(Obsolete, use test-hakos-roof instead.)
 
 ```
 usage: test-shutter-open [-h] [-v] [-P] [-O]
@@ -98,6 +101,8 @@ options:
 
 Version 0.4 / 2024-06-20 / Martin Junius
 ```
+
+Config file: hakosroof.json
 
 ## test-hakos-roof
 For Hakos remote observatories roll-off roof control only, refactored status queries
@@ -117,9 +122,11 @@ options:
 Version 1.0 / 2024-06-20 / Martin Junius
 ```
 
+Config file: hakosroof.json
+
 
 ## N.I.N.A External Script
-Use the batch files/wrappers with full path in N.I.N.A's "External Script" instruction
+Use the batch files/wrappers with full path in N.I.N.A's "External Script" instruction, e.g.
 
 ```
 "D:\Users\remote\Documents\Scripts\test-shutter-open.bat"
@@ -129,10 +136,12 @@ Use the batch files/wrappers with full path in N.I.N.A's "External Script" instr
 
 
 ## astro-countsubs
-Count sub frames in directory structure and compute total exposure time. Relies on YYYY-MM-DD sub-directories and FITS filenames containing filter name and exposure time. Additional data on calibration from JSON config file.
+Count sub frames in directory structure and compute total exposure time. Relies on *YYYY-MM-DD sub-directories and FITS filenames containing filter name and exposure time. Additional data on calibration from JSON config file.
 
 ```
-usage: astro-countsubs [-h] [-v] [-d] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] [-C] [-o OUTPUT] [-F FILTER_SET] [--calibration-set CALIBRATION_SET] dirname
+usage: astro-countsubs [-h] [-v] [-d] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] [-C] [-o OUTPUT] [-F FILTER_SET] [--calibration-set CALIBRATION_SET]
+                       [-m MATCH] [-T] [-N]
+                       dirname
 
 Traverse directory and count N.I.N.A subs
 
@@ -149,18 +158,22 @@ options:
                         filter list, e.g. L,R,G.B
   -t EXPOSURE_TIME, --exposure-time EXPOSURE_TIME
                         exposure time (sec) if not present in filename
-  -C, --csv             output CSV list
+  -C, --csv             output CSV list for Astrobin
   -o OUTPUT, --output OUTPUT
-                        write to file OUTPUT
+                        write CSV to file OUTPUT (default: stdout)
   -F FILTER_SET, --filter-set FILTER_SET
                         name of filter set for Astrobin CSV (see config)
   --calibration-set CALIBRATION_SET
-                        name of calibration set
+                        name of calibration set (see config)
+  -m MATCH, --match MATCH
+                        filename must contain MATCH
+  -T, --total-only      list total only
+  -N, --no-calibration  don't list calibration data
 
-Version: 0.5 / 2024-06-18 / Martin Junius
+Version: 1.2 / 2024-07-15 / Martin Junius
 ```
 
-JSON config file astro-countsubs-config.json
+Config file astro-countsubs-config.json
 
 Examples:
 
@@ -186,28 +199,34 @@ from within N.I.N.A
 - Loop continuously
 
 ```
-usage: nina-zip-ready-data [-h] [-v] [-l] [-D DATA_DIR] [-Z ZIP_DIR] [-t TIME_INTERVAL] [-z ZIP_PROG]
+usage: nina-zip-ready-data [-h] [-v] [-d] [-n] [-l] [-D DATA_DIR] [-Z ZIP_DIR] [-t TIME_INTERVAL] [-z ZIP_PROG] [-m]
 
 Zip target data in N.I.N.A data directory marked as ready
 
 options:
   -h, --help            show this help message and exit
   -v, --verbose         debug messages
+  -d, --debug           more debug messages
+  -n, --no-action       dry run
   -l, --low-priority    set process priority to low
   -D DATA_DIR, --data-dir DATA_DIR
-                        N.I.N.A data directory (default D:/Users/remote/Documents/NINA-Data)
+                        N.I.N.A data directory (default <...from config ...>)
   -Z ZIP_DIR, --zip-dir ZIP_DIR
-                        directory for zip (.7z) files (default C:/Users/remote/OneDrive/Remote-Upload)
+                        directory for zip (.7z) files (default <...from config ...>)
   -t TIME_INTERVAL, --time-interval TIME_INTERVAL
                         time interval for checking data directory (default 60s)
   -z ZIP_PROG, --zip-prog ZIP_PROG
-                        full path of 7-zip.exe (default C:/Program Files/7-Zip/7z.exe)
+                        full path of 7-zip.exe (default <...from config ...>)
+  -m, --zip_max         7-zip max compression -mx7
 
-Version 0.2 / 2023-07-09 / Martin Junius
+Version 0.3 / 2024-07-12 / Martin Junius
 ```
 
+Config file: nina-zip-config.json
+
+
 ## nina-zip-last-night
-Archive all N.I.N.A data from the last observation night (or date given by the -d option)
+Archive all N.I.N.A data from the last observation night (or date given by the --date option)
 - Search all TARGET/YYYY-MM-DD directories in DATADIR
 - Look for corresponding TARGET-YYYY-MM-DD.7z archive in ZIPDIR
 - If exists, skip
@@ -224,26 +243,28 @@ options:
   -d, --debug           more debug messages
   -n, --no-action       dry run
   -l, --low-priority    set process priority to low
-  --date DATE           archive target/DATE, default last night 2024-06-25
+  --date DATE           archive target/DATE, default last night 2024-07-16
   -t TARGETS, --targets TARGETS
                         archive TARGET[,TARGET] only
   -D DATA_DIR, --data-dir DATA_DIR
-                        N.I.N.A data directory (default D:/Users/remote/Documents/NINA-Data)
+                        N.I.N.A data directory (default D:/Users/mj/Documents/N.I.N.A-Data)
   -Z ZIP_DIR, --zip-dir ZIP_DIR
-                        directory for zip (.7z) files (default C:/Users/remote/OneDrive/Remote-Upload)
+                        directory for zip (.7z) files (default D:/Users/mj/OneDrive/IAS/Remote-Upload3/TEST)
   -z ZIP_PROG, --zip-prog ZIP_PROG
                         full path of 7-zip.exe (default C:/Program Files/7-Zip/7z.exe)
   -m, --zip_max         7-zip max compression -mx7
 
-Version 0.2 / 2024-05-01 / Martin Junius
+Version 0.3 / 2024-06-28 / Martin Junius
 ```
+
+Config file: nina-zip-config.json
 
 
 ## mpc-retrieve-ack
 Retrieve Minor Planets Center observation data from IMAP server with ACK mails, and MPC WAMO service
 
 ```
-usage: mpc-retrieve-ack [-h] [-v] [-d] [-n] [-l] [-f IMAP_FOLDER] [-L] [-m MSGS] [-o OUTPUT] [-C] [-O] [-D]
+usage: mpc-retrieve-ack [-h] [-v] [-d] [-n] [-l] [-f IMAP_FOLDER] [-L] [-m MSGS] [-M MATCH] [-o OUTPUT] [-J] [-C] [-O] [-S] [-D]
 
 Retrieve MPC ACK mails
 
@@ -260,16 +281,20 @@ options:
   -L, --list-messages-only
                         list messages in IMAP folder only
   -m MSGS, --msgs MSGS  retrieve messages in MSGS range only, e.g. "1-3,5", default all
+  -M MATCH, --match MATCH
+                        retrieve messages with subject containing MATCH
   -o OUTPUT, --output OUTPUT
-                        write JSON/CSV to OUTPUT file
-  -C, --csv             use CSV output format (instead of JSON)
+                        write to OUTPUT file
+  -J, --json            use JSON output format
+  -C, --csv             use CSV output format
   -O, --overview        create overview of objects and observations
+  -S, --submitted       add submitted observation to overview
   -D, --sort-by-date    sort overview by observation date (minus 12h)
 
-Version 1.5 / 2024-06-26 / Martin Junius
+Version 1.7 / 2024-07-17 / Martin Junius
 ```
 
-Config data for IMAP mailbox is stored in imap-account.json
+Config file: imap-account.json
 
 Examples:
 ```
@@ -325,11 +350,11 @@ options:
   -A, --ades-reports    read new ADES (PSV format) reports
   -o OUTPUT, --output OUTPUT
                         write JSON/CSV to OUTPUT file
-  -C, --csv             use CSV output format (instead of JSON)
+  -C, --csv             use CSV output format (instead of JSON), NOT YET IMPLEMENTED
   -O, --overview        create overview of objects and observations
   -D, --sort-by-date    sort overview by observation date (minus 12h)
 
-Version 1.5 / 2024-06-26 / Martin Junius
+Version 1.6 / 2024-07-15 / Martin Junius
 ```
 
 Examples:
@@ -339,3 +364,16 @@ mpc-retrieve-reports.py -A -o ades-reports.json '\Users\someone\Asteroids\report
 ```
 Retrieve all ADES report file from the given directory (recursively), query WAMO, and write results to ades-reports.json
 
+
+## JSON Config Files
+
+All the scripts search the corresponding JSON config in the following directories and in this order:
+- Current directory/
+- Current directory/.config/
+- Current directory/.config/astro-python/
+- %LOCALAPPDATA%/astro-python/
+- %APPDATA%/astro-python/
+
+test-shutter-open only looks in %APPDATA%/astro-python/.
+
+See sample-config/ in the repository for configuration examples.
