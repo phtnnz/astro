@@ -84,7 +84,7 @@ class Options:
     sort_by_date= False     # -D --sort-by-date
     match       = None      # -m --match
     json        = False     # -J --json
-
+    submitted   = False     # -S --submitted
 
 
 class RetrieveConfig(JSONConfig):
@@ -254,11 +254,19 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
                                        ])
 
         if Options.overview:
-            for wobj in wamo:
+            # for wobj in wamo:
+            for wobj, orig in zip(wamo, msg_ids.values()):
+                text     = wobj["data"]["data"]
+                key_id   = wobj["objID"]
+                key_date = wobj["data"]["date_minus12"]
                 if Options.sort_by_date:
-                    OverviewOutput.add(wobj["data"]["date_minus12"], wobj["objID"], wobj["data"]["data"])
+                    OverviewOutput.add(key_date, key_id, text)
+                    if Options.submitted:
+                        OverviewOutput.add(key_date, key_id, f"{orig}    << submitted (ACK mail)")
                 else:
-                    OverviewOutput.add(wobj["objID"], wobj["data"]["date_minus12"], wobj["data"]["data"])
+                    OverviewOutput.add(key_id, key_date, text)
+                    if Options.submitted:
+                        OverviewOutput.add(key_id, key_date, f"{orig}    << submitted (ACK mail)")
        
     else:
         if Options.csv:
@@ -298,6 +306,7 @@ def main():
     arg.add_argument("-J", "--json", action="store_true", help="use JSON output format")
     arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format")
     arg.add_argument("-O", "--overview", action="store_true", help="create overview of objects and observations")
+    arg.add_argument("-S", "--submitted", action="store_true", help="add submitted observation to overview")
     arg.add_argument("-D", "--sort-by-date", action="store_true", help="sort overview by observation date (minus 12h)")
     args = arg.parse_args()
 
@@ -319,6 +328,7 @@ def main():
     Options.sort_by_date= args.sort_by_date
     Options.match       = args.match
     Options.json        = args.json
+    Options.submitted   = args.submitted
 
     if Options.sort_by_date:
         OverviewOutput.set_description1("Total observation dates:  ")
