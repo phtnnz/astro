@@ -165,7 +165,7 @@ class Publication:
             for id in Publication._cache.keys():
                 m = re.search(r'^MPEC (\d\d\d\d-[A-Z]\d+)', id)
                 if m:
-                    print(id, ":", Publication._MPEC_link(m.group(1), m.group(2), m.group(3)), file=file)
+                    print(id, ":", Publication._MPEC_link(m.group(1)), file=file)
                 else:
                     r = arc.search_pub(id)
                     if r:
@@ -174,7 +174,7 @@ class Publication:
                         print(id, ": unknown", file=file)
 
 
-    def _mpec_link(cent, year, id):
+    def _MPEC_link(id):
         # Example
         # curl -v -d "S=M&F=P&N=2023-P25" https://cgi.minorplanetcenter.net/cgi-bin/displaycirc.cgi
         # yields 302 redirect
