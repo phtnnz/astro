@@ -1,0 +1,24 @@
+{
+    "##1": "Template setting for nina-create-sequence",
+
+    "remote-neo": {
+        "##":       "NEO observations, remote telescope",
+        "template": "./NINA-Templates-IAS/Base NEO nautical.json",
+        "target": "./NINA-Templates-IAS/Target NEO.json",
+        "output": "NEO-{}.json"
+    },
+
+    "remote3-neo": {
+        "##":       "NEO observations, remote3 telescope",
+        "template": "./NINA-Templates-IAS3/Base NEO nautical 3-Discord.json",
+        "target": "./NINA-Templates-IAS3/Target NEO 3-Discord.template.json",
+        "output": "NEO-{}.json"
+    },
+
+    "remote3-vs": {
+        "##":       "Variable star observations, remote3 telescope",
+        "template": "./NINA-Templates-IAS3/Base VS 3-Discord.json",
+        "target": "./NINA-Templates-IAS3/Target VS 3-Discord.template.json",
+        "output": "VS-{}.json"
+    }
+}
