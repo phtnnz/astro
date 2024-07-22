@@ -6,6 +6,7 @@
         "##":       "Sample 1",
         "zip program": "C:/Program Files/7-Zip/7z.exe",
         "data dir": "D:/Users/test/Documents/NINA-Data",
+        "tmp dir": "D:/Users/test/Documents/NINA-Tmp",
         "zip dir":  "D:/Users/test/OneDrive/TEST"
     },
 
@@ -13,6 +14,7 @@
         "##":       "Sample 2",
         "zip program": "C:/Program Files/7-Zip/7z.exe",
         "data dir": "D:/Users/test2/Documents/NINA-Data",
+        "tmp dir": "D:/Users/test2/Documents/NINA-Data",
         "zip dir":  "C:/Users/test2/Archive"
     }
 }
