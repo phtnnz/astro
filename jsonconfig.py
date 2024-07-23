@@ -25,10 +25,15 @@
 #               class MyConfig(JSONConfig)
 # Version 0.3 / 2024-06-19
 #       Search also in .config
+# Version 0.4 / 2024-07-23
+#       Added code for getting the path of Windows' Documents directory
 
 import os
+import sys
 import argparse
 import json
+# Windows specific
+import ctypes.wintypes
 
 # The following libs must be installed with pip
 from icecream import ic
@@ -39,7 +44,7 @@ from verbose import verbose
 
 
 
-VERSION = "0.3 / 2024-06-19"
+VERSION = "0.4 / 2024-07-23"
 AUTHOR  = "Martin Junius"
 NAME    = "JSONConfig"
 
@@ -50,6 +55,8 @@ CONFIGFILE = "astro-python-config.json"
 
 #ic.enable()
 ic(CONFIGDIR, CONFIGFILE)
+
+
 
 class JSONConfig:
     """ JSONConfig base class """
@@ -143,6 +150,15 @@ class JSONConfig:
         return self.config
 
 
+    def get_documents_path(self):
+        # Windows hack to get path of Documents folder, which might reside on other drives than C:
+        CSIDL_PERSONAL = 5       # My Documents
+        SHGFP_TYPE_CURRENT = 0   # Get current, not default value
+        buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+        ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
+        return buf.value
+
+
 
 # Global config object
 config = JSONConfig(CONFIGFILE)
@@ -165,10 +181,12 @@ def main():
         verbose.enable()
     if args.debug:
         ic.enable()
+        ic(sys.version_info, sys.path)
     if args.config:
         config.read_config(args.config)
 
     print("JSON config keys =", ", ".join(config.get_keys()))
+    print("Documents path =", config.get_documents_path())
 
 
 
