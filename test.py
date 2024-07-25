@@ -22,15 +22,15 @@ import sys
 import os
 import argparse
 
-global VERSION, AUTHOR
 VERSION = "0.0 / 2023-07-01"
 AUTHOR  = "Martin Junius"
+NAME    = "verbose"
 
 
 
 def main():
     arg = argparse.ArgumentParser(
-        prog        = "test",
+        prog        = TEST,
         description = "Test python script",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-e", "--exit-code", type=int, help="return exit code, default 0")

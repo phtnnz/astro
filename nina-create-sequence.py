@@ -36,7 +36,6 @@
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
-global VERSION, AUTHOR
 VERSION = "1.1 / 2024-06-28"
 AUTHOR  = "Martin Junius"
 

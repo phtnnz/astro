@@ -32,7 +32,6 @@ import json
 # The following libs must be installed with pip
 import requests
 
-global VERSION, AUTHOR
 VERSION = "0.4 / 2024-06-20"
 AUTHOR  = "Martin Junius"
 

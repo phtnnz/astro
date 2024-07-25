@@ -67,7 +67,6 @@ ic.disable()
 from verbose import verbose
 
 
-global VERSION, AUTHOR, NAME
 VERSION = "1.0 / 2024-07-17"
 AUTHOR  = "Martin Junius"
 NAME    = "mpcdata80"
