@@ -61,19 +61,21 @@ ic(CONFIGDIR, CONFIGFILE)
 class JSONConfig:
     """ JSONConfig base class """
 
-    def __init__(self, file, warn=True):
+    def __init__(self, file, warn=True, err=True):
         ic("config init", file)
         self.config = {}
-        self.read_config(file, warn)
+        self.read_config(file, warn, err)
 
 
-    def read_config(self, file, warn=True):
+    def read_config(self, file, warn=True, err=True):
         ic(file)
         file1 = self.search_config(file)
         if(file1):
             json  = self.read_json(file1)
             # Merge with existing config
             self.config = self.config | json
+        elif err:
+            error(f"config {file} not found")
         elif warn:
             warning(f"config {file} not found")
 
@@ -162,7 +164,7 @@ class JSONConfig:
 
 
 # Global config object
-config = JSONConfig(CONFIGFILE, False)
+config = JSONConfig(CONFIGFILE, False, False)
 
 
 
