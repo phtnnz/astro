@@ -71,8 +71,6 @@ class SequenceConfig(JSONConfig):
     def __init__(self, file=None):
         super().__init__(file)
 
-    def get_setting(self, key1, key2):
-        return self.get(key1).get(key2)
   
 
 config = SequenceConfig(CONFIG)
@@ -166,7 +164,7 @@ class NINABase:
 
 
     def process_provider(self, obj, indent, dict):
-        # search for Provider {...} and changed additional occurences to reference
+        # search for Provider {...} and change additional occurences to reference
         if ic.enabled:
             self.print_attr(obj, "SelectedProvider", "")
         if "SelectedProvider" in obj.keys():
@@ -180,7 +178,7 @@ class NINABase:
                     obj["SelectedProvider"] = { "$ref": ref }
 
                 else:
-                    # 1st time occurence, don't touch
+                    # 1st occurence, don't touch
                     dict[type] = id
         if ic.enabled:
             self.print_attr(obj, "SelectedProvider", "")
