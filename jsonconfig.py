@@ -40,7 +40,7 @@ from icecream import ic
 # Disable debugging
 
 # Local modules
-from verbose import verbose
+from verbose import verbose, warning, error
 
 
 
@@ -61,19 +61,21 @@ ic(CONFIGDIR, CONFIGFILE)
 class JSONConfig:
     """ JSONConfig base class """
 
-    def __init__(self, file):
+    def __init__(self, file, warn=True):
         ic("config init", file)
         self.config = {}
-        self.read_config(file)
+        self.read_config(file, warn)
 
 
-    def read_config(self, file):
+    def read_config(self, file, warn=True):
         ic(file)
         file1 = self.search_config(file)
         if(file1):
             json  = self.read_json(file1)
             # Merge with existing config
             self.config = self.config | json
+        elif warn:
+            warning(f"config {file} not found")
 
 
     def search_config(self, file):
@@ -123,7 +125,6 @@ class JSONConfig:
                 ic(file1)
                 return file1
 
-        verbose(f'config file {file} not found')    
         return None
 
 
@@ -161,7 +162,7 @@ class JSONConfig:
 
 
 # Global config object
-config = JSONConfig(CONFIGFILE)
+config = JSONConfig(CONFIGFILE, False)
 
 
 
