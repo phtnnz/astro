@@ -40,7 +40,7 @@
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
-VERSION = "1.1 / 2024-06-28"
+VERSION = "1.2 / 2024-07-25"
 AUTHOR  = "Martin Junius"
 NAME    = "nina-create-sequence2"
 
@@ -106,11 +106,6 @@ class TargetData:
 class NINABase:
     """Base class for NINASequence and NINATarget"""
 
-    prefix_target = False   # -p
-    no_output = False       # -n
-    add_number = False      # -N
-
-
     def __init__(self):
         self.obj = None
 
@@ -131,14 +126,15 @@ class NINABase:
 
 
     def traverse_obj(self, obj, indent, level, func=None, param=None):
-        verbose(indent, "KEYS =", ", ".join(obj.keys()))
+        if ic.enabled:
+            print(indent, "KEYS =", ", ".join(obj.keys()))
 
         if func:
             func(self, obj, indent + ">", param)
 
         for k, val in obj.items():
             if k=="$id" or k=="$type" or k=="$ref" or k=="Name":
-                if NINABase.verbose:
+                if ic.enabled:
                     self.print_attr(obj, k, indent+" >")
 
             if type(val) is dict:
@@ -380,7 +376,7 @@ class NINASequence(NINABase):
         self.targets_list.append(target.obj)
 
 
-    def process_csv(self, target_tmpl, file, destdir):
+    def process_csv(self, target_tmpl, file, target_format):
         ##FIXME: use pytz to convert UT to local time
         tz_NA = datetime.timezone(datetime.timedelta(hours=2, minutes=0))
 
@@ -415,45 +411,39 @@ class NINASequence(NINABase):
                             filter = fn
                             break
 
-                name = "{} {:03d} {}".format(time_NA.date(), seq, target).replace("/", "").replace(":", "")
-                # 
-                if NINABase.add_number:
-                    name += " (n{:03d})".format(number)
-                # use target sequence titel as the target name (FITS header!), too
-                if NINABase.prefix_target:
-                    target = name
+                # format target name for templates
+                target.replace("/", "").replace(":", "")
+
+                # 0=target, 1=date, 2=seq, 3=number
+                # formatted_target = "{1} {2:03d} {0} (n{3:03d})".format(target, time_NA.date(), seq, number)
+                # (from config)
+                formatted_target = target_format.format(target, time_NA.date(), seq, number)
+                ic(target, formatted_target)
+
+                # Replace target with formatted target, as NINA currently only support $$TARGETNAME$$
+                # in filename templates under Options > Imaging
+                target = formatted_target
 
                 print("NINASequence(process_csv):", "#{:03d} target={} RA={} DEC={}".format(seq, target, ra, dec))
                 print("NINASequence(process_csv):", "     UT={} / local {} {}".format(time_utc, time_NA.date(), time_NA.time()))
                 print("NINASequence(process_csv):", "     {:d}x{:.1f}s filter={}".format(number, exp, filter))
 
                 # default for filter and binning
-                data = TargetData(name, target, ra, dec, time_NA.time(), number, exp, filter)
+                data = TargetData(formatted_target, target, ra, dec, time_NA.time(), number, exp, filter)
 
                 # create deep copy of target object, update with data read from CSV
                 target_new = copy.deepcopy(target_tmpl)
                 target_new.update_target_data(data)
 
-                ### write separate targets
-                if NINABase.targets_only:
-                    output_path = destdir + "/" + name + ".json"
-                    if not NINABase.no_output:
-                        print("NINASequence(process_csv):", "writing JSON target", output_path)
-                        target_new.write_json(output_path)
-
                 ### append to main sequence targets
-                else:
-                    # the following changes are necessary to append target_new to the list of the target area
-                    target_new.set_prefix(seq)
-                    target_new.traverse(NINABase.add_prefix_to_id)
-                    # add parent ref to target object
-                    target_new.add_parent(self.targets_id)
-                    # collapse view
-                    target_new.set_expanded(False)
-                    self.append_target(target_new)
-
-                ##DELETE ME##
-                ##break
+                # the following changes are necessary to append target_new to the list of the target area
+                target_new.set_prefix(seq)
+                target_new.traverse(NINABase.add_prefix_to_id)
+                # add parent ref to target object
+                target_new.add_parent(self.targets_id)
+                # collapse view
+                target_new.set_expanded(False)
+                self.append_target(target_new)
 
         # update all SelectedProvider {...} with references
         self.traverse(NINABase.process_provider, self.provider_dict)
@@ -468,11 +458,9 @@ def main(argv):
         epilog      = "Version: " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
-    arg.add_argument("-D", "--destination-dir", help="output dir for created targets/sequence")
-    arg.add_argument("-o", "--output", help="output .json file, default NEO-YYYY-MM-DD")
-    arg.add_argument("-p", "--prefix-target", action="store_true", help="prefix all target names with YYYY-MM-DD NNN")
+    arg.add_argument("-D", "--destination-dir", help="output dir for created sequence")
+    arg.add_argument("-o", "--output", help="output .json file")
     arg.add_argument("-n", "--no-output", action="store_true", help="dry run, don't create output files")
-    arg.add_argument("-N", "--add-number", action="store_true", help="add number of frames (nNNN) to target name")
     arg.add_argument("-S", "--setting", help="use template/target SETTING from config")
     arg.add_argument("filename", nargs="+", help="CSV target data list")
    
@@ -485,9 +473,7 @@ def main(argv):
         verbose.set_prog(NAME)
         verbose.enable()
 
-    NINABase.prefix_target = args.prefix_target
     NINABase.no_output = args.no_output
-    NINABase.add_number = args.add_number
 
     if args.setting:
         if not args.setting in config.get_keys():
@@ -502,6 +488,10 @@ def main(argv):
     verbose("processing target template", target_template)
     sequence_template = setting["template"]
     verbose("processing sequence template", sequence_template)
+    target_format = setting["format"]
+    verbose("target format (0=target, 1=date, 2=seq, 3=number)", target_format)
+    output_format = setting["output"]
+    verbose("output format (1=date)", output_format)
 
     if args.destination_dir:
         destination_dir = args.destination_dir
@@ -511,8 +501,8 @@ def main(argv):
     if args.output:
         output = args.output
     else:
-        output = "NEO-" + str(datetime.date.today()) + ".json"
-    print(arg.prog+":", "output file", output)
+        output = output_format.format("", str(datetime.date.today()))
+    verbose("output file", output)
 
     target = NINATarget()
     target.read_json(target_template)
@@ -524,12 +514,12 @@ def main(argv):
 
 
     for f in args.filename:
-        print(arg.prog+":", "processing CSV file", f)
-        sequence.process_csv(target, f, destination_dir)
+        verbose("processing CSV file", f)
+        sequence.process_csv(target, f, target_format)
 
-    output_path = destination_dir + "/" + output
-    if not NINABase.no_output:
-        print(arg.prog+":", "writing JSON sequence", output_path)
+    output_path = os.path.join(destination_dir, output)
+    if not args.no_output:
+        verbose("writing JSON sequence", output_path)
         sequence.write_json(output_path)
 
 
