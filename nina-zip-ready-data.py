@@ -135,12 +135,13 @@ def scan_data_dir(datadir, zipdir):
     # print(ready)
 
     for target in ready:
-        verbose("Target ready:", target)
+        # verbose("Target ready:", target)
         zipfile = os.path.join(zipdir, target + ".7z")
         if os.path.exists(zipfile):
             # verbose("  Zip file", zipfile, "already exists")
             pass
         else:
+            verbose("Target ready:", target)
             verbose("  Zip file", zipfile, "must be created")
             print("{} archiving target {}".format(time_now(), target))
             create_zip_archive(target, datadir, zipfile)

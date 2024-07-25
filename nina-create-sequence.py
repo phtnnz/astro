@@ -36,7 +36,6 @@
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
-global VERSION, AUTHOR
 VERSION = "1.1 / 2024-06-28"
 AUTHOR  = "Martin Junius"
 
@@ -59,6 +58,7 @@ ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CU
 DEFAULT_NINA_DIR = buf.value.replace("\\", "/") + "/N.I.N.A"
 DEFAULT_TARGETS_DIR = DEFAULT_NINA_DIR + "/Targets/tmp"
 
+##FIXME: move to config file
 DEFAULT_TEMPLATE = "./NINA-Templates-IAS/Base NEO nautical.json"
 DEFAULT_TARGET = "./NINA-Templates-IAS/Target NEO.json"
 
@@ -204,8 +204,9 @@ class NINATarget(NINABase):
         self.timecondition = None
         self.script_w_target = None
         # instance variables created by process_data(), referencing the inner containers
-        # [0] Preparation (Slew, AF, WaitForTime)
-        # [1] Exposure loop
+        # [0] Pre-imaging (slew, AF, WaitForTime)
+        # [1] Imaging (exposure loop)
+        # [2] Post-imaging (create flag &c.)
         self.container_items = None
         self.container_conditions = None
         self.container_triggers = None
@@ -375,6 +376,7 @@ class NINASequence(NINABase):
 
 
     def process_csv(self, target_tmpl, file, destdir):
+        ##FIXME: use pytz to convert UT to local time
         tz_NA = datetime.timezone(datetime.timedelta(hours=2, minutes=0))
 
         with open(file, newline='') as f:
@@ -481,6 +483,7 @@ def main(argv):
 
     global DEFAULT_TARGET, DEFAULT_TEMPLATE
     if args.remote3:
+        ##FIXME: move to config file
         DEFAULT_TEMPLATE = "./NINA-Templates-IAS3/Base NEO nautical 3-Discord.json"
         DEFAULT_TARGET   = "./NINA-Templates-IAS3/Target NEO 3-Discord.template.json"
 

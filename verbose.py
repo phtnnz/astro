@@ -40,7 +40,6 @@ from icecream import ic
 ic.disable()
 
 
-global VERSION, AUTHOR, NAME
 VERSION = "1.0 / 2024-01-06"
 AUTHOR  = "Martin Junius"
 NAME    = "verbose"
