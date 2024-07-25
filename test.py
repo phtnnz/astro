@@ -30,7 +30,7 @@ NAME    = "verbose"
 
 def main():
     arg = argparse.ArgumentParser(
-        prog        = TEST,
+        prog        = NAME,
         description = "Test python script",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-e", "--exit-code", type=int, help="return exit code, default 0")
