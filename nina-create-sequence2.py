@@ -63,10 +63,12 @@ import os
 import argparse
 import json
 import csv
-import datetime
+from datetime import datetime, timezone, timedelta, date
+from zoneinfo import ZoneInfo
 import copy
 
 # The following libs must be installed with pip
+import tzdata
 from icecream import ic
 # Disable debugging
 ic.disable()
@@ -413,8 +415,8 @@ class NINASequence(NINABase):
 
 
     def process_csv(self, target_tmpl, file, target_format):
-        ##FIXME: use pytz to convert UT to local time
-        tz_NA = datetime.timezone(datetime.timedelta(hours=2, minutes=0))
+        # tz_NA = timezone(timedelta(hours=2, minutes=0))
+        tz_NA = ZoneInfo("Africa/Windhoek")
 
         with open(file, newline='') as f:
             reader = csv.DictReader(f)
@@ -425,7 +427,7 @@ class NINASequence(NINABase):
                 seq = int(row["#"])
                 # target must not contain [/:]
                 target = row["Object"].replace("/", "").replace(":", "").replace("\"", "")
-                time_utc = datetime.datetime.fromisoformat(row["Observation date"].replace(" ", "-") + "T" + 
+                time_utc = datetime.fromisoformat(row["Observation date"].replace(" ", "-") + "T" + 
                                                            row["Time UT"] + ":00+00:00")
                 # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
                 # convert to Namibian time zone = UTC+2
@@ -540,7 +542,7 @@ def main(argv):
     if args.output:
         output = args.output
     else:
-        output = output_format.format("", str(datetime.date.today()))
+        output = output_format.format("", str(date.today()))
     verbose("output file", output)
 
     target = NINATarget()
