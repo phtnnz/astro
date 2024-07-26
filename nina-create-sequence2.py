@@ -237,9 +237,10 @@ class NINATarget(NINABase):
         self.coord["DecSeconds"] = float(data.dec_ss)
 
         # NEW TIME --> waitfortime["..."]
-        self.waitfortime["Hours"]   = int(data.time_hh)
-        self.waitfortime["Minutes"] = int(data.time_mm)
-        self.waitfortime["Seconds"] = int(data.time_ss)
+        if self.waitfortime:
+            self.waitfortime["Hours"]   = int(data.time_hh)
+            self.waitfortime["Minutes"] = int(data.time_mm)
+            self.waitfortime["Seconds"] = int(data.time_ss)
 
         # NEW NUMBER OF EXPOSURES --> conditions0["Iterations"]
         self.conditions0["Iterations"] = int(data.number)
