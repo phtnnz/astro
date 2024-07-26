@@ -37,8 +37,22 @@
 # Version 1.2 / 2024-07-25
 #       Use JSONConfig, verbose modules
 #       Removed a lot of options (now handled in config)
+#       New option -A --debug-print-attr
+#       New config setting "container", add target items to this container in target area
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
+
+# Entries in nina-create-sequence.json:
+# "<NAME>": {
+#     "template":  "<BASE SEQUENCE TEMPLATE>",
+#     "target":    "<SINGLE TARGET TEMPLATE>",
+#     "container": "<CONTAINER NAME OR EMTYP>",
+#     "format":    "<TARGETNAME {x}>",
+#     "output":    "<OUTPUT FILENAME {x}>.json"
+# }
+#
+# Format placeholders:
+# 0=target, 1=date, 2=seq, 3=number
 
 VERSION = "1.2 / 2024-07-25"
 AUTHOR  = "Martin Junius"
@@ -63,6 +77,9 @@ from jsonconfig       import JSONConfig, config
 
 
 
+DEFAULT_FILTER_NAMES = [ "L", "R", "G", "B", "Ha", "OIII", "SII"]
+
+
 CONFIG = "nina-create-sequence.json"
 
 class SequenceConfig(JSONConfig):
@@ -77,11 +94,14 @@ config = SequenceConfig(CONFIG)
 
 
 
-DEFAULT_FILTER_NAMES = [ "L", "R", "G", "B", "Ha", "OIII", "SII"]
+class Options:
+    """ Command line options """
+    debug_print_attr = False            # -A --debug-print-attr
+
 
 
 class TargetData:
-    """Holds data to update N.I.N.A template"""
+    """ Holds data to update N.I.N.A template """
 
     def __init__(self, name, target, ra, dec, time, number, exposure, filter="L", binning="2x2"):
         self.name = name
@@ -124,7 +144,7 @@ class NINABase:
 
 
     def traverse_obj(self, obj, indent, level, func=None, param=None):
-        if ic.enabled:
+        if Options.debug_print_attr:
             print(indent, "KEYS =", ", ".join(obj.keys()))
 
         if func:
@@ -132,8 +152,7 @@ class NINABase:
 
         for k, val in obj.items():
             if k=="$id" or k=="$type" or k=="$ref" or k=="Name":
-                if ic.enabled:
-                    self.print_attr(obj, k, indent+" >")
+                self.print_attr(obj, k, indent+" >")
 
             if type(val) is dict:
                 """dict"""
@@ -160,13 +179,15 @@ class NINABase:
 
     def __add_prefix(self, obj, key):
         if key in obj:
-            obj[key] = str(self.id_prefix*1000 + int(obj[key]))
+            # obj[key] = str(self.id_prefix*1000 + int(obj[key]))
+            # JSON serializing in NINA uses pure numeric ids, but strings
+            # work as well and are collision free
+            obj[key] = f"{self.id_prefix:04d}_{int(obj[key]):04d}"
 
 
     def process_provider(self, obj, indent, dict):
         # search for Provider {...} and change additional occurences to reference
-        if ic.enabled:
-            self.print_attr(obj, "SelectedProvider", "")
+        self.print_attr(obj, "SelectedProvider", "")
         if "SelectedProvider" in obj.keys():
             prov = obj["SelectedProvider"]
             if "$type" in prov.keys():
@@ -180,13 +201,13 @@ class NINABase:
                 else:
                     # 1st occurence, don't touch
                     dict[type] = id
-        if ic.enabled:
-            self.print_attr(obj, "SelectedProvider", "")
+        self.print_attr(obj, "SelectedProvider", "")
 
 
     def print_attr(self, obj, name, indent):
-        if name in obj:
-            print(indent, name, "=", obj[name])
+        if Options.debug_print_attr:
+            if name in obj:
+                print(indent, name, "=", obj[name])
 
 
 
@@ -351,11 +372,10 @@ class NINASequence(NINABase):
 
         items = self.obj["Items"]["$values"]
         self.area_list = items
-        if ic.enabled:
-            for item in items:
-                for k in item.keys():
-                    if k=="$id" or k=="$type" or k=="$ref" or k=="Name":
-                        self.print_attr(item, k, ">")
+        for item in items:
+            for k in item.keys():
+                if k=="$id" or k=="$type" or k=="$ref" or k=="Name":
+                    self.print_attr(item, k, ">")
 
         self.start_list   = self.area_list[0]["Items"]["$values"]
         self.targets_list = self.area_list[1]["Items"]["$values"]
@@ -364,9 +384,26 @@ class NINASequence(NINABase):
         self.targets_id   = self.area_list[1]["$id"]
         self.end_id       = self.area_list[2]["$id"]
         if ic.enabled:
-            print("id =", self.start_id, "start =", self.start_list)
-            print("id =", self.targets_id, "targets =", self.targets_list)
-            print("id =", self.end_id, "end =", self.end_list)
+            ic(self.start_id, self.start_list)
+            ic(self.targets_id, self.targets_list)
+            ic(self.end_id, self.end_list)
+
+
+    def search_container(self, container):
+        """ Search for named container in target area (targets_list) """
+        if container:
+            verbose("NINASequence(search_container):", "name =", container)
+            for item in self.targets_list:
+                type = item["$type"]
+                name = item["Name"]
+                if "Container.SequentialContainer" in type and name==container:
+                    self.targets_list = item["Items"]["$values"]
+                    self.targets_id   = item["$id"]
+                    if ic.enabled:
+                        ic("NEW in container")
+                        ic(self.targets_id, self.targets_list)                    
+                    break
+                
 
 
     def append_target(self, target):
@@ -457,6 +494,7 @@ def main(argv):
         epilog      = "Version: " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
+    arg.add_argument("-A", "--debug-print-attr", action="store_true", help="extra debug output")
     arg.add_argument("-D", "--destination-dir", help="output dir for created sequence")
     arg.add_argument("-o", "--output", help="output .json file")
     arg.add_argument("-n", "--no-output", action="store_true", help="dry run, don't create output files")
@@ -472,7 +510,7 @@ def main(argv):
         verbose.set_prog(NAME)
         verbose.enable()
 
-    NINABase.no_output = args.no_output
+    Options.debug_print_attr = args.debug_print_attr
 
     if args.setting:
         if not args.setting in config.get_keys():
@@ -491,6 +529,8 @@ def main(argv):
     verbose("target format (0=target, 1=date, 2=seq, 3=number)", target_format)
     output_format = setting["output"]
     verbose("output format (1=date)", output_format)
+    container = setting["container"]
+    verbose(f"add target items to container '{container}', empty=target area")
 
     if args.destination_dir:
         destination_dir = args.destination_dir
@@ -510,7 +550,7 @@ def main(argv):
     sequence = NINASequence()
     sequence.read_json(sequence_template)
     sequence.process_data()
-
+    sequence.search_container(container)
 
     for f in args.filename:
         verbose("processing CSV file", f)
