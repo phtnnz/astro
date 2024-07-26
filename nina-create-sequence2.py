@@ -463,7 +463,7 @@ class NINASequence(NINABase):
                 target = formatted_target
 
                 print("NINASequence(process_csv):", "#{:03d} target={} RA={} DEC={}".format(seq, target, ra, dec))
-                print("NINASequence(process_csv):", "     UT={} / local {} {}".format(time_utc, time_NA.date(), time_NA.time()))
+                print("NINASequence(process_csv):", "     UT={} / local {}".format(time_utc, time_NA))
                 print("NINASequence(process_csv):", "     {:d}x{:.1f}s filter={}".format(number, exp, filter))
 
                 # default for filter and binning
