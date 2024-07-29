@@ -414,9 +414,10 @@ class NINASequence(NINABase):
         self.targets_list.append(target.obj)
 
 
-    def process_csv(self, target_tmpl, file, target_format):
+    def process_csv(self, target_tmpl, file, target_format, tzname):
         # tz_NA = timezone(timedelta(hours=2, minutes=0))
-        tz_NA = ZoneInfo("Africa/Windhoek")
+        # tz_NA = ZoneInfo("Africa/Windhoek")
+        tz_NA = ZoneInfo(tzname)
 
         with open(file, newline='') as f:
             reader = csv.DictReader(f)
@@ -430,7 +431,7 @@ class NINASequence(NINABase):
                 time_utc = datetime.fromisoformat(row["Observation date"].replace(" ", "-") + "T" + 
                                                            row["Time UT"] + ":00+00:00")
                 # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
-                # convert to Namibian time zone = UTC+2
+                # convert to local time zone (originally Namibia, now configurable)
                 time_NA  = time_utc.astimezone(tz_NA)
                 ra  = row["RAm"].replace(" ", ":").replace("+", "")
                 dec = row["DECm"].replace(" ", ":").replace("+", "")
@@ -458,7 +459,7 @@ class NINASequence(NINABase):
                 formatted_target = target_format.format(target, time_NA.date(), seq, number)
                 ic(target, formatted_target)
 
-                # Replace target with formatted target, as NINA currently only support $$TARGETNAME$$
+                # Replace target with formatted target, as NINA currently only supports $$TARGETNAME$$
                 # in filename templates under Options > Imaging
                 target = formatted_target
 
@@ -533,6 +534,8 @@ def main(argv):
     verbose("output format (1=date)", output_format)
     container = setting["container"]
     verbose(f"add target items to container '{container}', empty=target area")
+    tzname = setting["timezone"]
+    verbose("timezone", tzname)
 
     if args.destination_dir:
         destination_dir = args.destination_dir
@@ -556,7 +559,7 @@ def main(argv):
 
     for f in args.filename:
         verbose("processing CSV file", f)
-        sequence.process_csv(target, f, target_format)
+        sequence.process_csv(target, f, target_format, tzname)
 
     output_path = os.path.join(destination_dir, output)
     if not args.no_output:
