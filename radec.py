@@ -59,7 +59,7 @@ class Coord:
         d = int(va)
         m = int((va - d) * 60)
         s = float((va - d - m/60) * 3600)
-        return (d, m, s)
+        return (d*sign, m, s)
 
 
     def _parse_string(self, s, type=""):
@@ -102,13 +102,13 @@ class Coord:
         if format == "decimal":
             return f"{self.ra:.7f} {self.dec:.7f}"
         elif format == " ":
-            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:02.3f} {self.dec_d:+02d} {self.dec_m:02d} {self.dec_s:02.3f}"
+            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:06.3f} {self.dec_d:+02d} {self.dec_m:02d} {self.dec_s:06.3f}"
         elif format == "mpc":
-            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:02.3f}{self.dec_d:+02d} {self.dec_m:02d} {self.dec_s:02.2f}"
+            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:06.3f}{self.dec_d:+02d} {self.dec_m:02d} {self.dec_s:05.2f}"
         elif format == "mpc1":
-            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:02.2f} {self.dec_d:+02d} {self.dec_m:02d} {self.dec_s:02.1f} "
+            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:05.2f} {self.dec_d:+02d} {self.dec_m:02d} {self.dec_s:04.1f} "
         else:
-            return f"{self.ra_h:02d}h{self.ra_m:02d}m{self.ra_s:02.3f}s {self.dec_d:+02d}d{self.dec_m:02d}m{self.dec_s:02.3f}s"
+            return f"{self.ra_h:02d}h{self.ra_m:02d}m{self.ra_s:06.3f}s {self.dec_d:+02d}d{self.dec_m:02d}m{self.dec_s:06.3f}s"
 
 
     def __repr__(self):
@@ -137,15 +137,15 @@ def main():
 
     print(f"{args.ra=} {args.dec=}")
     coord1 = Coord(args.ra, args.dec)
-    print(f"{coord1=}\n{coord1.to_string(format="decimal")=}")
+    print(f"{coord1 = }\n{coord1.to_string(format="decimal") = }")
     print("Regression with coord1 decimal values ...")
     coord2 = Coord(coord1.ra, coord1.dec)
-    print(f"{coord2=}")
-    print(f"{coord2.to_string(format="hmsdms")=}")
-    print(f"{coord2.to_string(format="decimal")=}")
-    print(f"{coord2.to_string(format=" ")=}")
-    print(f"{coord2.to_string(format="mpc")=}")
-    print(f"{coord2.to_string(format="mpc1")=}")
+    print(f"{coord2 = }")
+    print(f"{coord2.to_string(format="hmsdms")  = }")
+    print(f"{coord2.to_string(format="decimal") = }")
+    print(f"{coord2.to_string(format=" ")       = }")
+    print(f"{coord2.to_string(format="mpc")     = }")
+    print(f"{coord2.to_string(format="mpc1")    = }")
 
     
 
