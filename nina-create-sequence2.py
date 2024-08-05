@@ -417,9 +417,7 @@ class NINASequence(NINABase):
 
 
     def process_csv(self, target_tmpl, file, target_format, tzname):
-        # tz_NA = timezone(timedelta(hours=2, minutes=0))
-        # tz_NA = ZoneInfo("Africa/Windhoek")
-        tz_NA = ZoneInfo(tzname)
+        tz_local = ZoneInfo(tzname)
 
         with open(file, newline='') as f:
             reader = csv.DictReader(f)
@@ -428,13 +426,13 @@ class NINASequence(NINABase):
                     continue
 
                 seq = int(row["#"])
-                # target must not contain [/:]
+                # target must not contain [/:"]
                 target = row["Object"].replace("/", "").replace(":", "").replace("\"", "")
                 time_utc = datetime.fromisoformat(row["Observation date"].replace(" ", "-") + "T" + 
                                                            row["Time UT"] + ":00+00:00")
                 # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
                 # convert to local time zone (originally Namibia, now configurable)
-                time_NA  = time_utc.astimezone(tz_NA)
+                time_local = time_utc.astimezone(tz_local)
 
                 # Use various field names for RA/DEC coordinates in CSV data
                 ra  = row["RAm"]  or row["RA"]
@@ -459,7 +457,7 @@ class NINASequence(NINABase):
                 # 0=target, 1=date, 2=seq, 3=number
                 # formatted_target = "{1} {2:03d} {0} (n{3:03d})".format(target, time_NA.date(), seq, number)
                 # (from config)
-                formatted_target = target_format.format(target, time_NA.date(), seq, number)
+                formatted_target = target_format.format(target, time_local.date(), seq, number)
                 ic(target, formatted_target)
 
                 # Replace target with formatted target, as NINA currently only supports $$TARGETNAME$$
@@ -467,11 +465,11 @@ class NINASequence(NINABase):
                 target = formatted_target
 
                 print("NINASequence(process_csv):", "#{:03d} target={} RA={} DEC={}".format(seq, target, ra, dec))
-                print("NINASequence(process_csv):", "     UT={} / local {}".format(time_utc, time_NA))
+                print("NINASequence(process_csv):", "     UT={} / local {}".format(time_utc, time_local))
                 print("NINASequence(process_csv):", "     {:d}x{:.1f}s filter={}".format(number, exp, filter))
 
                 # default for filter and binning
-                data = TargetData(formatted_target, target, coord, time_NA.time(), number, exp, filter)
+                data = TargetData(formatted_target, target, coord, time_local.time(), number, exp, filter)
 
                 # create deep copy of target object, update with data read from CSV
                 target_new = copy.deepcopy(target_tmpl)
