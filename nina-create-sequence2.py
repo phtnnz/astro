@@ -76,6 +76,7 @@ ic.disable()
 # Local modules
 from verbose          import verbose, warning, error
 from jsonconfig       import JSONConfig, config
+from radec            import Coord
 
 
 
@@ -105,11 +106,12 @@ class Options:
 class TargetData:
     """ Holds data to update N.I.N.A template """
 
-    def __init__(self, name, target, ra, dec, time, number, exposure, filter="L", binning="2x2"):
+    def __init__(self, name: str, target: str, coord: Coord, time: str, 
+                 number: int, exposure: float, filter: str ="L", binning: str ="2x2"):
         self.name = name
         self.targetname = target
-        (self.ra_hh, self.ra_mm, self.ra_ss) = ra.split(":")
-        (self.dec_dd, self.dec_mm, self.dec_ss) = dec.split(":")
+        (self.ra_hh, self.ra_mm, self.ra_ss)    = (coord.ra_h, coord.ra_m, coord.ra_s)
+        (self.dec_dd, self.dec_mm, self.dec_ss) = (coord.dec_d, coord.dec_m, coord.dec_s)
         (self.time_hh, self.time_mm, self.time_ss) = str(time).split(":")
         self.number = number
         self.exposure = exposure
@@ -433,13 +435,16 @@ class NINASequence(NINABase):
                 # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
                 # convert to local time zone (originally Namibia, now configurable)
                 time_NA  = time_utc.astimezone(tz_NA)
-                ra  = row["RAm"].replace(" ", ":").replace("+", "")
-                dec = row["DECm"].replace(" ", ":").replace("+", "")
-                # use RA/DEC if RAm/DECm are empty
-                if ra=="":
-                    ra  = row["RA"].replace(" ", ":").replace("+", "")
-                if dec=="":
-                    dec = row["Dec."].replace(" ", ":").replace("+", "")
+
+                # Use RAm/DECm or RA/Dec. in CSV data
+                ra  = row["RAm"]
+                dec = row["DECm"]
+                if not ra:
+                    ra  = row["RA"]
+                if not dec:
+                    dec = row["Dec."]
+                coord = Coord(ra, dec)
+
                 exp = float(row["Exposure time"])
                 number = int(row["No images"])
                 filter = "L"
@@ -468,7 +473,7 @@ class NINASequence(NINABase):
                 print("NINASequence(process_csv):", "     {:d}x{:.1f}s filter={}".format(number, exp, filter))
 
                 # default for filter and binning
-                data = TargetData(formatted_target, target, ra, dec, time_NA.time(), number, exp, filter)
+                data = TargetData(formatted_target, target, coord, time_NA.time(), number, exp, filter)
 
                 # create deep copy of target object, update with data read from CSV
                 target_new = copy.deepcopy(target_tmpl)
