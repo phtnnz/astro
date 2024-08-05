@@ -436,13 +436,11 @@ class NINASequence(NINABase):
                 # convert to local time zone (originally Namibia, now configurable)
                 time_NA  = time_utc.astimezone(tz_NA)
 
-                # Use RAm/DECm or RA/Dec. in CSV data
-                ra  = row["RAm"]
-                dec = row["DECm"]
-                if not ra:
-                    ra  = row["RA"]
-                if not dec:
-                    dec = row["Dec."]
+                # Use various field names for RA/DEC coordinates in CSV data
+                ra  = row["RAm"]  or row["RA"]
+                dec = row["DECm"] or row["Dec."] or row["DEC"] or row["DE"]
+                if not ra and not dec:
+                    error("can't find RA/DEC coordinates in CSV data")
                 coord = Coord(ra, dec)
 
                 exp = float(row["Exposure time"])
