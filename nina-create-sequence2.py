@@ -422,30 +422,39 @@ class NINASequence(NINABase):
         with open(file, newline='') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                if row["Object"]=="Azelfafage" or row["RA"]=="":
-                    continue
+                # Number in sequence, default 0
+                seq = int(row.get("#") or "0")
 
-                seq = int(row["#"])
-                # target must not contain [/:"]
-                target = row["Object"].replace("/", "").replace(":", "").replace("\"", "")
-                time_utc = datetime.fromisoformat(row["Observation date"].replace(" ", "-") + "T" + 
-                                                           row["Time UT"] + ":00+00:00")
-                # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
-                # convert to local time zone (originally Namibia, now configurable)
-                time_local = time_utc.astimezone(tz_local)
+                # Target name, must not contain [/:"]
+                target = row.get("Object") or row.get("Name") or row.get("name")
+                if not target:
+                    error("can't find target name in CSV data")
+                target.replace("/", "").replace(":", "").replace("\"", "")
+
+                # Date / time UTC and local
+                time_utc = time_local = None
+                date1 = row.get("Observation date")
+                time1 = row.get("Time UT")
+                if date1 and time1:
+                    time_utc = datetime.fromisoformat(date1.replace(" ", "-") + "T" + time1 + ":00+00:00")
+                    # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
+                    # convert to local time zone (now configurable)
+                    time_local = time_utc.astimezone(tz_local)
 
                 # Use various field names for RA/DEC coordinates in CSV data
-                ra  = row["RAm"]  or row["RA"]
-                dec = row["DECm"] or row["Dec."] or row["DEC"] or row["DE"]
-                if not ra and not dec:
-                    error("can't find RA/DEC coordinates in CSV data")
+                ra  = row.get("RAm")  or row.get("RA")
+                dec = row.get("DECm") or row.get("Dec.") or row.get("DEC") or row.get("DE")
+                # End marker
+                if target=="Azelfafage" or not ra or not dec:
+                    break
                 coord = Coord(ra, dec)
 
-                exp = float(row["Exposure time"])
-                number = int(row["No images"])
-                filter = "L"
-                if "filter" in row.keys():
-                    filter = row["filter"]
+                exp = float(row.get("Exposure time"))
+                number = int(row.get("No images"))
+
+                # Filter
+                filter = row.get("filter") or "L"
+                if filter:
                     for fn in DEFAULT_FILTER_NAMES:
                         if filter.startswith(fn):
                             filter = fn
@@ -465,7 +474,8 @@ class NINASequence(NINABase):
                 target = formatted_target
 
                 print("NINASequence(process_csv):", "#{:03d} target={} RA={} DEC={}".format(seq, target, ra, dec))
-                print("NINASequence(process_csv):", "     UT={} / local {}".format(time_utc, time_local))
+                if time_utc:
+                    print("NINASequence(process_csv):", "     UT={} / local {}".format(time_utc, time_local))
                 print("NINASequence(process_csv):", "     {:d}x{:.1f}s filter={}".format(number, exp, filter))
 
                 # default for filter and binning
