@@ -47,9 +47,10 @@
 
 # Entries in nina-create-sequence.json:
 # "<NAME>": {
+#     "timezone":  "<IANA TIMEZONE NAME>"
 #     "template":  "<BASE SEQUENCE TEMPLATE>",
 #     "target":    "<SINGLE TARGET TEMPLATE>",
-#     "container": "<CONTAINER NAME OR EMTYP>",
+#     "container": "<CONTAINER NAME OR EMPTY>",
 #     "format":    "<TARGETNAME {x}>",
 #     "output":    "<OUTPUT FILENAME {x}>.json"
 # }
@@ -107,17 +108,14 @@ class Options:
 
 
 class TargetData:
-    """ Holds data to update N.I.N.A template """
+    """Hold data to update N.I.N.A template"""
 
     def __init__(self, name: str, target: str, coord: Coord, time: datetime, 
                  number: int, exposure: float, filter: str ="L", binning: str ="2x2"):
         self.name = name
         self.targetname = target
-        ## FIXME: store coord as an instance variable
-        (self.ra_hh, self.ra_mm, self.ra_ss)    = (coord.ra_h, coord.ra_m, coord.ra_s)
-        (self.dec_dd, self.dec_mm, self.dec_ss) = (coord.dec_d, coord.dec_m, coord.dec_s)
-        ## FIXME: store time as an instance variable
-        (self.time_hh, self.time_mm, self.time_ss) = (time.hour, time.minute, time.second) if time else (None, None, None)
+        self.coord = coord
+        self.time = time
         self.number = number
         self.exposure = exposure
         self.filter = filter
@@ -237,7 +235,8 @@ class NINATarget(NINABase):
         self.binning     = None
         self.timecondition = None
         self.script_w_target = None
-        # instance variables created by process_data(), referencing the inner containers
+        # Instance variables created by process_data(), referencing the inner containers
+        # Items in container
         # [0] Pre-imaging (slew, AF, WaitForTime)
         # [1] Imaging (exposure loop)
         # [2] Post-imaging (create flag &c.)
@@ -258,21 +257,21 @@ class NINATarget(NINABase):
 
         # NEW COORD --> coord["..."]
         # Coordinates in WaitForAltitude don't need to be updated, handled automatically by N.I.N.A when loading
-        self.coord["RAHours"]   = int(data.ra_hh)
-        self.coord["RAMinutes"] = int(data.ra_mm)
-        self.coord["RASeconds"] = float(data.ra_ss)
-        self.coord["NegativeDec"] = True if int(data.dec_dd) < 0 else False
-        self.coord["DecDegrees"] = int(data.dec_dd)
-        self.coord["DecMinutes"] = int(data.dec_mm)
-        self.coord["DecSeconds"] = float(data.dec_ss)
+        self.coord["RAHours"]   = int(data.coord.ra_h)
+        self.coord["RAMinutes"] = int(data.coord.ra_m)
+        self.coord["RASeconds"] = float(data.coord.ra_s)
+        self.coord["NegativeDec"] = True if int(data.coord.dec_d) < 0 else False
+        self.coord["DecDegrees"] = int(data.coord.dec_d)
+        self.coord["DecMinutes"] = int(data.coord.dec_m)
+        self.coord["DecSeconds"] = float(data.coord.dec_s)
 
         # NEW TIME --> waitfortime["..."]
         if self.waitfortime:
-            if data.time_hh == None:
+            if not data.time:
                 error("WaitForTime in sequence, but no start time in CSV data")
-            self.waitfortime["Hours"]   = int(data.time_hh)
-            self.waitfortime["Minutes"] = int(data.time_mm)
-            self.waitfortime["Seconds"] = int(data.time_ss)
+            self.waitfortime["Hours"]   = int(data.time.hour)
+            self.waitfortime["Minutes"] = int(data.time.minute)
+            self.waitfortime["Seconds"] = int(data.time.second)
 
         # NEW NUMBER OF EXPOSURES --> conditions0["Iterations"]
         self.conditions0["Iterations"] = int(data.number)
@@ -590,4 +589,4 @@ def main(argv):
 
    
 if __name__ == "__main__":
-   main(sys.argv[1:])
+   main()
