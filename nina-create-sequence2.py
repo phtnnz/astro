@@ -39,6 +39,9 @@
 #       Removed a lot of options (now handled in config)
 #       New option -A --debug-print-attr
 #       New config setting "container", add target items to this container in target area
+# Version 1.3 / 2024-08-06
+#       Use new radec.Coord
+#       More alternatives and defaults for CSV data field names
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
@@ -54,7 +57,7 @@
 # Format placeholders:
 # 0=target, 1=date, 2=seq, 3=number
 
-VERSION = "1.2 / 2024-07-25"
+VERSION = "1.3 / 2024-08-06"
 AUTHOR  = "Martin Junius"
 NAME    = "nina-create-sequence2"
 
@@ -106,13 +109,15 @@ class Options:
 class TargetData:
     """ Holds data to update N.I.N.A template """
 
-    def __init__(self, name: str, target: str, coord: Coord, time: str, 
+    def __init__(self, name: str, target: str, coord: Coord, time: datetime, 
                  number: int, exposure: float, filter: str ="L", binning: str ="2x2"):
         self.name = name
         self.targetname = target
+        ## FIXME: store coord as an instance variable
         (self.ra_hh, self.ra_mm, self.ra_ss)    = (coord.ra_h, coord.ra_m, coord.ra_s)
         (self.dec_dd, self.dec_mm, self.dec_ss) = (coord.dec_d, coord.dec_m, coord.dec_s)
-        (self.time_hh, self.time_mm, self.time_ss) = str(time).split(":")
+        ## FIXME: store time as an instance variable
+        (self.time_hh, self.time_mm, self.time_ss) = (time.hour, time.minute, time.second) if time else (None, None, None)
         self.number = number
         self.exposure = exposure
         self.filter = filter
@@ -243,7 +248,7 @@ class NINATarget(NINABase):
         NINABase.__init__(self)
 
 
-    def update_target_data(self, data):
+    def update_target_data(self, data: TargetData):
         # NEW NAME --> obj["Name"]
         self.obj["Name"] = data.name
         self.name = data.name
@@ -263,6 +268,8 @@ class NINATarget(NINABase):
 
         # NEW TIME --> waitfortime["..."]
         if self.waitfortime:
+            if data.time_hh == None:
+                error("WaitForTime in sequence, but no start time in CSV data")
             self.waitfortime["Hours"]   = int(data.time_hh)
             self.waitfortime["Minutes"] = int(data.time_mm)
             self.waitfortime["Seconds"] = int(data.time_ss)
@@ -421,9 +428,9 @@ class NINASequence(NINABase):
 
         with open(file, newline='') as f:
             reader = csv.DictReader(f)
-            for row in reader:
+            for count, row in enumerate(reader):
                 # Number in sequence, default 0
-                seq = int(row.get("#") or "0")
+                seq = int(row.get("#") or count + 1)
 
                 # Target name, must not contain [/:"]
                 target = row.get("Object") or row.get("Name") or row.get("name")
@@ -447,12 +454,17 @@ class NINASequence(NINABase):
                 # End marker
                 if target=="Azelfafage" or not ra or not dec:
                     break
-                coord = Coord(ra, dec)
+                try:
+                    coord = Coord(ra, dec)
+                except ValueError:
+                    error(f"invalid coordinates {ra=} {dec=}")
 
-                exp = float(row.get("Exposure time"))
-                number = int(row.get("No images"))
+                # Default 60s exposure time
+                exp = float(row.get("Exposure time") or row.get("Exposure") or 60)
+                # Default 60 frames
+                number = int(row.get("No images") or row.get("Number") or 60)
 
-                # Filter
+                # Default filter L
                 filter = row.get("filter") or "L"
                 if filter:
                     for fn in DEFAULT_FILTER_NAMES:
@@ -460,9 +472,7 @@ class NINASequence(NINABase):
                             filter = fn
                             break
 
-                # format target name for templates
-                target.replace("/", "").replace(":", "")
-
+                # Format target name for templates:
                 # 0=target, 1=date, 2=seq, 3=number
                 # formatted_target = "{1} {2:03d} {0} (n{3:03d})".format(target, time_NA.date(), seq, number)
                 # (from config)
@@ -479,7 +489,7 @@ class NINASequence(NINABase):
                 print("NINASequence(process_csv):", "     {:d}x{:.1f}s filter={}".format(number, exp, filter))
 
                 # default for filter and binning
-                data = TargetData(formatted_target, target, coord, time_local.time(), number, exp, filter)
+                data = TargetData(formatted_target, target, coord, time_local, number, exp, filter)
 
                 # create deep copy of target object, update with data read from CSV
                 target_new = copy.deepcopy(target_tmpl)
