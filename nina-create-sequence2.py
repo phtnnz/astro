@@ -448,10 +448,10 @@ class NINASequence(NINABase):
                     time_local = time_utc.astimezone(tz_local)
 
                 # Use various field names for RA/DEC coordinates in CSV data
-                ra  = row.get("RAm")  or row.get("RA")
-                dec = row.get("DECm") or row.get("Dec.") or row.get("DEC") or row.get("DE")
+                ra  = row.get("RAm")  or row.get("RA")   or row.get("ra")
+                dec = row.get("DECm") or row.get("Dec.") or row.get("DEC") or row.get("DE") or row.get("dec") or row.get("de")
                 # End marker
-                if target=="Azelfafage" or not ra or not dec:
+                if target=="Azelfafage" or target=="0" or not target or not ra or not dec:
                     break
                 try:
                     coord = Coord(ra, dec)
@@ -475,7 +475,8 @@ class NINASequence(NINABase):
                 # 0=target, 1=date, 2=seq, 3=number
                 # formatted_target = "{1} {2:03d} {0} (n{3:03d})".format(target, time_NA.date(), seq, number)
                 # (from config)
-                formatted_target = target_format.format(target, time_local.date(), seq, number)
+                date1 = time_local.date() if time_local else ""
+                formatted_target = target_format.format(target, date1, seq, number)
                 ic(target, formatted_target)
 
                 # Replace target with formatted target, as NINA currently only supports $$TARGETNAME$$
@@ -510,7 +511,7 @@ class NINASequence(NINABase):
 
 
 
-def main(argv):
+def main():
     arg = argparse.ArgumentParser(
         prog        = NAME,
         description = "Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV",
