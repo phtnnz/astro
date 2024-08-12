@@ -23,7 +23,7 @@
 #   CSVOutput.write(file="", set_locale=True)       file="" uses stdout
 
 # ChangeLog
-# Version 0.0 / 2024-07-12
+# Version 1.0 / 2024-07-12
 #       locale aware global CSV output class
 
 
@@ -31,7 +31,7 @@ import csv
 import locale
 import sys
 
-VERSION = "0.0 / 2024-07-12"
+VERSION = "1.0 / 2024-07-12"
 AUTHOR  = "Martin Junius"
 NAME    = "csvoutput"
 

@@ -28,7 +28,7 @@
       {
         "$id": "5",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.0-remote3-discord / 2024-07-03 / Martin Junius",
+        "Text": "Version 1.1-remote3-discord / 2024-07-03 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -95,7 +95,7 @@
       {
         "$id": "12",
         "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-        "Text": "Telescope in park position, waiting for nautical dawn",
+        "Text": "Telescope in park position",
         "Parent": {
           "$ref": "1"
         },
@@ -138,13 +138,23 @@
           "$values": [
             {
               "$id": "18",
+              "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
+              "Text": "Waiting for nautical dawn",
+              "Parent": {
+                "$ref": "13"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            },
+            {
+              "$id": "19",
               "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTime, NINA.Sequencer",
               "Hours": 6,
-              "Minutes": 44,
+              "Minutes": 39,
               "MinutesOffset": 0,
-              "Seconds": 11,
+              "Seconds": 27,
               "SelectedProvider": {
-                "$id": "19",
+                "$id": "20",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.NauticalDawnProvider, NINA.Sequencer"
               },
               "Parent": {
@@ -156,7 +166,7 @@
           ]
         },
         "Triggers": {
-          "$id": "20",
+          "$id": "21",
           "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
           "$values": []
         },
@@ -167,19 +177,9 @@
         "Attempts": 1
       },
       {
-        "$id": "21",
-        "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Park twice to mitigate sometimes strange behaviour, test parked status of Hakos roof API",
-        "Parent": {
-          "$ref": "1"
-        },
-        "ErrorBehavior": 0,
-        "Attempts": 1
-      },
-      {
         "$id": "22",
-        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-        "Text": "Nautical dawn, final park and close roof",
+        "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
+        "Text": "Final park to mitigate sometimes strange behaviour, test parked status of Hakos roof API",
         "Parent": {
           "$ref": "1"
         },
@@ -188,6 +188,16 @@
       },
       {
         "$id": "23",
+        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
+        "Text": "Final park and close roof",
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "24",
         "$type": "NINA.Sequencer.SequenceItem.Telescope.ParkScope, NINA.Sequencer",
         "Parent": {
           "$ref": "1"
@@ -196,7 +206,7 @@
         "Attempts": 1
       },
       {
-        "$id": "24",
+        "$id": "25",
         "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTimeSpan, NINA.Sequencer",
         "Time": 10.0,
         "Parent": {
@@ -206,7 +216,7 @@
         "Attempts": 1
       },
       {
-        "$id": "25",
+        "$id": "26",
         "$type": "NINA.Sequencer.SequenceItem.Utility.ExternalScript, NINA.Sequencer",
         "Script": "\"D:\\Users\\remote\\Documents\\Scripts\\test-hakos-roof.bat\" -v --parked",
         "Parent": {
@@ -216,7 +226,7 @@
         "Attempts": 1
       },
       {
-        "$id": "26",
+        "$id": "27",
         "$type": "NINA.Sequencer.SequenceItem.Dome.CloseDomeShutter, NINA.Sequencer",
         "Parent": {
           "$ref": "1"
@@ -225,7 +235,7 @@
         "Attempts": 1
       },
       {
-        "$id": "27",
+        "$id": "28",
         "$type": "NINA.Sequencer.SequenceItem.Camera.WarmCamera, NINA.Sequencer",
         "Duration": 2.0,
         "Parent": {
@@ -235,7 +245,7 @@
         "Attempts": 1
       },
       {
-        "$id": "28",
+        "$id": "29",
         "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
         "Text": "End sequence, all is well ;-)",
         "Parent": {
@@ -247,36 +257,36 @@
     ]
   },
   "Triggers": {
-    "$id": "29",
+    "$id": "30",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
     "$values": [
       {
-        "$id": "30",
+        "$id": "31",
         "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordAlertOnErrorTrigger, Discord Alert",
         "Text": "@everyone ERROR in shutdown sequence",
         "Parent": {
           "$ref": "1"
         },
         "TriggerRunner": {
-          "$id": "31",
+          "$id": "32",
           "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
           "Strategy": {
             "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
           },
           "Name": null,
           "Conditions": {
-            "$id": "32",
+            "$id": "33",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "IsExpanded": true,
           "Items": {
-            "$id": "33",
+            "$id": "34",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "Triggers": {
-            "$id": "34",
+            "$id": "35",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },

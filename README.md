@@ -32,6 +32,7 @@ The following additional Python libraries must be installed:
 | requests | https://pypi.org/project/requests/ |
 | psutil   | https://pypi.org/project/psutil/   |
 | icecream | https://pypi.org/project/icecream/ |
+| tzdata   | https://pypi.org/project/tzdata/   (support for IANA timezone names on Windows) |
 
 Local modules:
 

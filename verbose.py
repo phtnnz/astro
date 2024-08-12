@@ -21,6 +21,9 @@
 #       Added warning(), error() with abort
 # Version 1.0 / 2024-01-06
 #       Version bumped to 1.0
+# Version 1.1 / 2024-08-08
+#       Output "exiting" message only if verbose is enabled
+#       errno is now global for verbose, warning, error
 #
 #       Usage:  from verbose import verbose, warning, error
 #               verbose(print-like-args)
@@ -28,6 +31,7 @@
 #               error(print-like-args)
 #               .enable(flag=True)
 #               .disable()
+#               .enabled
 #               .set_prog(name)         global for all objects
 #               .set_errno(errno)       relevant only for error()
 
@@ -40,7 +44,7 @@ from icecream import ic
 ic.disable()
 
 
-VERSION = "1.0 / 2024-01-06"
+VERSION = "1.1 / 2024-08-08"
 AUTHOR  = "Martin Junius"
 NAME    = "verbose"
 
@@ -48,12 +52,12 @@ NAME    = "verbose"
 
 class Verbose:
     progname = None             # global program name
+    errno    = 1                # exit code, 1 for generic errors
 
     def __init__(self, flag=False, prefix=None, abort=False):
         self.enabled = flag
         self.prefix = prefix
         self.abort = abort
-        self.errno = 1          # exit(1) for generic errors
 
     def __call__(self, *args, **kwargs):
         if not self.enabled:
@@ -76,13 +80,14 @@ class Verbose:
         Verbose.progname = name
 
     def set_errno(self, errno):
-        self.errno = errno
+        Verbose.errno = errno
 
     def _exit(self):
-        if Verbose.progname:
-            print(Verbose.progname + ": ", end="")
-        print(f"exiting ({self.errno})")
-        sys.exit(self.errno)
+        if verbose.enabled:
+            if Verbose.progname:
+                print(Verbose.progname + ": ", end="")
+            print(f"exiting ({Verbose.errno})")
+        sys.exit(Verbose.errno)
 
 
 verbose = Verbose()

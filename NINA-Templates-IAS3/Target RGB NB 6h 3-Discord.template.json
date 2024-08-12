@@ -90,9 +90,9 @@
               "$id": "13",
               "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
               "Hours": 6,
-              "Minutes": 16,
+              "Minutes": 12,
               "MinutesOffset": 0,
-              "Seconds": 0,
+              "Seconds": 32,
               "SelectedProvider": {
                 "$id": "14",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.DawnProvider, NINA.Sequencer"
@@ -121,7 +121,7 @@
             {
               "$id": "17",
               "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-              "Text": "\"Wait for altitude\" target should be one degree higher than the limit in \"Loop until altitude below\", strict minimum is 26 °!",
+              "Text": "\"Wait for altitude\" target should be one degree higher than the limit in \"Loop until altitude below\"",
               "Parent": {
                 "$ref": "9"
               },
@@ -244,9 +244,9 @@
               "$id": "30",
               "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
               "Hours": 6,
-              "Minutes": 16,
+              "Minutes": 12,
               "MinutesOffset": 0,
-              "Seconds": 0,
+              "Seconds": 32,
               "SelectedProvider": {
                 "$ref": "14"
               },
