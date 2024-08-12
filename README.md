@@ -4,6 +4,7 @@ Python scripts for automation of NEO observations with N.I.N.A (and more)
 - Build JSON sequences from target templates and observation data in CSV format
 - Test Hakos roof and parked status
 - Data packing with 7-zip and upload
+- Analysis of autofocus results with CSV output
 - Count # of frames in data directory, output CSV for Astrobin import
 - Process MPC ACK mails and retrieve observations from MPC WAMO
 - Process MPC 1992 and ADES reports, retrieve observations from MPC WAMO
@@ -25,7 +26,7 @@ limitations under the License.
 
 (See the most recent working* branch for bleeding edge code)
 
-The following additional Python libraries must be installed:
+The following additional Python libraries must be installed, see also requirements.txt:
 
 | Library  | PyPI URL                           |
 | -------- | ---------------------------------- |
@@ -47,6 +48,7 @@ Local modules:
 | discordmsg       | Send message via Discord webhook |
 | jsonoutput       | Handle output to JSON file |
 | ovoutput         | Handle output to overview text file |
+| radec            | Class Coord for handling RA/DEC coordinates |
 
 
 ## nina-create-sequence
@@ -84,6 +86,42 @@ options:
 
 Version: 1.1 / 2024-06-28 / Martin Junius
 ```
+
+
+## nina-create-sequence2
+Improved version of nina-create-sequence, builds a complete N.I.N.A sequence for the observation night, using a base template and a target template (repeated for every single object in the target area), from a CSV list of targets.
+
+The directories NINA-Templates-IAS/ and NINA-Templates-IAS3/ contain the necessary N.I.N.A templates.
+
+Currently used for the M49, the IAS Remote Telescopes at Hakos, Namibia
+
+```
+usage: nina-create-sequence2 [-h] [-v] [-d] [-A] [-D DESTINATION_DIR] [-o OUTPUT] [-n] [-S SETTING] filename [filename ...]
+
+Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV
+
+positional arguments:
+  filename              CSV target data list
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         debug messages
+  -d, --debug           more debug messages
+  -A, --debug-print-attr
+                        extra debug output
+  -D DESTINATION_DIR, --destination-dir DESTINATION_DIR
+                        output dir for created sequence
+  -o OUTPUT, --output OUTPUT
+                        output .json file
+  -n, --no-output       dry run, don't create output files
+  -S SETTING, --setting SETTING
+                        use template/target SETTING from config
+
+Version: 1.3 / 2024-08-06 / Martin Junius
+```
+
+Config: nina-create-sequence.json
+
 
 ## test-shutter-open
 For Hakos remote observatories roll-off roof control only, checks roof/mount status.
@@ -260,6 +298,30 @@ Version 0.3 / 2024-06-28 / Martin Junius
 
 Config file: nina-zip-config.json
 
+
+## nina-af-analyzer
+Quick'n'dirty analysis of N.I.N.A autofocus results, with CSV output.
+
+```
+usage: nina-af-analyzer [-h] [-v] [-d] [-m MATCH] [-o OUTPUT] [-C] [dirname ...]
+
+N.I.N.A Autofocus results analyzer
+
+positional arguments:
+  dirname               directory name (default: LOCALAPPDATA)
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         verbose messages
+  -d, --debug           more debug messages
+  -m MATCH, --match MATCH
+                        process files matching profile code MATCH
+  -o OUTPUT, --output OUTPUT
+                        write CSV to OUTPUT file
+  -C, --csv             use CSV output format
+
+Version 0.1 / 2024-08-12 / Martin Junius
+```
 
 ## mpc-retrieve-ack
 Retrieve Minor Planets Center observation data from IMAP server with ACK mails, and MPC WAMO service
