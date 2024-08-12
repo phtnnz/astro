@@ -30,6 +30,7 @@ from icecream import ic
 ic.disable()
 # Local modules
 from verbose import verbose, warning, error
+from csvoutput import CSVOutput
 
 VERSION = "0.1 / 2024-08-12"
 AUTHOR  = "Martin Junius"
@@ -40,7 +41,8 @@ NAME    = "nina-af-analyzer"
 # Command line options
 class Options:
     """Command line options"""
-    pass
+    csv: bool = False       # -C --csv
+    output: str = None      # -o --output
 
 
 
@@ -111,7 +113,11 @@ def process_file(file: str):
     pos = af.get_position()
     hfr = af.get_hfr()
     ic(dt, pos, hfr)
-    verbose(f"{dt}: {pos=:.0f} {hfr=:.2f}")
+    if Options.csv:
+        CSVOutput.add_row([dt, int(pos), hfr])
+    else:
+        verbose(f"{dt}: {pos=:.0f} {hfr=:.2f}")
+
 
 
 
@@ -123,6 +129,9 @@ def main():
     arg.add_argument("-v", "--verbose", action="store_true", help="verbose messages")
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("-m", "--match", help="process files matching profile code MATCH")
+    arg.add_argument("-o", "--output", help="write CSV to OUTPUT file")
+    arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format")
+
     arg.add_argument("dirname", nargs="*", help="directory name (default: LOCALAPPDATA)")
 
     args = arg.parse_args()
@@ -134,14 +143,20 @@ def main():
         verbose.set_prog(NAME)
         verbose.enable()
     # ... more options ...
+    Options.csv = args.csv
+    Options.output = args.output
         
     # ... the action starts here ...
+    if Options.csv:
+        CSVOutput.add_fields(["Date Time", "Positiion", "HFR"])
     if args.dirname:
         for dir in args.dirname:
             process_dir(dir, args.match)
     else:
         dir = get_nina_appdata()
         process_dir(dir, args.match)
+    if Options.csv:
+        CSVOutput.write(Options.output)
 
 
 
