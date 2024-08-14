@@ -435,7 +435,7 @@ class NINASequence(NINABase):
                 target = row.get("Object") or row.get("Name") or row.get("name")
                 if not target:
                     error("can't find target name in CSV data")
-                target.replace("/", "").replace(":", "").replace("\"", "")
+                target = target.replace("/", "").replace(":", "").replace("\"", "")
 
                 # Date / time UTC and local
                 time_utc = time_local = None
