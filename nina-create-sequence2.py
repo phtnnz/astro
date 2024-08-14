@@ -343,14 +343,12 @@ class NINATarget(NINABase):
 
 
     def add_parent(self, id):
-        verbose("NINATarget(add_parent):", "id =", id)
-
+        # verbose("NINATarget(add_parent):", "id =", id)
         self.obj["Parent"] = { "$ref": id }
 
 
     def set_expanded(self, flag):
-        verbose("NINATarget(set_expanded):", "flag =", flag)
-
+        # verbose("NINATarget(set_expanded):", "flag =", flag)
         self.obj["IsExpanded"] = flag
 
 
@@ -438,6 +436,7 @@ class NINASequence(NINABase):
                 target = target.replace("/", "").replace(":", "").replace("\"", "")
 
                 # Date / time UTC and local
+                ## FIXME: should be way more flexible
                 time_utc = time_local = None
                 date1 = row.get("Observation date")
                 time1 = row.get("Time UT")
@@ -483,10 +482,10 @@ class NINASequence(NINABase):
                 # in filename templates under Options > Imaging
                 target = formatted_target
 
-                print("NINASequence(process_csv):", "#{:03d} target={} RA={} DEC={}".format(seq, target, ra, dec))
+                print("#{:03d} target={} RA={} DEC={}".format(seq, target, ra, dec))
                 if time_utc:
-                    print("NINASequence(process_csv):", "     UT={} / local {}".format(time_utc, time_local))
-                print("NINASequence(process_csv):", "     {:d}x{:.1f}s filter={}".format(number, exp, filter))
+                    print("     UT={} / local {}".format(time_utc, time_local))
+                print("     {:d}x{:.1f}s filter={}".format(number, exp, filter))
 
                 # default for filter and binning
                 data = TargetData(formatted_target, target, coord, time_local, number, exp, filter)
