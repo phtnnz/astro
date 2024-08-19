@@ -1,0 +1,431 @@
+{
+  "$id": "1",
+  "$type": "NINA.Sequencer.Container.DeepSkyObjectContainer, NINA.Sequencer",
+  "Target": {
+    "$id": "2",
+    "$type": "NINA.Astrometry.InputTarget, NINA.Astrometry",
+    "Expanded": true,
+    "TargetName": "",
+    "PositionAngle": 0.0,
+    "InputCoordinates": {
+      "$id": "3",
+      "$type": "NINA.Astrometry.InputCoordinates, NINA.Astrometry",
+      "RAHours": 0,
+      "RAMinutes": 0,
+      "RASeconds": 0.0,
+      "NegativeDec": false,
+      "DecDegrees": 0,
+      "DecMinutes": 0,
+      "DecSeconds": 0.0
+    }
+  },
+  "ExposureInfoListExpanded": false,
+  "ExposureInfoList": {
+    "$id": "4",
+    "$type": "NINA.Core.Utility.AsyncObservableCollection`1[[NINA.Sequencer.Utility.ExposureInfo, NINA.Sequencer]], NINA.Core",
+    "$values": []
+  },
+  "Strategy": {
+    "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+  },
+  "Name": "Target VS 2",
+  "Conditions": {
+    "$id": "5",
+    "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
+    "$values": [
+      {
+        "$id": "6",
+        "$type": "NINA.Sequencer.Conditions.AltitudeCondition, NINA.Sequencer",
+        "HasDsoParent": true,
+        "Data": {
+          "$id": "7",
+          "$type": "NINA.Sequencer.SequenceItem.Utility.WaitLoopData, NINA.Sequencer",
+          "Coordinates": {
+            "$id": "8",
+            "$type": "NINA.Astrometry.InputCoordinates, NINA.Astrometry",
+            "RAHours": 0,
+            "RAMinutes": 0,
+            "RASeconds": 0.0,
+            "NegativeDec": false,
+            "DecDegrees": 0,
+            "DecMinutes": 0,
+            "DecSeconds": 0.0
+          },
+          "Offset": 30.0,
+          "Comparator": 1
+        },
+        "Parent": {
+          "$ref": "1"
+        }
+      },
+      {
+        "$id": "9",
+        "$type": "NINA.Sequencer.Conditions.LoopCondition, NINA.Sequencer",
+        "CompletedIterations": 0,
+        "Iterations": 1,
+        "Parent": {
+          "$ref": "1"
+        }
+      }
+    ]
+  },
+  "IsExpanded": true,
+  "Items": {
+    "$id": "10",
+    "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
+    "$values": [
+      {
+        "$id": "11",
+        "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
+        "Text": "IAS template for variable star observations, to be used inside Loop Objects",
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "12",
+        "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
+        "Text": "Used by nina-create.sequence2.py",
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "13",
+        "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
+        "Text": "Version 0.1 remote / 2024-08-19 / Martin Junius",
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "14",
+        "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
+        "Strategy": {
+          "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+        },
+        "Name": "CONTAINER [0] - Immediate start, no wait for time",
+        "Conditions": {
+          "$id": "15",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
+          "$values": [
+            {
+              "$id": "16",
+              "$type": "NINA.Sequencer.Conditions.SafetyMonitorCondition, NINA.Sequencer",
+              "Parent": {
+                "$ref": "14"
+              }
+            },
+            {
+              "$id": "17",
+              "$type": "NINA.Sequencer.Conditions.LoopCondition, NINA.Sequencer",
+              "CompletedIterations": 0,
+              "Iterations": 1,
+              "Parent": {
+                "$ref": "14"
+              }
+            }
+          ]
+        },
+        "IsExpanded": true,
+        "Items": {
+          "$id": "18",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
+          "$values": [
+            {
+              "$id": "19",
+              "$type": "NINA.Sequencer.SequenceItem.Platesolving.Center, NINA.Sequencer",
+              "Inherited": true,
+              "Coordinates": {
+                "$id": "20",
+                "$type": "NINA.Astrometry.InputCoordinates, NINA.Astrometry",
+                "RAHours": 0,
+                "RAMinutes": 0,
+                "RASeconds": 0.0,
+                "NegativeDec": false,
+                "DecDegrees": 0,
+                "DecMinutes": 0,
+                "DecSeconds": 0.0
+              },
+              "Parent": {
+                "$ref": "14"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            },
+            {
+              "$id": "21",
+              "$type": "NINA.Sequencer.SequenceItem.Autofocus.RunAutofocus, NINA.Sequencer",
+              "Parent": {
+                "$ref": "14"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            }
+          ]
+        },
+        "Triggers": {
+          "$id": "22",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
+          "$values": []
+        },
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "23",
+        "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
+        "Strategy": {
+          "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+        },
+        "Name": "CONTAINER [1] - must contain Smart Exposure",
+        "Conditions": {
+          "$id": "24",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
+          "$values": [
+            {
+              "$id": "25",
+              "$type": "NINA.Sequencer.Conditions.SafetyMonitorCondition, NINA.Sequencer",
+              "Parent": {
+                "$ref": "23"
+              }
+            },
+            {
+              "$id": "26",
+              "$type": "NINA.Sequencer.Conditions.LoopCondition, NINA.Sequencer",
+              "CompletedIterations": 0,
+              "Iterations": 1,
+              "Parent": {
+                "$ref": "23"
+              }
+            }
+          ]
+        },
+        "IsExpanded": true,
+        "Items": {
+          "$id": "27",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
+          "$values": [
+            {
+              "$id": "28",
+              "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
+              "Text": "Variable star observation exposures, only one filter, default L",
+              "Parent": {
+                "$ref": "23"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            },
+            {
+              "$id": "29",
+              "$type": "NINA.Sequencer.SequenceItem.Imaging.SmartExposure, NINA.Sequencer",
+              "ErrorBehavior": 0,
+              "Attempts": 1,
+              "Strategy": {
+                "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+              },
+              "Name": "Smart Belichtung",
+              "Conditions": {
+                "$id": "30",
+                "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
+                "$values": [
+                  {
+                    "$id": "31",
+                    "$type": "NINA.Sequencer.Conditions.LoopCondition, NINA.Sequencer",
+                    "CompletedIterations": 0,
+                    "Iterations": 999,
+                    "Parent": {
+                      "$ref": "29"
+                    }
+                  }
+                ]
+              },
+              "IsExpanded": false,
+              "Items": {
+                "$id": "32",
+                "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
+                "$values": [
+                  {
+                    "$id": "33",
+                    "$type": "NINA.Sequencer.SequenceItem.FilterWheel.SwitchFilter, NINA.Sequencer",
+                    "Filter": {
+                      "$id": "34",
+                      "$type": "NINA.Core.Model.Equipment.FilterInfo, NINA.Core",
+                      "_name": "L",
+                      "_focusOffset": 0,
+                      "_position": 0,
+                      "_autoFocusExposureTime": -1.0,
+                      "_autoFocusFilter": false,
+                      "FlatWizardFilterSettings": {
+                        "$id": "35",
+                        "$type": "NINA.Core.Model.Equipment.FlatWizardFilterSettings, NINA.Core",
+                        "FlatWizardMode": 0,
+                        "HistogramMeanTarget": 0.5,
+                        "HistogramTolerance": 0.1,
+                        "MaxFlatExposureTime": 20.0,
+                        "MinFlatExposureTime": 0.2,
+                        "MaxAbsoluteFlatDeviceBrightness": 1,
+                        "MinAbsoluteFlatDeviceBrightness": 0,
+                        "Gain": -1,
+                        "Offset": -1,
+                        "Binning": {
+                          "$id": "36",
+                          "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+                          "X": 1,
+                          "Y": 1
+                        }
+                      },
+                      "_autoFocusBinning": {
+                        "$id": "37",
+                        "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+                        "X": 1,
+                        "Y": 1
+                      },
+                      "_autoFocusGain": -1,
+                      "_autoFocusOffset": -1
+                    },
+                    "Parent": {
+                      "$ref": "29"
+                    },
+                    "ErrorBehavior": 0,
+                    "Attempts": 1
+                  },
+                  {
+                    "$id": "38",
+                    "$type": "NINA.Sequencer.SequenceItem.Imaging.TakeExposure, NINA.Sequencer",
+                    "ExposureTime": 30.0,
+                    "Gain": -1,
+                    "Offset": -1,
+                    "Binning": {
+                      "$id": "39",
+                      "$type": "NINA.Core.Model.Equipment.BinningMode, NINA.Core",
+                      "X": 2,
+                      "Y": 2
+                    },
+                    "ImageType": "LIGHT",
+                    "ExposureCount": 0,
+                    "Parent": {
+                      "$ref": "29"
+                    },
+                    "ErrorBehavior": 0,
+                    "Attempts": 1
+                  }
+                ]
+              },
+              "Triggers": {
+                "$id": "40",
+                "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
+                "$values": [
+                  {
+                    "$id": "41",
+                    "$type": "NINA.Sequencer.Trigger.Guider.DitherAfterExposures, NINA.Sequencer",
+                    "AfterExposures": 0,
+                    "Parent": {
+                      "$ref": "29"
+                    },
+                    "TriggerRunner": {
+                      "$id": "42",
+                      "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
+                      "Strategy": {
+                        "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+                      },
+                      "Name": null,
+                      "Conditions": {
+                        "$id": "43",
+                        "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
+                        "$values": []
+                      },
+                      "IsExpanded": true,
+                      "Items": {
+                        "$id": "44",
+                        "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
+                        "$values": [
+                          {
+                            "$id": "45",
+                            "$type": "NINA.Sequencer.SequenceItem.Guider.Dither, NINA.Sequencer",
+                            "Parent": {
+                              "$ref": "42"
+                            },
+                            "ErrorBehavior": 0,
+                            "Attempts": 1
+                          }
+                        ]
+                      },
+                      "Triggers": {
+                        "$id": "46",
+                        "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
+                        "$values": []
+                      },
+                      "Parent": null,
+                      "ErrorBehavior": 0,
+                      "Attempts": 1
+                    }
+                  }
+                ]
+              },
+              "Parent": {
+                "$ref": "23"
+              }
+            }
+          ]
+        },
+        "Triggers": {
+          "$id": "47",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
+          "$values": []
+        },
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "48",
+        "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
+        "Strategy": {
+          "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+        },
+        "Name": "CONTAINER [2] - can contain External Script",
+        "Conditions": {
+          "$id": "49",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
+          "$values": []
+        },
+        "IsExpanded": true,
+        "Items": {
+          "$id": "50",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
+          "$values": []
+        },
+        "Triggers": {
+          "$id": "51",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
+          "$values": []
+        },
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      }
+    ]
+  },
+  "Triggers": {
+    "$id": "52",
+    "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
+    "$values": []
+  },
+  "Parent": null,
+  "ErrorBehavior": 0,
+  "Attempts": 1
+}
