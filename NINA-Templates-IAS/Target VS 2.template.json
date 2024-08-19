@@ -35,13 +35,22 @@
     "$values": [
       {
         "$id": "6",
-        "$type": "NINA.Sequencer.Conditions.AltitudeCondition, NINA.Sequencer",
+        "$type": "NINA.Sequencer.Conditions.LoopCondition, NINA.Sequencer",
+        "CompletedIterations": 0,
+        "Iterations": 1,
+        "Parent": {
+          "$ref": "1"
+        }
+      },
+      {
+        "$id": "7",
+        "$type": "NINA.Sequencer.Conditions.AboveHorizonCondition, NINA.Sequencer",
         "HasDsoParent": true,
         "Data": {
-          "$id": "7",
+          "$id": "8",
           "$type": "NINA.Sequencer.SequenceItem.Utility.WaitLoopData, NINA.Sequencer",
           "Coordinates": {
-            "$id": "8",
+            "$id": "9",
             "$type": "NINA.Astrometry.InputCoordinates, NINA.Astrometry",
             "RAHours": 0,
             "RAMinutes": 0,
@@ -52,17 +61,8 @@
             "DecSeconds": 0.0
           },
           "Offset": 30.0,
-          "Comparator": 1
+          "Comparator": 3
         },
-        "Parent": {
-          "$ref": "1"
-        }
-      },
-      {
-        "$id": "9",
-        "$type": "NINA.Sequencer.Conditions.LoopCondition, NINA.Sequencer",
-        "CompletedIterations": 0,
-        "Iterations": 1,
         "Parent": {
           "$ref": "1"
         }
