@@ -425,12 +425,14 @@ class NINASequence(NINABase):
 
         with open(file, newline='') as f:
             reader = csv.DictReader(f)
-            for count, row in enumerate(reader):
+            for count, row1 in enumerate(reader):
+                # Make field names lower case
+                row = { key.lower():val for key, val in row1.items() if key}
                 # Number in sequence, default 0
                 seq = int(row.get("#") or count + 1)
 
                 # Target name, must not contain [/:"]
-                target = row.get("Object") or row.get("Name") or row.get("name")
+                target = row.get("object") or row.get("name") or row.get("target")
                 if not target:
                     error("can't find target name in CSV data")
                 target = target.replace("/", "").replace(":", "").replace("\"", "")
@@ -438,8 +440,8 @@ class NINASequence(NINABase):
                 # Date / time UTC and local
                 ## FIXME: should be way more flexible
                 time_utc = time_local = None
-                date1 = row.get("Observation date")
-                time1 = row.get("Time UT")
+                date1 = row.get("observation date")
+                time1 = row.get("time ut")
                 if date1 and time1:
                     time_utc = datetime.fromisoformat(date1.replace(" ", "-") + "T" + time1 + ":00+00:00")
                     # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
@@ -447,8 +449,8 @@ class NINASequence(NINABase):
                     time_local = time_utc.astimezone(tz_local)
 
                 # Use various field names for RA/DEC coordinates in CSV data
-                ra  = row.get("RAm")  or row.get("RA")   or row.get("ra")
-                dec = row.get("DECm") or row.get("Dec.") or row.get("DEC") or row.get("DE") or row.get("dec") or row.get("de")
+                ra  = row.get("ram")  or row.get("ra")
+                dec = row.get("decm") or row.get("dec.") or row.get("dec") or row.get("de")
                 # End marker
                 if target=="Azelfafage" or target=="0" or not target or not ra or not dec:
                     break
@@ -457,10 +459,10 @@ class NINASequence(NINABase):
                 except ValueError:
                     error(f"invalid coordinates {ra=} {dec=}")
 
-                # Default 60s exposure time
-                exp = float(row.get("Exposure time") or row.get("Exposure") or 60)
-                # Default 60 frames
-                number = int(row.get("No images") or row.get("Number") or 60)
+                # Default 30s exposure time
+                exp = float(row.get("exposure time") or row.get("exposure") or row.get("exp") or 30)
+                # Default 3 frames
+                number = int(row.get("no images") or row.get("number") or 3)
 
                 # Default filter L
                 filter = row.get("filter") or "L"

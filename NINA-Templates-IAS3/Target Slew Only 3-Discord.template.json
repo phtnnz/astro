@@ -1,0 +1,236 @@
+{
+  "$id": "1",
+  "$type": "NINA.Sequencer.Container.DeepSkyObjectContainer, NINA.Sequencer",
+  "Target": {
+    "$id": "2",
+    "$type": "NINA.Astrometry.InputTarget, NINA.Astrometry",
+    "Expanded": true,
+    "TargetName": "",
+    "PositionAngle": 0.0,
+    "InputCoordinates": {
+      "$id": "3",
+      "$type": "NINA.Astrometry.InputCoordinates, NINA.Astrometry",
+      "RAHours": 0,
+      "RAMinutes": 0,
+      "RASeconds": 0.0,
+      "NegativeDec": false,
+      "DecDegrees": 0,
+      "DecMinutes": 0,
+      "DecSeconds": 0.0
+    }
+  },
+  "ExposureInfoListExpanded": false,
+  "ExposureInfoList": {
+    "$id": "4",
+    "$type": "NINA.Core.Utility.AsyncObservableCollection`1[[NINA.Sequencer.Utility.ExposureInfo, NINA.Sequencer]], NINA.Core",
+    "$values": []
+  },
+  "Strategy": {
+    "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+  },
+  "Name": "Target Slew Only 3-Discord",
+  "Conditions": {
+    "$id": "5",
+    "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
+    "$values": []
+  },
+  "IsExpanded": true,
+  "Items": {
+    "$id": "6",
+    "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
+    "$values": [
+      {
+        "$id": "7",
+        "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
+        "Text": "IAS remote telescope - slew to target and center only",
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "8",
+        "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
+        "Text": "Version 1.0 remote3-discord / 2024-08-01 / Martin Junius",
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "9",
+        "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
+        "Strategy": {
+          "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+        },
+        "Name": "Pre-imaging",
+        "Conditions": {
+          "$id": "10",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
+          "$values": [
+            {
+              "$id": "11",
+              "$type": "NINA.Sequencer.Conditions.SafetyMonitorCondition, NINA.Sequencer",
+              "Parent": {
+                "$ref": "9"
+              }
+            },
+            {
+              "$id": "12",
+              "$type": "NINA.Sequencer.Conditions.LoopCondition, NINA.Sequencer",
+              "CompletedIterations": 0,
+              "Iterations": 1,
+              "Parent": {
+                "$ref": "9"
+              }
+            },
+            {
+              "$id": "13",
+              "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
+              "Hours": 5,
+              "Minutes": 59,
+              "MinutesOffset": 0,
+              "Seconds": 53,
+              "SelectedProvider": {
+                "$id": "14",
+                "$type": "NINA.Sequencer.Utility.DateTimeProvider.DawnProvider, NINA.Sequencer"
+              },
+              "Parent": {
+                "$ref": "9"
+              }
+            }
+          ]
+        },
+        "IsExpanded": true,
+        "Items": {
+          "$id": "15",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
+          "$values": [
+            {
+              "$id": "16",
+              "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
+              "Text": "Slew and center target",
+              "Parent": {
+                "$ref": "9"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            },
+            {
+              "$id": "17",
+              "$type": "NINA.Sequencer.SequenceItem.Platesolving.Center, NINA.Sequencer",
+              "Inherited": true,
+              "Coordinates": {
+                "$id": "18",
+                "$type": "NINA.Astrometry.InputCoordinates, NINA.Astrometry",
+                "RAHours": 0,
+                "RAMinutes": 0,
+                "RASeconds": 0.0,
+                "NegativeDec": false,
+                "DecDegrees": 0,
+                "DecMinutes": 0,
+                "DecSeconds": 0.0
+              },
+              "Parent": {
+                "$ref": "9"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            },
+            {
+              "$id": "19",
+              "$type": "NINA.Sequencer.SequenceItem.Autofocus.RunAutofocus, NINA.Sequencer",
+              "Parent": {
+                "$ref": "9"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            },
+            {
+              "$id": "20",
+              "$type": "NINA.Sequencer.SequenceItem.Utility.MessageBox, NINA.Sequencer",
+              "Text": "Slew and center target done.",
+              "Parent": {
+                "$ref": "9"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            }
+          ]
+        },
+        "Triggers": {
+          "$id": "21",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
+          "$values": []
+        },
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "22",
+        "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTime, NINA.Sequencer",
+        "Hours": 5,
+        "Minutes": 59,
+        "MinutesOffset": 0,
+        "Seconds": 53,
+        "SelectedProvider": {
+          "$ref": "14"
+        },
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      }
+    ]
+  },
+  "Triggers": {
+    "$id": "23",
+    "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
+    "$values": [
+      {
+        "$id": "24",
+        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordAlertOnErrorTrigger, Discord Alert",
+        "Text": "@everyone ERROR in target sequence",
+        "Parent": {
+          "$ref": "1"
+        },
+        "TriggerRunner": {
+          "$id": "25",
+          "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
+          "Strategy": {
+            "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+          },
+          "Name": null,
+          "Conditions": {
+            "$id": "26",
+            "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
+            "$values": []
+          },
+          "IsExpanded": true,
+          "Items": {
+            "$id": "27",
+            "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
+            "$values": []
+          },
+          "Triggers": {
+            "$id": "28",
+            "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
+            "$values": []
+          },
+          "Parent": null,
+          "ErrorBehavior": 0,
+          "Attempts": 1
+        }
+      }
+    ]
+  },
+  "Parent": null,
+  "ErrorBehavior": 0,
+  "Attempts": 1
+}
