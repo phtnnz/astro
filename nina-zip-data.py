@@ -69,7 +69,7 @@ from jsonconfig import JSONConfig
 
 NAME        = "nina-zip-data"
 DESCRIPTION = "Zip (7z) N.I.N.A data and upload"
-VERSION     = "0.4 / 2024-08-25"
+VERSION     = "1.0 / 2024-08-25"
 AUTHOR      = "Martin Junius"
 
 TIMER   = 60
