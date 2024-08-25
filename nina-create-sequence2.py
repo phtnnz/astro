@@ -461,8 +461,8 @@ class NINASequence(NINABase):
 
                 # Default 30s exposure time
                 exp = float(row.get("exposure time") or row.get("exposure") or row.get("exp") or 30)
-                # Default 3 frames
-                number = int(row.get("no images") or row.get("number") or 3)
+                # Default 5 frames
+                number = int(row.get("no images") or row.get("number") or 5)
 
                 # Default filter L
                 filter = row.get("filter") or "L"
