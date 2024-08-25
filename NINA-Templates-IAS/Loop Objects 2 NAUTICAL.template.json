@@ -20,9 +20,9 @@
         "$id": "4",
         "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
         "Hours": 6,
-        "Minutes": 26,
+        "Minutes": 23,
         "MinutesOffset": 0,
-        "Seconds": 9,
+        "Seconds": 46,
         "SelectedProvider": {
           "$id": "5",
           "$type": "NINA.Sequencer.Utility.DateTimeProvider.NauticalDawnProvider, NINA.Sequencer"
@@ -51,7 +51,7 @@
       {
         "$id": "8",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 0.1 / 2024-08-19 / Martin Junius",
+        "Text": "Version 0.2 / 2024-08-22 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -60,8 +60,18 @@
       },
       {
         "$id": "9",
+        "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTimeSpan, NINA.Sequencer",
+        "Time": 60.0,
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "10",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Add target to be repeated in loop objects below",
+        "Text": "Add targets to be repeated in loop objects below",
         "Parent": {
           "$ref": "1"
         },
@@ -71,38 +81,38 @@
     ]
   },
   "Triggers": {
-    "$id": "10",
+    "$id": "11",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
     "$values": [
       {
-        "$id": "11",
+        "$id": "12",
         "$type": "NINA.Sequencer.Trigger.Autofocus.AutofocusAfterTimeTrigger, NINA.Sequencer",
         "Amount": 30.0,
         "Parent": {
           "$ref": "1"
         },
         "TriggerRunner": {
-          "$id": "12",
+          "$id": "13",
           "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
           "Strategy": {
             "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
           },
           "Name": null,
           "Conditions": {
-            "$id": "13",
+            "$id": "14",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "IsExpanded": true,
           "Items": {
-            "$id": "14",
+            "$id": "15",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
             "$values": [
               {
-                "$id": "15",
+                "$id": "16",
                 "$type": "NINA.Sequencer.SequenceItem.Autofocus.RunAutofocus, NINA.Sequencer",
                 "Parent": {
-                  "$ref": "12"
+                  "$ref": "13"
                 },
                 "ErrorBehavior": 0,
                 "Attempts": 1
@@ -110,7 +120,7 @@
             ]
           },
           "Triggers": {
-            "$id": "16",
+            "$id": "17",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
@@ -120,31 +130,31 @@
         }
       },
       {
-        "$id": "17",
+        "$id": "18",
         "$type": "NINA.Sequencer.Trigger.MeridianFlip.MeridianFlipTrigger, NINA.Sequencer",
         "Parent": {
           "$ref": "1"
         },
         "TriggerRunner": {
-          "$id": "18",
+          "$id": "19",
           "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
           "Strategy": {
             "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
           },
           "Name": null,
           "Conditions": {
-            "$id": "19",
+            "$id": "20",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "IsExpanded": true,
           "Items": {
-            "$id": "20",
+            "$id": "21",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "Triggers": {
-            "$id": "21",
+            "$id": "22",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
