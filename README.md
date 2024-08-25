@@ -227,7 +227,45 @@ astro-countsubs.py --filter-set "Baader 36mm" --calibration-set remote3 --csv -o
 Mono camera with Baader filter set, output CSV file for Astrobin import
 
 
-## nina-zip-ready-data
+## nina-zip-data
+Automatically archive N.I.N.A exposure when a target sequence has been completed,
+relying on the .ready flags created by nina-flag-ready.bat, or for all/selected
+targets of an observation night.
+
+Supersedes nina-zip-ready-data and nina-zip-last-night.
+
+```
+usage: nina-zip-data [-h] [-v] [-d] [-n] [-l] [-D DATA_DIR] [-Z ZIP_DIR] [-T TMP_DIR] [--ready] [-t TIME_INTERVAL] [--last]
+                     [--date DATE] [--targets TARGETS] [-z ZIP_PROG] [-m]
+
+Zip (7z) N.I.N.A data and upload
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         debug messages
+  -d, --debug           more debug messages
+  -n, --no-action       dry run
+  -l, --low-priority    set process priority to low
+  -D DATA_DIR, --data-dir DATA_DIR
+                        N.I.N.A data directory (default D:/Users/remote/Documents/NINA-Data)
+  -Z ZIP_DIR, --zip-dir ZIP_DIR
+                        directory for zip (.7z) files (default D:/Users/remote/OneDrive/Remote-Upload3)
+  -T TMP_DIR, --tmp-dir TMP_DIR
+                        temp directory for zip (.7z) files (default D:/Users/remote/Documents/NINA-Tmp)
+  --ready               run in TARGET.ready mode
+  -t TIME_INTERVAL, --time-interval TIME_INTERVAL
+                        time interval for checking data directory (default 60s)
+  --last                run in last night mode (2024-08-24)
+  --date DATE           run in archive data from DATE mode
+  --targets TARGETS     archive TARGET[,TARGET] only (--last / --date)
+  -z ZIP_PROG, --zip-prog ZIP_PROG
+                        full path of 7-zip.exe (default C:/Program Files/7-Zip/7z.exe)
+  -m, --zip_max         7-zip max compression -mx7
+
+Version 1.0 / 2024-08-25 / Martin Junius
+```
+
+### --ready mode
 Automatically archive N.I.N.A exposure when a target sequence has been completed,
 relying on the .ready flags created by nina-flag-ready.bat run as an External Script
 from within N.I.N.A
@@ -237,64 +275,12 @@ from within N.I.N.A
 - If not, run 7z.exe to archive TARGET data subdir in DATA to TARGET.7z in ZIPDIR
 - Loop continuously
 
-```
-usage: nina-zip-ready-data [-h] [-v] [-d] [-n] [-l] [-D DATA_DIR] [-Z ZIP_DIR] [-t TIME_INTERVAL] [-z ZIP_PROG] [-m]
-
-Zip target data in N.I.N.A data directory marked as ready
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         debug messages
-  -d, --debug           more debug messages
-  -n, --no-action       dry run
-  -l, --low-priority    set process priority to low
-  -D DATA_DIR, --data-dir DATA_DIR
-                        N.I.N.A data directory (default <...from config ...>)
-  -Z ZIP_DIR, --zip-dir ZIP_DIR
-                        directory for zip (.7z) files (default <...from config ...>)
-  -t TIME_INTERVAL, --time-interval TIME_INTERVAL
-                        time interval for checking data directory (default 60s)
-  -z ZIP_PROG, --zip-prog ZIP_PROG
-                        full path of 7-zip.exe (default <...from config ...>)
-  -m, --zip_max         7-zip max compression -mx7
-
-Version 0.3 / 2024-07-12 / Martin Junius
-```
-
-Config file: nina-zip-config.json
-
-
-## nina-zip-last-night
+### --last / --date mode
 Archive all N.I.N.A data from the last observation night (or date given by the --date option)
 - Search all TARGET/YYYY-MM-DD directories in DATADIR
 - Look for corresponding TARGET-YYYY-MM-DD.7z archive in ZIPDIR
 - If exists, skip
 - If not, run 7z.exe to archive TARGET/YYYY-MM-DD data subdir in DATA to TARGET-YYYY-MM-DD.7z in ZIPDIR
-
-```
-usage: nina-zip-last-night [-h] [-v] [-d] [-n] [-l] [--date DATE] [-t TARGETS] [-D DATA_DIR] [-Z ZIP_DIR] [-z ZIP_PROG] [-m]
-
-Zip target data in N.I.N.A data directory from last night
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         debug messages
-  -d, --debug           more debug messages
-  -n, --no-action       dry run
-  -l, --low-priority    set process priority to low
-  --date DATE           archive target/DATE, default last night 2024-07-16
-  -t TARGETS, --targets TARGETS
-                        archive TARGET[,TARGET] only
-  -D DATA_DIR, --data-dir DATA_DIR
-                        N.I.N.A data directory (default D:/Users/mj/Documents/N.I.N.A-Data)
-  -Z ZIP_DIR, --zip-dir ZIP_DIR
-                        directory for zip (.7z) files (default D:/Users/mj/OneDrive/IAS/Remote-Upload3/TEST)
-  -z ZIP_PROG, --zip-prog ZIP_PROG
-                        full path of 7-zip.exe (default C:/Program Files/7-Zip/7z.exe)
-  -m, --zip_max         7-zip max compression -mx7
-
-Version 0.3 / 2024-06-28 / Martin Junius
-```
 
 Config file: nina-zip-config.json
 
