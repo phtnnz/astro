@@ -85,6 +85,10 @@ class ZipConfig(JSONConfig):
         dirs = self._get_dirs()
         return dirs["zip dir"]
 
+    def tmp_dir(self):
+        dirs = self._get_dirs()
+        return dirs["tmp dir"]
+
     def zip_prog(self):
         dirs = self._get_dirs()
         return dirs["zip program"]
@@ -99,8 +103,13 @@ class Options:
     no_action = False                                       # -n --no_action
     datadir   = config.data_dir()
     zipdir    = config.zip_dir()
+    tmpdir    = config.tmp_dir()
     zipprog   = config.zip_prog()
     zipmx     = 5                                            # normal compression, -m --max => 7 = max compression
+    run_ready = False
+    run_last  = False
+    run_date  = None
+    timer     = TIMER
 
 
 
@@ -130,6 +139,9 @@ def set_priority():
 def time_now():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+def date_yesterday():
+    return (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+
 
 
 def scan_data_dir(datadir, zipdir):
@@ -143,10 +155,13 @@ def scan_data_dir(datadir, zipdir):
             # verbose("  Zip file", zipfile, "already exists")
             pass
         else:
-            verbose("Target ready:", target)
-            verbose("  Zip file", zipfile, "must be created")
-            print("{} archiving target {}".format(time_now(), target))
+            verbose(f"target ready: {target}")
+            msg = f"{time_now()} archiving target {target}"
+            print(msg)
+            print("=" * len(msg))
+            verbose(f"zip file {zipfile}")
             create_zip_archive(target, datadir, zipfile)
+            print("=" * len(msg))
 
 
 
@@ -164,9 +179,19 @@ def create_zip_archive(target, datadir, zipfile):
 
 
 
-def main():
-    global TIMER
+def run_ready():
+    try:
+        while True:
+            scan_data_dir(Options.datadir, Options.zipdir)
+            # if verbose.enabled:
+            #     print("Waiting ... ({:d}s, Ctrl-C to interrupt)".format(TIMER))
+            time.sleep(Options.timer)
+    except KeyboardInterrupt:
+        print("Terminating ...")
 
+
+
+def main():
     arg = argparse.ArgumentParser(
         prog        = NAME,
         description = DESCRIPTION,
@@ -175,9 +200,14 @@ def main():
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("-n", "--no-action", action="store_true", help="dry run")
     arg.add_argument("-l", "--low-priority", action="store_true", help="set process priority to low")
+
     arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+Options.datadir+")")
     arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+Options.zipdir+")")
+    arg.add_argument("-T", "--tmp-dir", help="temp directory for zip (.7z) files (default "+Options.tmpdir+")")
+    arg.add_argument("--ready", action="store_true", help="run in TARGET.ready mode")
     arg.add_argument("-t", "--time-interval", type=int, help="time interval for checking data directory (default 60s)")
+    arg.add_argument("--last", action="store_true", help="run in last night mode ("+date_yesterday()+")")
+    arg.add_argument("--date", help="run in archive data from DATE mode")
     arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+Options.zipprog+")")
     arg.add_argument("-m", "--zip_max", action="store_true", help="7-zip max compression -mx7")
     args = arg.parse_args()
@@ -195,33 +225,43 @@ def main():
         Options.datadir = args.data_dir
     if args.zip_dir:
         Options.zipdir  = args.zip_dir
+    if args.tmp_dir:
+        Options.tmpdir  = args.tmp_dir
     if args.zip_prog:
         Options.zipprog = args.zip_prog
     if args.zip_max:
         Options.zipmx   = 7
+    if args.time_interval:
+        Options.timer   = args.time_interval
+    Options.run_ready = args.ready
+    Options.run_last  = args.last
+    Options.run_date  = args.date
 
     Options.datadir = os.path.abspath(Options.datadir)
     Options.zipdir  = os.path.abspath(Options.zipdir)
+    Options.tmpdir  = os.path.abspath(Options.tmpdir)
     Options.zipprog = os.path.abspath(Options.zipprog)
 
     verbose("Data directory =", Options.datadir)
     verbose("ZIP directory  =", Options.zipdir)
+    verbose("Tmp directory  =", Options.tmpdir)
     verbose("ZIP program    =", Options.zipprog)
-
-    print("Waiting for ready data ... (Ctrl-C to interrupt)")
 
     # Set process priority
     if args.low_priority:
         set_priority()
 
-    try:
-        while True:
-            scan_data_dir(Options.datadir, Options.zipdir)
-            # if verbose.enabled:
-            #     print("Waiting ... ({:d}s, Ctrl-C to interrupt)".format(TIMER))
-            time.sleep(TIMER)
-    except KeyboardInterrupt:
-        print("Terminating ...")
+    if Options.run_ready:
+        print("Waiting for ready data ... (Ctrl-C to interrupt)")
+        run_ready()
+    elif Options.run_last:
+        ## ...
+        pass
+    elif Options.run_date:
+        ## ...
+        pass
+    else:
+        error("must specify mode, one of --ready / --last / --date")
 
 
 
