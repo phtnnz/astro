@@ -24,6 +24,16 @@
 # - If not, run 7z.exe to archive TARGET data subdir in DATA to TARGET.7z in ZIPDIR
 # - Loop continuously
 
+## --last mode
+# Archive all N.I.N.A exposure data from the previous night, i.e. date=yesterday
+# - Search all TARGET*YYYY-MM-DD directories in DATADIR
+# - Look for corresponding TARGET-YYYY-MM-DD.7z archive in ZIPDIR
+# - If exists, skip
+# - If not, run 7z.exe to archive TARGET/YYYY-MM-DD data subdir in DATA to TARGET-YYYY-MM-DD.7z in ZIPDIR
+
+## --date mode
+# Like --last, but using the specified DATE
+
 # ChangeLog
 # Version 0.1 / 2023-07-08
 #       First version of script
@@ -33,6 +43,8 @@
 #       Refactored, reusing nina-zip-last-night.py code, same JSON config
 # Version 0.4 / 2024-08-25
 #       Copy of nina-zip-ready-data, will combine nina-zip-last-night and nina-zip-ready-data
+# Version 1.0 / 2024-08-25
+#       Combined version, integrating nina-zip-last-night functionality (Options --last / --date)
 
 import os
 import argparse
@@ -98,6 +110,14 @@ config = ZipConfig(CONFIG)
 
 
 
+def time_now():
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def date_yesterday():
+    return (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+
+
+
 # options
 class Options:
     no_action = False                                       # -n --no_action
@@ -108,8 +128,8 @@ class Options:
     zipmx     = 5                                            # normal compression, -m --max => 7 = max compression
     run_ready = False
     run_last  = False
-    run_date  = None
     timer     = TIMER
+    date      = date_yesterday()
 
 
 
@@ -136,15 +156,7 @@ def set_priority():
 
 
 
-def time_now():
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-def date_yesterday():
-    return (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-
-
-
-def scan_data_dir(datadir, zipdir):
+def scan_data_dir_ready_mode(datadir, zipdir):
     ready = [f.replace(".ready", "") for f in os.listdir(datadir) if f.endswith(".ready")]
     # print(ready)
 
@@ -165,6 +177,48 @@ def scan_data_dir(datadir, zipdir):
 
 
 
+def scan_data_dir_last_mode(datadir, zipdir, date=None):
+    # TARGET/YYYY-MM-DD directories
+    dirs = [d for d in os.listdir(datadir) if os.path.isdir(os.path.join(datadir, d, date))]
+    ic(dirs)
+    if dirs:
+        scan_targets(datadir, zipdir, dirs, date)
+    # TARGET-YYYY-MM-DD directories
+    dirs = [d.replace("-" + date, "").replace("_" + date, "") for d in os.listdir(datadir) if d.endswith(date)]
+    ic(dirs)
+    if dirs:
+        scan_targets(datadir, zipdir, dirs, date)
+
+
+
+def scan_targets(datadir, zipdir, targets, date):
+    for target in targets:
+        verbose("target to archive:", target)
+        zipfile1 = os.path.join(zipdir, target + ".7z")
+        zipfile  = os.path.join(zipdir, target + "-" + date + ".7z")
+        if os.path.exists(zipfile1):
+            verbose(f"7z file {zipfile1} already exists")
+        elif os.path.exists(zipfile):
+            verbose(f"7z file {zipfile} already exists")
+        else:
+            # TARGET-YYYY-MM-DD/ directories
+            if os.path.isdir(os.path.join(datadir, target + "-" + date)):
+                verbose(f"{time_now()} archiving {target}-{date}")
+                create_zip_archive(target + "-" + date, datadir, zipfile)
+            # TARGET_YYYY-MM-DD/ directories
+            elif os.path.isdir(os.path.join(datadir, target + "_" + date)):
+                verbose(f"{time_now()} archiving {target}_{date}")
+                create_zip_archive(target + "_" + date, datadir, zipfile)
+            # TARGET/YYYY-MM-DD/ directories
+            elif os.path.isdir(os.path.join(datadir, target, date)):
+                verbose(f"{time_now()} archiving {target}/{date}")
+                create_zip_archive(os.path.join(target, date), datadir, zipfile)
+            # Unsupported
+            else:
+                warning(f"no supported directory structure for {target} {date} found!")            
+
+
+
 def create_zip_archive(target, datadir, zipfile):
     # 7z.exe a -t7z -mx=7 -r -spf zipfile target
     #   a       add files to archive
@@ -182,12 +236,21 @@ def create_zip_archive(target, datadir, zipfile):
 def run_ready():
     try:
         while True:
-            scan_data_dir(Options.datadir, Options.zipdir)
+            scan_data_dir_ready_mode(Options.datadir, Options.zipdir)
             # if verbose.enabled:
             #     print("Waiting ... ({:d}s, Ctrl-C to interrupt)".format(TIMER))
             time.sleep(Options.timer)
     except KeyboardInterrupt:
         print("Terminating ...")
+
+
+
+def run_last(targetlist=None):
+    if targetlist:
+        targets = targetlist.split(",")
+        scan_targets(Options.datadir, Options.zipdir, targets, Options.date)
+    else:
+        scan_data_dir_last_mode(Options.datadir, Options.zipdir, Options.date)
 
 
 
@@ -201,13 +264,14 @@ def main():
     arg.add_argument("-n", "--no-action", action="store_true", help="dry run")
     arg.add_argument("-l", "--low-priority", action="store_true", help="set process priority to low")
 
-    arg.add_argument("-D", "--data-dir", help="N.I.N.A data directory (default "+Options.datadir+")")
-    arg.add_argument("-Z", "--zip-dir", help="directory for zip (.7z) files (default "+Options.zipdir+")")
-    arg.add_argument("-T", "--tmp-dir", help="temp directory for zip (.7z) files (default "+Options.tmpdir+")")
+    arg.add_argument("-D", "--data-dir", help=f"N.I.N.A data directory (default {Options.datadir})")
+    arg.add_argument("-Z", "--zip-dir", help=f"directory for zip (.7z) files (default {Options.zipdir})")
+    arg.add_argument("-T", "--tmp-dir", help=f"temp directory for zip (.7z) files (default {Options.tmpdir})")
     arg.add_argument("--ready", action="store_true", help="run in TARGET.ready mode")
     arg.add_argument("-t", "--time-interval", type=int, help="time interval for checking data directory (default 60s)")
-    arg.add_argument("--last", action="store_true", help="run in last night mode ("+date_yesterday()+")")
+    arg.add_argument("--last", action="store_true", help=f"run in last night mode ({Options.date})")
     arg.add_argument("--date", help="run in archive data from DATE mode")
+    arg.add_argument("--targets", help="archive TARGET[,TARGET] only (--last / --date)")
     arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+Options.zipprog+")")
     arg.add_argument("-m", "--zip_max", action="store_true", help="7-zip max compression -mx7")
     args = arg.parse_args()
@@ -235,31 +299,32 @@ def main():
         Options.timer   = args.time_interval
     Options.run_ready = args.ready
     Options.run_last  = args.last
-    Options.run_date  = args.date
+    if args.date:
+        Options.date = args.date
+        Options.run_last = True
 
     Options.datadir = os.path.abspath(Options.datadir)
     Options.zipdir  = os.path.abspath(Options.zipdir)
     Options.tmpdir  = os.path.abspath(Options.tmpdir)
     Options.zipprog = os.path.abspath(Options.zipprog)
 
-    verbose("Data directory =", Options.datadir)
-    verbose("ZIP directory  =", Options.zipdir)
-    verbose("Tmp directory  =", Options.tmpdir)
-    verbose("ZIP program    =", Options.zipprog)
+    verbose(f"Data directory = {Options.datadir}")
+    verbose(f"ZIP directory  = {Options.zipdir}")
+    verbose(f"Tmp directory  = {Options.tmpdir}")
+    verbose(f"ZIP program    = {Options.zipprog}")
+    verbose(f"Date           = {Options.date}")
 
     # Set process priority
     if args.low_priority:
         set_priority()
 
     if Options.run_ready:
+        # --ready mode
         print("Waiting for ready data ... (Ctrl-C to interrupt)")
         run_ready()
     elif Options.run_last:
-        ## ...
-        pass
-    elif Options.run_date:
-        ## ...
-        pass
+        # --last / --date mode
+        run_last(args.targets)
     else:
         error("must specify mode, one of --ready / --last / --date")
 
