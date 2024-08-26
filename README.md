@@ -35,6 +35,12 @@ The following additional Python libraries must be installed, see also requiremen
 | icecream | https://pypi.org/project/icecream/ |
 | tzdata   | https://pypi.org/project/tzdata/   (support for IANA timezone names on Windows) |
 
+The following external programs are required and must be installed:
+
+| Program | URL |
+| ------- | --- |
+| 7-zip   | https://7-zip.com/ |
+
 Local modules:
 
 | Library          | Function                           |
