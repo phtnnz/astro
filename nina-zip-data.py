@@ -54,6 +54,7 @@ import platform
 import sys
 import socket
 import time
+import shutil
 
 # The following libs must be installed with pip
 import psutil
@@ -243,7 +244,14 @@ def create_zip_archive(target, datadir, zipfile):
 
 def upload_zip_archive(zipfile, zipdir):
     verbose(f"upload {zipfile} -> {zipdir}")
-    pass
+    ## if upload = move
+    upload_move(zipfile, zipdir)
+
+def upload_move(zipfile, zipdir):
+    (total, used, free) = shutil.disk_usage(zipdir)
+    ic(total, used, free)
+    verbose(f"free disk space {free/1024/1024/1024:.2f} GB")
+    shutil.move(zipfile, zipdir)
 
 
 
