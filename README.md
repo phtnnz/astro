@@ -40,6 +40,7 @@ The following external programs are required and must be installed:
 | Program | URL |
 | ------- | --- |
 | 7-zip   | https://7-zip.com/ |
+| Rclone  | https://rclone.org/downloads/ |
 
 Local modules:
 
