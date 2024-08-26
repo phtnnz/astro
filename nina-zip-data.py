@@ -90,18 +90,22 @@ class ZipConfig(JSONConfig):
         error(f"no directory config for hostname {hostname}")
 
     def data_dir(self):
+        """Return N.I.N.A Image file path"""
         dirs = self._get_dirs()
         return dirs["data dir"]
 
     def zip_dir(self):
+        """Return upload directory for completed 7z archives"""
         dirs = self._get_dirs()
         return dirs["zip dir"]
 
     def tmp_dir(self):
+        """Return temporary directory for creating 7z archives"""
         dirs = self._get_dirs()
         return dirs["tmp dir"]
 
     def zip_prog(self):
+        """Full path of 7-zip.exe"""
         dirs = self._get_dirs()
         return dirs["zip program"]
 
@@ -156,13 +160,13 @@ def set_priority():
 
 
 
-def scan_data_dir_ready_mode(datadir, zipdir):
+def scan_data_dir_ready_mode(datadir, tmpdir, zipdir):
     ready = [f.replace(".ready", "") for f in os.listdir(datadir) if f.endswith(".ready")]
     # print(ready)
 
     for target in ready:
         # verbose("Target ready:", target)
-        zipfile = os.path.join(zipdir, target + ".7z")
+        zipfile = os.path.join(tmpdir, target + ".7z")
         if os.path.exists(zipfile):
             # verbose("  Zip file", zipfile, "already exists")
             pass
@@ -173,29 +177,30 @@ def scan_data_dir_ready_mode(datadir, zipdir):
             print("=" * len(msg))
             verbose(f"zip file {zipfile}")
             create_zip_archive(target, datadir, zipfile)
+            upload_zip_archive(zipfile, zipdir)
             print("=" * len(msg))
 
 
 
-def scan_data_dir_last_mode(datadir, zipdir, date=None):
+def scan_data_dir_last_mode(datadir, tmpdir, zipdir, date=None):
     # TARGET/YYYY-MM-DD directories
     dirs = [d for d in os.listdir(datadir) if os.path.isdir(os.path.join(datadir, d, date))]
     ic(dirs)
     if dirs:
-        scan_targets(datadir, zipdir, dirs, date)
+        scan_targets(datadir, tmpdir, zipdir, dirs, date)
     # TARGET-YYYY-MM-DD directories
     dirs = [d.replace("-" + date, "").replace("_" + date, "") for d in os.listdir(datadir) if d.endswith(date)]
     ic(dirs)
     if dirs:
-        scan_targets(datadir, zipdir, dirs, date)
+        scan_targets(datadir, tmpdir, zipdir, dirs, date)
 
 
 
-def scan_targets(datadir, zipdir, targets, date):
+def scan_targets(datadir, tmpdir, zipdir, targets, date):
     for target in targets:
         verbose("target to archive:", target)
-        zipfile1 = os.path.join(zipdir, target + ".7z")
-        zipfile  = os.path.join(zipdir, target + "-" + date + ".7z")
+        zipfile1 = os.path.join(tmpdir, target + ".7z")
+        zipfile  = os.path.join(tmpdir, target + "-" + date + ".7z")
         if os.path.exists(zipfile1):
             verbose(f"7z file {zipfile1} already exists")
         elif os.path.exists(zipfile):
@@ -205,14 +210,17 @@ def scan_targets(datadir, zipdir, targets, date):
             if os.path.isdir(os.path.join(datadir, target + "-" + date)):
                 verbose(f"{time_now()} archiving {target}-{date}")
                 create_zip_archive(target + "-" + date, datadir, zipfile)
+                upload_zip_archive(zipfile, zipdir)
             # TARGET_YYYY-MM-DD/ directories
             elif os.path.isdir(os.path.join(datadir, target + "_" + date)):
                 verbose(f"{time_now()} archiving {target}_{date}")
                 create_zip_archive(target + "_" + date, datadir, zipfile)
+                upload_zip_archive(zipfile, zipdir)
             # TARGET/YYYY-MM-DD/ directories
             elif os.path.isdir(os.path.join(datadir, target, date)):
                 verbose(f"{time_now()} archiving {target}/{date}")
                 create_zip_archive(os.path.join(target, date), datadir, zipfile)
+                upload_zip_archive(zipfile, zipdir)
             # Unsupported
             else:
                 warning(f"no supported directory structure for {target} {date} found!")            
@@ -229,14 +237,20 @@ def create_zip_archive(target, datadir, zipfile):
     args7z = [ Options.zipprog, "a", "-t7z", f"-mx{Options.zipmx}", "-r", "-spf", zipfile, target ]
     verbose("run", " ".join(args7z))
     if not Options.no_action:
-        subprocess.run(args=args7z, shell=False, cwd=datadir)
+        subprocess.run(args=args7z, shell=False, cwd=datadir, check=True)
+
+
+
+def upload_zip_archive(zipfile, zipdir):
+    verbose(f"upload {zipfile} -> {zipdir}")
+    pass
 
 
 
 def run_ready():
     try:
         while True:
-            scan_data_dir_ready_mode(Options.datadir, Options.zipdir)
+            scan_data_dir_ready_mode(Options.datadir, Options.tmpdir, Options.zipdir)
             # if verbose.enabled:
             #     print("Waiting ... ({:d}s, Ctrl-C to interrupt)".format(TIMER))
             time.sleep(Options.timer)
@@ -248,9 +262,9 @@ def run_ready():
 def run_last(targetlist=None):
     if targetlist:
         targets = targetlist.split(",")
-        scan_targets(Options.datadir, Options.zipdir, targets, Options.date)
+        scan_targets(Options.datadir, Options.tmpdir, Options.zipdir, targets, Options.date)
     else:
-        scan_data_dir_last_mode(Options.datadir, Options.zipdir, Options.date)
+        scan_data_dir_last_mode(Options.datadir, Options.tmpdir, Options.zipdir, Options.date)
 
 
 
