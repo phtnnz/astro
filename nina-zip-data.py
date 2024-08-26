@@ -151,11 +151,11 @@ config = ZipConfig(CONFIG)
 def time_now():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-def time_now_yyyy_mm():
-    return datetime.datetime.now().strftime("%Y/%m")
+def date_minus12h_subdir():
+    return (datetime.date.today() - datetime.timedelta(hours=12)).strftime("%Y/%m")
 
-def date_yesterday():
-    return (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+def date_minus12h():
+    return (datetime.date.today() - datetime.timedelta(hours=12)).strftime("%Y-%m-%d")
 
 
 
@@ -172,7 +172,7 @@ class Options:
     run_ready = False
     run_last  = False
     timer     = TIMER
-    date      = date_yesterday()
+    date      = date_minus12h()
 
 
 
@@ -249,9 +249,9 @@ def scan_targets(datadir, tmpdir, zipdir, targets, date):
         #     verbose(f"7z file {zipfile1} already exists")
         # elif os.path.exists(zipfile):
         if os.path.exists(zipfile):
-            verbose(f"7z file {zipfile} already exists")
+            verbose(f"file {zipfile} already exists")
         elif check_upload(zipdir, arcname):
-            verbose(f"7z archive {arcname} already uploaded")
+            verbose(f"archive {arcname} already uploaded")
         else:
             # TARGET-YYYY-MM-DD/ directories
             if os.path.isdir(os.path.join(datadir, target + "-" + date)):
@@ -290,11 +290,22 @@ def create_zip_archive(target, datadir, zipfile):
 
 def upload_zip_archive(zipfile, zipdir):
     verbose(f"upload {zipfile} -> {zipdir}")
-    ## if upload = move
     if Options.upload:
         upload_rclone_copy(zipfile, zipdir)
     else:
         upload_move(zipfile, zipdir)
+
+
+
+def check_upload(zipdir, arcname):
+    if Options.upload:          # rclone
+        zipfile = rclone_join(zipdir, arcname)
+        verbose(f"check upload {zipfile}")
+        return check_rclone_lsf(zipfile, arcname)
+    else:
+        zipfile = os.path.join(zipdir, arcname)
+        verbose(f"check upload {zipfile}")
+        return os.path.exists(zipfile)
 
 
 
@@ -306,7 +317,9 @@ def upload_move(zipfile, zipdir):
 
 
 
+## rclone specific functions
 def upload_rclone_copy(zipfile, zipdir):
+    """Copy archive from tmp dir to remote storage, using rclone copy"""
     remote = rclone_join(zipdir)
     args = [ Options.rcloneprog, "copy", zipfile, remote, "-v" ]
     verbose("run", " ".join(args))
@@ -315,22 +328,23 @@ def upload_rclone_copy(zipfile, zipdir):
 
 
 
-def check_upload(zipdir, arcname):
-    if Options.upload:          # rclone
-        zipfile = rclone_join(zipdir, arcname)
-        verbose(f"check upload {zipfile}")
-        verbose("NOT IMPLEMENTED, returning False")
-        return False ## FIXME: proper check with rclone
-    else:
-        zipfile = os.path.join(zipdir, arcname)
-        verbose(f"check upload {zipfile}")
-        return os.path.exists(zipfile)
+def check_rclone_lsf(remote, arcname):
+    """Check if archive exists on remote storage, using rclone lsf"""
+    args = [ Options.rcloneprog, "lsf", remote ]
+    verbose("run", " ".join(args))
+    if not Options.no_action:
+        r = subprocess.run(args=args, shell=False, check=True, capture_output=True, text=True)
+        ic(r)
+        file = r.stdout.strip()
+        return file == arcname
+    return False
 
 
 
 def rclone_join(zipdir, arcname=""):
+    """Add YYYY/MM subdir to bucket dir"""
     ## FIXME: make this configurable
-    subdir = time_now_yyyy_mm()
+    subdir = date_minus12h_subdir()
     if arcname:
         return zipdir.replace("\\", "/") + "/" + subdir + "/" + arcname
     else:
