@@ -1,20 +1,24 @@
 {
-    "##1": "Map hostname to specific directory settings, used by nina-zip-*.py",
+    "##1": "Map hostname to specific directory settings, used by nina-zip-data.py",
     "##2": "Sample settings",
 
     "myhostname1": {
-        "##":       "Sample 1",
-        "zip program": "C:/Program Files/7-Zip/7z.exe",
-        "data dir": "D:/Users/test/Documents/NINA-Data",
-        "tmp dir": "D:/Users/test/Documents/NINA-Tmp",
-        "zip dir":  "D:/Users/test/OneDrive/TEST"
+        "##":             "Sample 1",
+        "zip program":    "C:/Program Files/7-Zip/7z.exe",
+        "rclone program": "C:/Tools/rclone/rclone.exe",
+        "data dir":       "D:/Users/test/Documents/NINA-Data",
+        "tmp dir":        "D:/Users/test/Documents/NINA-Tmp",
+        "zip dir":        "D:/Users/test/OneDrive/Test",
+        "upload":         "move"
     },
 
     "myhostname2": {
-        "##":       "Sample 2",
-        "zip program": "C:/Program Files/7-Zip/7z.exe",
-        "data dir": "D:/Users/test2/Documents/NINA-Data",
-        "tmp dir": "D:/Users/test2/Documents/NINA-Tmp",
-        "zip dir":  "C:/Users/test2/Archive"
+        "##":             "Sample 2",
+        "zip program":    "C:/Program Files/7-Zip/7z.exe",
+        "rclone program": "C:/Tools/rclone/rclone.exe",
+        "data dir":       "D:/Users/test2/Documents/NINA-Data",
+        "tmp dir":        "D:/Users/test2/Documents/NINA-Tmp",
+        "zip dir":        "remotetest:bucket/Test",
+        "upload":          "rclone"
     }
 }
