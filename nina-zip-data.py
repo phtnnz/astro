@@ -211,7 +211,7 @@ def scan_data_dir_ready_mode(datadir, tmpdir, zipdir):
             # verbose("  Zip file", zipfile, "already exists")
             pass
         elif check_upload(zipdir, arcname):
-            verbose(f"7z archive {arcname} already uploaded")
+            verbose(f"archive {arcname} already uploaded")
         else:
             verbose(f"target ready: {target}")
             msg = f"{time_now()} archiving target {target}"
@@ -321,7 +321,7 @@ def upload_move(zipfile, zipdir):
 def upload_rclone_copy(zipfile, zipdir):
     """Copy archive from tmp dir to remote storage, using rclone copy"""
     remote = rclone_join(zipdir)
-    args = [ Options.rcloneprog, "copy", zipfile, remote, "-v" ]
+    args = [ Options.rcloneprog, "copy", zipfile, remote, "-v", "-P" ]
     verbose("run", " ".join(args))
     if not Options.no_action:
         subprocess.run(args=args, shell=False, check=True)
