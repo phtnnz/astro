@@ -45,6 +45,8 @@
 #       Copy of nina-zip-ready-data, will combine nina-zip-last-night and nina-zip-ready-data
 # Version 1.0 / 2024-08-25
 #       Combined version, integrating nina-zip-last-night functionality (Options --last / --date)
+# Version 1.1 / 2024-08-26
+#       Implemented support for rclone
 
 import os
 import argparse
@@ -70,12 +72,33 @@ from jsonconfig import JSONConfig
 
 NAME        = "nina-zip-data"
 DESCRIPTION = "Zip (7z) N.I.N.A data and upload"
-VERSION     = "1.0 / 2024-08-25"
+VERSION     = "1.1 / 2024-08-26"
 AUTHOR      = "Martin Junius"
 
 TIMER   = 60
 
 CONFIG = "nina-zip-config.json"
+
+## Config:
+# "<HOSTNAME>": {
+#         "##":       "<COMMENT>",
+#         "zip program": "C:/Program Files/7-Zip/7z.exe",
+#         "rclone program": "C:/Tools/rclone/rclone.exe",
+#         "data dir": "<SOMEWHERE>/NINA-Data",
+#         "tmp dir":  "<SOMEWHERE>/NINA-Tmp",
+#         "zip dir":  "<SOMEWHERE>/OneDrive/Upload",
+#         "upload":   "move"
+#     },
+# or
+# "<HOSTNAME>": {
+#         "##":       "<COMMENT>",
+#         "zip program": "C:/Program Files/7-Zip/7z.exe",
+#         "rclone program": "C:/Tools/rclone/rclone.exe",
+#         "data dir": "<SOMEWHERE>/NINA-Data",
+#         "tmp dir":  "<SOMEWHERE>/NINA-Tmp",
+#         "zip dir":  "<REMOTENAME>:<BUCKETNAME>",
+#         "upload":   "rclone"
+#     },
 
 class ZipConfig(JSONConfig):
     """ JSON Config for data / zip directory """
@@ -110,6 +133,16 @@ class ZipConfig(JSONConfig):
         dirs = self._get_dirs()
         return dirs["zip program"]
 
+    def rclone_prog(self):
+        """Full path of rclone.exe"""
+        dirs = self._get_dirs()
+        return dirs["rclone program"]
+
+    def upload_method(self):
+        """Upload method: False=move, True=rclone"""
+        dirs = self._get_dirs()
+        return (dirs.get("upload") or "") == "rclone"
+
 
 config = ZipConfig(CONFIG)
 
@@ -118,6 +151,9 @@ config = ZipConfig(CONFIG)
 def time_now():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+def time_now_yyyy_mm():
+    return datetime.datetime.now().strftime("%Y/%m")
+
 def date_yesterday():
     return (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
 
@@ -125,12 +161,14 @@ def date_yesterday():
 
 # options
 class Options:
-    no_action = False                                       # -n --no_action
+    no_action = False                       # -n --no_action
     datadir   = config.data_dir()
     zipdir    = config.zip_dir()
     tmpdir    = config.tmp_dir()
     zipprog   = config.zip_prog()
-    zipmx     = 5                                            # normal compression, -m --max => 7 = max compression
+    rcloneprog= config.rclone_prog()
+    upload    = config.upload_method()      # False=move, True=rclone
+    zipmx     = 5                           # normal compression, -m --max => 7 = max compression
     run_ready = False
     run_last  = False
     timer     = TIMER
@@ -167,10 +205,13 @@ def scan_data_dir_ready_mode(datadir, tmpdir, zipdir):
 
     for target in ready:
         # verbose("Target ready:", target)
-        zipfile = os.path.join(tmpdir, target + ".7z")
+        arcname = target + ".7z"
+        zipfile = os.path.join(tmpdir, arcname)
         if os.path.exists(zipfile):
             # verbose("  Zip file", zipfile, "already exists")
             pass
+        elif check_upload(zipdir, arcname):
+            verbose(f"7z archive {arcname} already uploaded")
         else:
             verbose(f"target ready: {target}")
             msg = f"{time_now()} archiving target {target}"
@@ -178,6 +219,7 @@ def scan_data_dir_ready_mode(datadir, tmpdir, zipdir):
             print("=" * len(msg))
             verbose(f"zip file {zipfile}")
             create_zip_archive(target, datadir, zipfile)
+            print("=" * len(msg))
             upload_zip_archive(zipfile, zipdir)
             print("=" * len(msg))
 
@@ -199,13 +241,17 @@ def scan_data_dir_last_mode(datadir, tmpdir, zipdir, date=None):
 
 def scan_targets(datadir, tmpdir, zipdir, targets, date):
     for target in targets:
-        verbose("target to archive:", target)
-        zipfile1 = os.path.join(tmpdir, target + ".7z")
-        zipfile  = os.path.join(tmpdir, target + "-" + date + ".7z")
-        if os.path.exists(zipfile1):
-            verbose(f"7z file {zipfile1} already exists")
-        elif os.path.exists(zipfile):
+        arcname = target + "-" + date + ".7z"
+        verbose(f"target to archive: {target} -> {arcname}")
+        # zipfile1 = os.path.join(tmpdir, target + ".7z")
+        zipfile  = os.path.join(tmpdir, arcname)
+        # if os.path.exists(zipfile1):
+        #     verbose(f"7z file {zipfile1} already exists")
+        # elif os.path.exists(zipfile):
+        if os.path.exists(zipfile):
             verbose(f"7z file {zipfile} already exists")
+        elif check_upload(zipdir, arcname):
+            verbose(f"7z archive {arcname} already uploaded")
         else:
             # TARGET-YYYY-MM-DD/ directories
             if os.path.isdir(os.path.join(datadir, target + "-" + date)):
@@ -245,13 +291,50 @@ def create_zip_archive(target, datadir, zipfile):
 def upload_zip_archive(zipfile, zipdir):
     verbose(f"upload {zipfile} -> {zipdir}")
     ## if upload = move
-    upload_move(zipfile, zipdir)
+    if Options.upload:
+        upload_rclone_copy(zipfile, zipdir)
+    else:
+        upload_move(zipfile, zipdir)
+
+
 
 def upload_move(zipfile, zipdir):
     (total, used, free) = shutil.disk_usage(zipdir)
     ic(total, used, free)
     verbose(f"free disk space {free/1024/1024/1024:.2f} GB")
     shutil.move(zipfile, zipdir)
+
+
+
+def upload_rclone_copy(zipfile, zipdir):
+    remote = rclone_join(zipdir)
+    args = [ Options.rcloneprog, "copy", zipfile, remote, "-v" ]
+    verbose("run", " ".join(args))
+    if not Options.no_action:
+        subprocess.run(args=args, shell=False, check=True)
+
+
+
+def check_upload(zipdir, arcname):
+    if Options.upload:          # rclone
+        zipfile = rclone_join(zipdir, arcname)
+        verbose(f"check upload {zipfile}")
+        verbose("NOT IMPLEMENTED, returning False")
+        return False ## FIXME: proper check with rclone
+    else:
+        zipfile = os.path.join(zipdir, arcname)
+        verbose(f"check upload {zipfile}")
+        return os.path.exists(zipfile)
+
+
+
+def rclone_join(zipdir, arcname=""):
+    ## FIXME: make this configurable
+    subdir = time_now_yyyy_mm()
+    if arcname:
+        return zipdir.replace("\\", "/") + "/" + subdir + "/" + arcname
+    else:
+        return zipdir.replace("\\", "/") + "/" + subdir
 
 
 
@@ -326,8 +409,9 @@ def main():
         Options.run_last = True
 
     Options.datadir = os.path.abspath(Options.datadir)
-    Options.zipdir  = os.path.abspath(Options.zipdir)
     Options.tmpdir  = os.path.abspath(Options.tmpdir)
+    if not Options.upload:
+        Options.zipdir  = os.path.abspath(Options.zipdir)
     Options.zipprog = os.path.abspath(Options.zipprog)
 
     verbose(f"Data directory = {Options.datadir}")
