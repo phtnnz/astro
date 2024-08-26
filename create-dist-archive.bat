@@ -1,0 +1,3 @@
+@echo off
+echo Creating distribution archive ...
+"C:\Program Files\7-Zip\7z.exe" a -t7z -spf -x!__pycache__ IAS-astro-python.7z @files.dist
