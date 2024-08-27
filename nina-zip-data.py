@@ -152,10 +152,10 @@ def time_now():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 def date_minus12h_subdir():
-    return (datetime.date.today() - datetime.timedelta(hours=12)).strftime("%Y/%m")
+    return (datetime.datetime.now() - datetime.timedelta(hours=12)).strftime("%Y/%m")
 
 def date_minus12h():
-    return (datetime.date.today() - datetime.timedelta(hours=12)).strftime("%Y-%m-%d")
+    return (datetime.datetime.now() - datetime.timedelta(hours=12)).strftime("%Y-%m-%d")
 
 
 
