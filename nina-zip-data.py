@@ -225,14 +225,15 @@ def scan_data_dir_ready_mode(datadir, tmpdir, zipdir):
 
 
 
-def scan_data_dir_last_mode(datadir, tmpdir, zipdir, date=None):
+def scan_data_dir_last_mode(datadir, tmpdir, zipdir, date):
     # TARGET/YYYY-MM-DD directories
     dirs = [d for d in os.listdir(datadir) if os.path.isdir(os.path.join(datadir, d, date))]
     ic(dirs)
     if dirs:
         scan_targets(datadir, tmpdir, zipdir, dirs, date)
     # TARGET-YYYY-MM-DD directories
-    dirs = [d.replace("-" + date, "").replace("_" + date, "") for d in os.listdir(datadir) if d.endswith(date)]
+    dirs = [d.replace("-"+date, "").replace("_"+date, "") 
+            for d in os.listdir(datadir) if d.endswith("-"+date) or d.endswith("_"+date)]
     ic(dirs)
     if dirs:
         scan_targets(datadir, tmpdir, zipdir, dirs, date)
@@ -241,6 +242,11 @@ def scan_data_dir_last_mode(datadir, tmpdir, zipdir, date=None):
 
 def scan_targets(datadir, tmpdir, zipdir, targets, date):
     for target in targets:
+        # Ignore targets / directories starting with "_"
+        if target.startswith("_"):
+            verbose(f"ignoring {target}")
+            continue
+
         arcname = target + "-" + date + ".7z"
         verbose(f"target to archive: {target} -> {arcname}")
         # zipfile1 = os.path.join(tmpdir, target + ".7z")
