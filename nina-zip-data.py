@@ -47,6 +47,9 @@
 #       Combined version, integrating nina-zip-last-night functionality (Options --last / --date)
 # Version 1.1 / 2024-08-26
 #       Implemented support for rclone
+# Version 1.2 / 2024-08-28
+#       Added --hostname options to select config settings
+#       Removed -D --data-dir, -Z --zip-dir, -T --tmp-dir, -z --zip-prog options
 
 import os
 import argparse
@@ -72,7 +75,7 @@ from jsonconfig import JSONConfig
 
 NAME        = "nina-zip-data"
 DESCRIPTION = "Zip (7z) N.I.N.A data and upload"
-VERSION     = "1.1 / 2024-08-26"
+VERSION     = "1.2 / 2024-08-28"
 AUTHOR      = "Martin Junius"
 
 TIMER   = 60
@@ -101,17 +104,18 @@ CONFIG = "nina-zip-config.json"
 #     },
 
 class ZipConfig(JSONConfig):
-    """ JSON Config for data / zip directory """
+    """JSON config for directories / programs &c."""
+
+    hostname  = socket.gethostname()
 
     def __init__(self, file=None):
         super().__init__(file)
 
     def _get_dirs(self):
-        hostname = socket.gethostname()
-        ic(hostname)
-        if hostname in self.config:
-            return self.config[hostname]
-        error(f"no directory config for hostname {hostname}")
+        # ic(ZipConfig.hostname)
+        if ZipConfig.hostname in self.config:
+            return self.config[ZipConfig.hostname]
+        error(f"no directory config for hostname {ZipConfig.hostname}")
 
     def data_dir(self):
         """Return N.I.N.A Image file path"""
@@ -359,6 +363,8 @@ def rclone_join(zipdir, arcname=""):
 
 
 def run_ready():
+    print("Waiting for ready data ... (Ctrl-C to interrupt)")
+
     try:
         while True:
             scan_data_dir_ready_mode(Options.datadir, Options.tmpdir, Options.zipdir)
@@ -389,35 +395,36 @@ def main():
     arg.add_argument("-n", "--no-action", action="store_true", help="dry run")
     arg.add_argument("-l", "--low-priority", action="store_true", help="set process priority to low")
 
-    arg.add_argument("-D", "--data-dir", help=f"N.I.N.A data directory (default {Options.datadir})")
-    arg.add_argument("-Z", "--zip-dir", help=f"directory for zip (.7z) files (default {Options.zipdir})")
-    arg.add_argument("-T", "--tmp-dir", help=f"temp directory for zip (.7z) files (default {Options.tmpdir})")
     arg.add_argument("--ready", action="store_true", help="run in TARGET.ready mode")
-    arg.add_argument("-t", "--time-interval", type=int, help="time interval for checking data directory (default 60s)")
     arg.add_argument("--last", action="store_true", help=f"run in last night mode ({Options.date})")
     arg.add_argument("--date", help="run in archive data from DATE mode")
+
     arg.add_argument("--targets", help="archive TARGET[,TARGET] only (--last / --date)")
-    arg.add_argument("-z", "--zip-prog", help="full path of 7-zip.exe (default "+Options.zipprog+")")
+    arg.add_argument("--hostname", help=f"load settings for HOSTNAME (default {ZipConfig.hostname})")
+    arg.add_argument("-t", "--time-interval", type=int, help=f"time interval for checking data directory (default {TIMER}s)")
     arg.add_argument("-m", "--zip_max", action="store_true", help="7-zip max compression -mx7")
     args = arg.parse_args()
 
     if args.verbose:
         verbose.set_prog(NAME)
         verbose.enable()
+        config.info()
     if args.debug:
         ic.enable()
         ic(sys.version_info, sys.path)
 
     Options.no_action = args.no_action
 
-    if args.data_dir:
-        Options.datadir = args.data_dir
-    if args.zip_dir:
-        Options.zipdir  = args.zip_dir
-    if args.tmp_dir:
-        Options.tmpdir  = args.tmp_dir
-    if args.zip_prog:
-        Options.zipprog = args.zip_prog
+    if args.hostname:
+        ZipConfig.hostname = args.hostname
+        # Re-initialize Options
+        Options.datadir   = config.data_dir()
+        Options.zipdir    = config.zip_dir()
+        Options.tmpdir    = config.tmp_dir()
+        Options.zipprog   = config.zip_prog()
+        Options.rcloneprog= config.rclone_prog()
+        Options.upload    = config.upload_method()
+
     if args.zip_max:
         Options.zipmx   = 7
     if args.time_interval:
@@ -435,9 +442,11 @@ def main():
     Options.zipprog = os.path.abspath(Options.zipprog)
 
     verbose(f"Data directory = {Options.datadir}")
-    verbose(f"ZIP directory  = {Options.zipdir}")
+    verbose(f"Dest directory = {Options.zipdir}")
     verbose(f"Tmp directory  = {Options.tmpdir}")
-    verbose(f"ZIP program    = {Options.zipprog}")
+    verbose(f"7z program     = {Options.zipprog}")
+    verbose(f"rclone program = {Options.rcloneprog}")
+    verbose(f"Use rclone     = {Options.upload}")
     verbose(f"Date           = {Options.date}")
 
     # Set process priority
@@ -446,7 +455,6 @@ def main():
 
     if Options.run_ready:
         # --ready mode
-        print("Waiting for ready data ... (Ctrl-C to interrupt)")
         run_ready()
     elif Options.run_last:
         # --last / --date mode
