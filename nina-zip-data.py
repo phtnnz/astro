@@ -177,6 +177,7 @@ class Options:
     run_last  = False
     timer     = TIMER
     date      = date_minus12h()
+    subdir    = None                        # --subdir
 
 
 
@@ -206,8 +207,10 @@ def set_priority():
 def scan_data_dir_ready_mode(datadir, tmpdir, zipdir):
     ready = [f.replace(".ready", "") for f in os.listdir(datadir) if f.endswith(".ready")]
     # print(ready)
+    ic(ready)
 
     for target in ready:
+        ic(target)
         # verbose("Target ready:", target)
         arcname = target + ".7z"
         zipfile = os.path.join(tmpdir, arcname)
@@ -353,8 +356,12 @@ def check_rclone_lsf(remote, arcname):
 
 def rclone_join(zipdir, arcname=""):
     """Add YYYY/MM subdir to bucket dir"""
-    ## FIXME: make this configurable
-    subdir = date_minus12h_subdir()
+    if Options.subdir:
+        subdir = Options.subdir
+    else:
+        ## FIXME: make this configurable
+        subdir = date_minus12h_subdir()
+
     if arcname:
         return zipdir.replace("\\", "/") + "/" + subdir + "/" + arcname
     else:
@@ -363,11 +370,15 @@ def rclone_join(zipdir, arcname=""):
 
 
 def run_ready():
-    print("Waiting for ready data ... (Ctrl-C to interrupt)")
+    datadir = Options.datadir
+    if Options.subdir:
+        datadir = os.path.join(datadir, Options.subdir)
+    verbose(f"scanning directory {datadir}")
 
     try:
+        print("Waiting for ready data ... (Ctrl-C to interrupt)")
         while True:
-            scan_data_dir_ready_mode(Options.datadir, Options.tmpdir, Options.zipdir)
+            scan_data_dir_ready_mode(datadir, Options.tmpdir, Options.zipdir)
             # if verbose.enabled:
             #     print("Waiting ... ({:d}s, Ctrl-C to interrupt)".format(TIMER))
             time.sleep(Options.timer)
@@ -399,10 +410,11 @@ def main():
     arg.add_argument("--last", action="store_true", help=f"run in last night mode ({Options.date})")
     arg.add_argument("--date", help="run in archive data from DATE mode")
 
+    arg.add_argument("--subdir", help="search SUBDIR_YYYY-MM-DD in data dir for ready targets (--ready)")
     arg.add_argument("--targets", help="archive TARGET[,TARGET] only (--last / --date)")
     arg.add_argument("--hostname", help=f"load settings for HOSTNAME (default {ZipConfig.hostname})")
     arg.add_argument("-t", "--time-interval", type=int, help=f"time interval for checking data directory (default {TIMER}s)")
-    arg.add_argument("-m", "--zip_max", action="store_true", help="7-zip max compression -mx7")
+    arg.add_argument("-m", "--zip-max", action="store_true", help="7-zip max compression -mx7")
     args = arg.parse_args()
 
     if args.verbose:
@@ -434,6 +446,11 @@ def main():
     if args.date:
         Options.date = args.date
         Options.run_last = True
+        Options.run_ready = False
+    if args.subdir:
+        Options.subdir = args.subdir + "_" + Options.date
+        Options.run_last = False
+        Options.run_ready = True
 
     Options.datadir = os.path.abspath(Options.datadir)
     Options.tmpdir  = os.path.abspath(Options.tmpdir)
@@ -448,6 +465,7 @@ def main():
     verbose(f"rclone program = {Options.rcloneprog}")
     verbose(f"Use rclone     = {Options.upload}")
     verbose(f"Date           = {Options.date}")
+    verbose(f"Sub directory  = {Options.subdir}")
 
     # Set process priority
     if args.low_priority:
