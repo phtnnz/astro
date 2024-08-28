@@ -48,8 +48,11 @@
 # Version 1.1 / 2024-08-26
 #       Implemented support for rclone
 # Version 1.2 / 2024-08-28
-#       Added --hostname options to select config settings
+#       Added --hostname option to select config settings
 #       Removed -D --data-dir, -Z --zip-dir, -T --tmp-dir, -z --zip-prog options
+# Version 1.3 / 2024-08-28
+#       Added --subdir option: invokes --ready mode, search in data dir/subdir_YYYY-MM-DD,
+#       uploads with rclone will add subdir_YYYY-MM-DD instead of YYYY/MM to zip dir path
 
 import os
 import argparse
@@ -75,7 +78,7 @@ from jsonconfig import JSONConfig
 
 NAME        = "nina-zip-data"
 DESCRIPTION = "Zip (7z) N.I.N.A data and upload"
-VERSION     = "1.2 / 2024-08-28"
+VERSION     = "1.3 / 2024-08-28"
 AUTHOR      = "Martin Junius"
 
 TIMER   = 60
@@ -304,7 +307,7 @@ def create_zip_archive(target, datadir, zipfile):
 def upload_zip_archive(zipfile, zipdir):
     verbose(f"upload {zipfile} -> {zipdir}")
     if Options.upload:
-        upload_rclone_copy(zipfile, zipdir)
+        upload_rclone(zipfile, zipdir)
     else:
         upload_move(zipfile, zipdir)
 
@@ -326,14 +329,16 @@ def upload_move(zipfile, zipdir):
     (total, used, free) = shutil.disk_usage(zipdir)
     ic(total, used, free)
     verbose(f"free disk space {free/1024/1024/1024:.2f} GB")
+    ## FIXME: add subdir, create directories if needed
     shutil.move(zipfile, zipdir)
 
 
 
 ## rclone specific functions
-def upload_rclone_copy(zipfile, zipdir):
+def upload_rclone(zipfile, zipdir):
     """Copy archive from tmp dir to remote storage, using rclone copy"""
     remote = rclone_join(zipdir)
+    ## FIXME: test moveto
     args = [ Options.rcloneprog, "copy", zipfile, remote, "-v", "-P" ]
     verbose("run", " ".join(args))
     if not Options.no_action:
