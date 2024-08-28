@@ -40,7 +40,7 @@ The following external programs are required and must be installed:
 | Program | URL |
 | ------- | --- |
 | 7-zip   | https://7-zip.com/ |
-| Rclone  | https://rclone.org/downloads/ |
+| rclone  | https://rclone.org/downloads/ |
 
 Local modules:
 
@@ -242,8 +242,7 @@ targets of an observation night.
 Supersedes nina-zip-ready-data and nina-zip-last-night.
 
 ```
-usage: nina-zip-data [-h] [-v] [-d] [-n] [-l] [-D DATA_DIR] [-Z ZIP_DIR] [-T TMP_DIR] [--ready] [-t TIME_INTERVAL] [--last]
-                     [--date DATE] [--targets TARGETS] [-z ZIP_PROG] [-m]
+usage: nina-zip-data [-h] [-v] [-d] [-n] [-l] [--ready] [--last] [--date DATE] [--targets TARGETS] [--hostname HOSTNAME] [-t TIME_INTERVAL] [-m]
 
 Zip (7z) N.I.N.A data and upload
 
@@ -253,23 +252,16 @@ options:
   -d, --debug           more debug messages
   -n, --no-action       dry run
   -l, --low-priority    set process priority to low
-  -D DATA_DIR, --data-dir DATA_DIR
-                        N.I.N.A data directory (default D:/Users/remote/Documents/NINA-Data)
-  -Z ZIP_DIR, --zip-dir ZIP_DIR
-                        directory for zip (.7z) files (default D:/Users/remote/OneDrive/Remote-Upload3)
-  -T TMP_DIR, --tmp-dir TMP_DIR
-                        temp directory for zip (.7z) files (default D:/Users/remote/Documents/NINA-Tmp)
   --ready               run in TARGET.ready mode
-  -t TIME_INTERVAL, --time-interval TIME_INTERVAL
-                        time interval for checking data directory (default 60s)
-  --last                run in last night mode (2024-08-24)
+  --last                run in last night mode (<DATEMINUS12>)
   --date DATE           run in archive data from DATE mode
   --targets TARGETS     archive TARGET[,TARGET] only (--last / --date)
-  -z ZIP_PROG, --zip-prog ZIP_PROG
-                        full path of 7-zip.exe (default C:/Program Files/7-Zip/7z.exe)
+  --hostname HOSTNAME   load settings for HOSTNAME (default <HOSTNAME>)
+  -t TIME_INTERVAL, --time-interval TIME_INTERVAL
+                        time interval for checking data directory (default 60s)
   -m, --zip_max         7-zip max compression -mx7
 
-Version 1.0 / 2024-08-25 / Martin Junius
+Version 1.2 / 2024-08-28 / Martin Junius
 ```
 
 ### --ready mode
