@@ -56,6 +56,9 @@
 # Version 1.3 / 2024-08-28
 #       Added --subdir option: invokes --ready mode, search in data dir/subdir_YYYY-MM-DD,
 #       uploads with move/rclone will add subdir_YYYY-MM-DD instead of YYYY/MM to zip dir path
+# Version 1.4 / 2024-08-29
+#       Added "zip sub" to config file, override of default "%Y/%m" for sub directory
+#       under zip dir
 
 import os
 import argparse
@@ -81,33 +84,39 @@ from jsonconfig import JSONConfig
 
 NAME        = "nina-zip-data"
 DESCRIPTION = "Zip (7z) N.I.N.A data and upload"
-VERSION     = "1.3 / 2024-08-28"
+VERSION     = "1.4 / 2024-08-29"
 AUTHOR      = "Martin Junius"
 
 TIMER   = 60
+ZIP_SUB = "%Y/%m"
 
 CONFIG = "nina-zip-config.json"
 
 ## Config:
 # "<HOSTNAME>": {
-#         "##":       "<COMMENT>",
-#         "zip program": "C:/Program Files/7-Zip/7z.exe",
+#         "##":             "<COMMENT>",
+#         "zip program":    "C:/Program Files/7-Zip/7z.exe",
 #         "rclone program": "C:/Tools/rclone/rclone.exe",
-#         "data dir": "<SOMEWHERE>/NINA-Data",
-#         "tmp dir":  "<SOMEWHERE>/NINA-Tmp",
-#         "zip dir":  "<SOMEWHERE>/OneDrive/Upload",
-#         "upload":   "move"
+#         "data dir":        "<SOMEWHERE>/NINA-Data",
+#         "tmp dir":         "<SOMEWHERE>/NINA-Tmp",
+#         "zip dir":         "<SOMEWHERE>/OneDrive/Upload",
+#         "zip sub":         "<STRFTIME_PLACEHOLDERS>"
+#         "upload":          "move"
 #     },
 # or
 # "<HOSTNAME>": {
-#         "##":       "<COMMENT>",
-#         "zip program": "C:/Program Files/7-Zip/7z.exe",
+#         "##":             "<COMMENT>",
+#         "zip program":    "C:/Program Files/7-Zip/7z.exe",
 #         "rclone program": "C:/Tools/rclone/rclone.exe",
-#         "data dir": "<SOMEWHERE>/NINA-Data",
-#         "tmp dir":  "<SOMEWHERE>/NINA-Tmp",
-#         "zip dir":  "<REMOTENAME>:<BUCKETNAME>",
-#         "upload":   "rclone"
+#         "data dir":       "<SOMEWHERE>/NINA-Data",
+#         "tmp dir":        "<SOMEWHERE>/NINA-Tmp",
+#         "zip dir":        "<REMOTENAME>:<BUCKETNAME>",
+#         "zip sub":        "<STRFTIME_PLACEHOLDERS>"
+#         "upload":         "rclone"
 #     },
+
+# Default "zip sub" = "%Y/%m"
+#         "upload"  = "move"
 
 class ZipConfig(JSONConfig):
     """JSON config for directories / programs &c."""
@@ -126,27 +135,32 @@ class ZipConfig(JSONConfig):
     def data_dir(self):
         """Return N.I.N.A Image file path"""
         dirs = self._get_dirs()
-        return dirs["data dir"]
+        return dirs.get("data dir")
 
     def zip_dir(self):
         """Return upload directory for completed 7z archives"""
         dirs = self._get_dirs()
-        return dirs["zip dir"]
+        return dirs.get("zip dir")
+
+    def zip_sub(self):
+        """Return sub directory in upload directory for completed 7z archives (strftime placeholder)"""
+        dirs = self._get_dirs()
+        return dirs.get("zip sub") or ZIP_SUB
 
     def tmp_dir(self):
         """Return temporary directory for creating 7z archives"""
         dirs = self._get_dirs()
-        return dirs["tmp dir"]
+        return dirs.get("tmp dir")
 
     def zip_prog(self):
         """Full path of 7-zip.exe"""
         dirs = self._get_dirs()
-        return dirs["zip program"]
+        return dirs.get("zip program")
 
     def rclone_prog(self):
         """Full path of rclone.exe"""
         dirs = self._get_dirs()
-        return dirs["rclone program"]
+        return dirs.get("rclone program")
 
     def upload_method(self):
         """Upload method: False=move, True=rclone"""
@@ -162,7 +176,8 @@ def time_now():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 def date_minus12h_subdir():
-    return (datetime.datetime.now() - datetime.timedelta(hours=12)).strftime("%Y/%m")
+    ## FIXME: behavior if --date is set?
+    return (datetime.datetime.now() - datetime.timedelta(hours=12)).strftime(config.zip_sub())
 
 def date_minus12h():
     return (datetime.datetime.now() - datetime.timedelta(hours=12)).strftime("%Y-%m-%d")
@@ -184,6 +199,7 @@ class Options:
     timer     = TIMER
     date      = date_minus12h()
     subdir    = None                        # --subdir
+    zipsub    = date_minus12h_subdir()
 
 
 
@@ -373,19 +389,18 @@ def check_rclone_lsf(remote, arcname):
 
 
 def upload_join(zipdir, arcname="", remote=True):
-    """Add YYYY/MM or SUBDIR to bucket dir"""
+    """Add ZIPSUB or SUBDIR to bucket dir"""
     if Options.subdir:
         subdir = Options.subdir
     else:
-        ## FIXME: make this configurable
-        # Destination directory is ZIPDIR/YYYY/MM
-        subdir = date_minus12h_subdir()
+        subdir = Options.zipsub
 
     if remote:
         zip = zipdir.replace("\\", "/") + "/" + subdir
         if arcname:
             zip += "/" + arcname
     else:
+        subdir = subdir.replace("/", os.path.sep)
         zip = os.path.join(zipdir, subdir)
         if arcname:
             zip = os.path.join(zip, arcname)
@@ -461,6 +476,7 @@ def main():
         # Re-initialize Options
         Options.datadir   = config.data_dir()
         Options.zipdir    = config.zip_dir()
+        Options.zipsub    = date_minus12h_subdir()
         Options.tmpdir    = config.tmp_dir()
         Options.zipprog   = config.zip_prog()
         Options.rcloneprog= config.rclone_prog()
@@ -489,6 +505,7 @@ def main():
 
     verbose(f"Data directory = {Options.datadir}")
     verbose(f"Dest directory = {Options.zipdir}")
+    verbose(f"Dest subdir    = {Options.zipsub}")
     verbose(f"Tmp directory  = {Options.tmpdir}")
     verbose(f"7z program     = {Options.zipprog}")
     verbose(f"rclone program = {Options.rcloneprog}")
