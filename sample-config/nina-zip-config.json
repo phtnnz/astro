@@ -9,6 +9,7 @@
         "data dir":       "D:/Users/test/Documents/NINA-Data",
         "tmp dir":        "D:/Users/test/Documents/NINA-Tmp",
         "zip dir":        "D:/Users/test/OneDrive/Test",
+        "zip sub":        "%Y/%m",
         "upload":         "move"
     },
 
@@ -19,6 +20,7 @@
         "data dir":       "D:/Users/test2/Documents/NINA-Data",
         "tmp dir":        "D:/Users/test2/Documents/NINA-Tmp",
         "zip dir":        "remotetest:bucket/Test",
+        "zip sub":        "%Y/%m",
         "upload":          "rclone"
     }
 }
