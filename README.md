@@ -58,47 +58,11 @@ Local modules:
 | radec            | Class Coord for handling RA/DEC coordinates |
 
 
-## nina-create-sequence
-Builds a complete N.I.N.A sequence for the observation night, using a base template (with empty Sequence Target Area) and a target template (repeated for every single object), from a CSV list of targets exported by NEO Planner.
-
-The directories NINA-Templates-IAS/ and NINA-Templates-IAS3/ contain the necessary N.I.N.A templates.
-
-Currently used for the M49, the IAS Remote Telescopes at Hakos, Namibia
-
-```
-usage: nina-create-sequence [-h] [-v] [-T TARGET_TEMPLATE] [-S SEQUENCE_TEMPLATE] [-D DESTINATION_DIR] [-o OUTPUT] [-t] [-p] [-n] [-N] [-3]
-                            filename [filename ...]
-
-Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV
-
-positional arguments:
-  filename              CSV target data list
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         debug messages
-  -T TARGET_TEMPLATE, --target-template TARGET_TEMPLATE
-                        base N.I.N.A target template .json file
-  -S SEQUENCE_TEMPLATE, --sequence-template SEQUENCE_TEMPLATE
-                        base N.I.N.A sequence .json file
-  -D DESTINATION_DIR, --destination-dir DESTINATION_DIR
-                        output dir for created targets/sequence
-  -o OUTPUT, --output OUTPUT
-                        output .json file, default NEO-YYYY-MM-DD
-  -t, --targets-only    create separate targets only
-  -p, --prefix-target   prefix all target names with YYYY-MM-DD NNN
-  -n, --no-output       dry run, don't create output files
-  -N, --add-number      add number of frames (nNNN) to target name
-  -3, --remote3         use templates for Remote3
-
-Version: 1.1 / 2024-06-28 / Martin Junius
-```
-
 
 ## nina-create-sequence2
 Improved version of nina-create-sequence, builds a complete N.I.N.A sequence for the observation night, using a base template and a target template (repeated for every single object in the target area), from a CSV list of targets.
 
-The directories NINA-Templates-IAS/ and NINA-Templates-IAS3/ contain the necessary N.I.N.A templates.
+The directories NINA-Templates-IAS/, NINA-Templates-IAS3/ and NINA-Templates-Common/ contain the necessary N.I.N.A templates.
 
 Currently used for the M49, the IAS Remote Telescopes at Hakos, Namibia
 
@@ -130,26 +94,6 @@ Version: 1.3 / 2024-08-06 / Martin Junius
 Config: nina-create-sequence.json
 
 
-## test-shutter-open
-For Hakos remote observatories roll-off roof control only, checks roof/mount status.
-(Obsolete, use test-hakos-roof instead.)
-
-```
-usage: test-shutter-open [-h] [-v] [-P] [-O]
-
-Test Hakos roof (shutter) status: returns exit code 0, if ok (open/parked), else 1
-
-options:
-  -h, --help     show this help message and exit
-  -v, --verbose  debug messages
-  -P, --parked   test for "parked" status
-  -O, --open     test for "open" status (default)
-
-Version 0.4 / 2024-06-20 / Martin Junius
-```
-
-Config file: hakosroof.json
-
 ## test-hakos-roof
 For Hakos remote observatories roll-off roof control only, refactored status queries
 
@@ -175,7 +119,6 @@ Config file: hakosroof.json
 Use the batch files/wrappers with full path in N.I.N.A's "External Script" instruction, e.g.
 
 ```
-"D:\Users\remote\Documents\Scripts\test-shutter-open.bat"
 "D:\Users\remote\Documents\Scripts\test-hakos-roof.bat"
 "D:\Users\remote\Documents\Scripts\nina-flag-ready.bat" "TARGET"
 ```
@@ -242,7 +185,8 @@ targets of an observation night.
 Supersedes nina-zip-ready-data and nina-zip-last-night.
 
 ```
-usage: nina-zip-data [-h] [-v] [-d] [-n] [-l] [--ready] [--last] [--date DATE] [--targets TARGETS] [--hostname HOSTNAME] [-t TIME_INTERVAL] [-m]
+usage: nina-zip-data [-h] [-v] [-d] [-n] [-l] [--ready] [--last] [--date DATE] [--subdir SUBDIR] [--targets TARGETS] [--hostname HOSTNAME]
+                     [-t TIME_INTERVAL] [-m]
 
 Zip (7z) N.I.N.A data and upload
 
@@ -253,15 +197,16 @@ options:
   -n, --no-action       dry run
   -l, --low-priority    set process priority to low
   --ready               run in TARGET.ready mode
-  --last                run in last night mode (<DATEMINUS12>)
+  --last                run in last night mode (2024-08-29)
   --date DATE           run in archive data from DATE mode
+  --subdir SUBDIR       search SUBDIR_YYYY-MM-DD in data dir for ready targets (--ready)
   --targets TARGETS     archive TARGET[,TARGET] only (--last / --date)
-  --hostname HOSTNAME   load settings for HOSTNAME (default <HOSTNAME>)
+  --hostname HOSTNAME   load settings for HOSTNAME (default numenor)
   -t TIME_INTERVAL, --time-interval TIME_INTERVAL
                         time interval for checking data directory (default 60s)
-  -m, --zip_max         7-zip max compression -mx7
+  -m, --zip-max         7-zip max compression -mx7
 
-Version 1.2 / 2024-08-28 / Martin Junius
+Version 1.4 / 2024-08-29 / Martin Junius
 ```
 
 ### --ready mode
