@@ -34,6 +34,9 @@
 ## --date mode
 # Like --last, but using the specified DATE
 
+## --subdir mode
+# Like --ready, but search in N.I.N.A datadir / SUBDIR_YYYY-MM-DD 
+
 # ChangeLog
 # Version 0.1 / 2023-07-08
 #       First version of script
@@ -52,7 +55,7 @@
 #       Removed -D --data-dir, -Z --zip-dir, -T --tmp-dir, -z --zip-prog options
 # Version 1.3 / 2024-08-28
 #       Added --subdir option: invokes --ready mode, search in data dir/subdir_YYYY-MM-DD,
-#       uploads with rclone will add subdir_YYYY-MM-DD instead of YYYY/MM to zip dir path
+#       uploads with move/rclone will add subdir_YYYY-MM-DD instead of YYYY/MM to zip dir path
 
 import os
 import argparse
@@ -221,7 +224,8 @@ def scan_data_dir_ready_mode(datadir, tmpdir, zipdir):
             # verbose("  Zip file", zipfile, "already exists")
             pass
         elif check_upload(zipdir, arcname):
-            verbose(f"archive {arcname} already uploaded")
+            # verbose(f"archive {arcname} already uploaded")
+            pass
         else:
             verbose(f"target ready: {target}")
             msg = f"{time_now()} archiving target {target}"
@@ -230,7 +234,7 @@ def scan_data_dir_ready_mode(datadir, tmpdir, zipdir):
             verbose(f"zip file {zipfile}")
             create_zip_archive(target, datadir, zipfile)
             print("=" * len(msg))
-            upload_zip_archive(zipfile, zipdir)
+            upload_zip_archive(zipfile, zipdir, arcname)
             print("=" * len(msg))
 
 
@@ -273,17 +277,17 @@ def scan_targets(datadir, tmpdir, zipdir, targets, date):
             if os.path.isdir(os.path.join(datadir, target + "-" + date)):
                 verbose(f"{time_now()} archiving {target}-{date}")
                 create_zip_archive(target + "-" + date, datadir, zipfile)
-                upload_zip_archive(zipfile, zipdir)
+                upload_zip_archive(zipfile, zipdir, arcname)
             # TARGET_YYYY-MM-DD/ directories
             elif os.path.isdir(os.path.join(datadir, target + "_" + date)):
                 verbose(f"{time_now()} archiving {target}_{date}")
                 create_zip_archive(target + "_" + date, datadir, zipfile)
-                upload_zip_archive(zipfile, zipdir)
+                upload_zip_archive(zipfile, zipdir, arcname)
             # TARGET/YYYY-MM-DD/ directories
             elif os.path.isdir(os.path.join(datadir, target, date)):
                 verbose(f"{time_now()} archiving {target}/{date}")
                 create_zip_archive(os.path.join(target, date), datadir, zipfile)
-                upload_zip_archive(zipfile, zipdir)
+                upload_zip_archive(zipfile, zipdir, arcname)
             # Unsupported
             else:
                 warning(f"no supported directory structure for {target} {date} found!")            
@@ -304,10 +308,10 @@ def create_zip_archive(target, datadir, zipfile):
 
 
 
-def upload_zip_archive(zipfile, zipdir):
-    verbose(f"upload {zipfile} -> {zipdir}")
+def upload_zip_archive(zipfile, zipdir, arcname):
+    verbose(f"upload to {zipdir} (+subdir)")
     if Options.upload:
-        upload_rclone(zipfile, zipdir)
+        upload_rclone(zipfile, zipdir, arcname)
     else:
         upload_move(zipfile, zipdir)
 
@@ -315,12 +319,14 @@ def upload_zip_archive(zipfile, zipdir):
 
 def check_upload(zipdir, arcname):
     if Options.upload:          # rclone
-        zipfile = rclone_join(zipdir, arcname)
-        verbose(f"check upload {zipfile}")
+        zipfile = upload_join(zipdir, arcname)
+        if not Options.run_ready:
+            verbose(f"check upload {zipfile}")
         return check_rclone_lsf(zipfile, arcname)
     else:
-        zipfile = os.path.join(zipdir, arcname)
-        verbose(f"check upload {zipfile}")
+        zipfile = upload_join(zipdir, arcname, remote=False)
+        if not Options.run_ready:
+            verbose(f"check upload {zipfile}")
         return os.path.exists(zipfile)
 
 
@@ -329,17 +335,23 @@ def upload_move(zipfile, zipdir):
     (total, used, free) = shutil.disk_usage(zipdir)
     ic(total, used, free)
     verbose(f"free disk space {free/1024/1024/1024:.2f} GB")
-    ## FIXME: add subdir, create directories if needed
-    shutil.move(zipfile, zipdir)
+
+    zipdir = upload_join(zipdir, remote=False)
+    verbose(f"move {zipfile}")
+    verbose(f"  -> {zipdir}")
+    if not Options.no_action:
+        os.makedirs(zipdir, exist_ok=True)
+        shutil.move(zipfile, zipdir)
 
 
 
 ## rclone specific functions
-def upload_rclone(zipfile, zipdir):
-    """Copy archive from tmp dir to remote storage, using rclone copy"""
-    remote = rclone_join(zipdir)
-    ## FIXME: test moveto
-    args = [ Options.rcloneprog, "copy", zipfile, remote, "-v", "-P" ]
+def upload_rclone(zipfile, remote, arcname):
+    """Move archive from tmp dir to remote storage, using rclone"""
+    remote = upload_join(remote) + "/" + arcname
+    # Use moveto to remove local archive after upload
+    # args = [ Options.rcloneprog, "copy", zipfile, remote, "-v", "-P" ]
+    args = [ Options.rcloneprog, "moveto", zipfile, remote, "-v", "-P" ]
     verbose("run", " ".join(args))
     if not Options.no_action:
         subprocess.run(args=args, shell=False, check=True)
@@ -349,7 +361,8 @@ def upload_rclone(zipfile, zipdir):
 def check_rclone_lsf(remote, arcname):
     """Check if archive exists on remote storage, using rclone lsf"""
     args = [ Options.rcloneprog, "lsf", remote ]
-    verbose("run", " ".join(args))
+    if not Options.run_ready:
+        verbose("run", " ".join(args))
     if not Options.no_action:
         r = subprocess.run(args=args, shell=False, check=True, capture_output=True, text=True)
         ic(r)
@@ -359,18 +372,25 @@ def check_rclone_lsf(remote, arcname):
 
 
 
-def rclone_join(zipdir, arcname=""):
-    """Add YYYY/MM subdir to bucket dir"""
+def upload_join(zipdir, arcname="", remote=True):
+    """Add YYYY/MM or SUBDIR to bucket dir"""
     if Options.subdir:
         subdir = Options.subdir
     else:
         ## FIXME: make this configurable
+        # Destination directory is ZIPDIR/YYYY/MM
         subdir = date_minus12h_subdir()
 
-    if arcname:
-        return zipdir.replace("\\", "/") + "/" + subdir + "/" + arcname
+    if remote:
+        zip = zipdir.replace("\\", "/") + "/" + subdir
+        if arcname:
+            zip += "/" + arcname
     else:
-        return zipdir.replace("\\", "/") + "/" + subdir
+        zip = os.path.join(zipdir, subdir)
+        if arcname:
+            zip = os.path.join(zip, arcname)
+    ic(zip)
+    return zip
 
 
 
@@ -378,8 +398,12 @@ def run_ready():
     datadir = Options.datadir
     if Options.subdir:
         datadir = os.path.join(datadir, Options.subdir)
+    if not os.path.isdir(datadir):
+        # If subdir doesn't exist, create it, NINA will create it only with the 1st frame
+        warning(f"directory {datadir} doesn't exist, creating it")
+        os.makedirs(datadir)
+    
     verbose(f"scanning directory {datadir}")
-
     try:
         print("Waiting for ready data ... (Ctrl-C to interrupt)")
         while True:
@@ -469,7 +493,7 @@ def main():
     verbose(f"7z program     = {Options.zipprog}")
     verbose(f"rclone program = {Options.rcloneprog}")
     verbose(f"Use rclone     = {Options.upload}")
-    verbose(f"Date           = {Options.date}")
+    verbose(f"Date minus 12h = {Options.date}")
     verbose(f"Sub directory  = {Options.subdir}")
 
     # Set process priority
