@@ -85,8 +85,7 @@ class JSONConfig:
 
     def info(self):
         verbose(f"config file {self.configfile}")
-        verbose(f"config keys: {" ".join( [k for k in self.config.keys() if not k.startswith("#")] )}")
-
+        verbose(f"config keys:", ' '.join( [k for k in self.config.keys() if not k.startswith("#")] ))
 
     def search_config(self, file):
         # If full path use as is
