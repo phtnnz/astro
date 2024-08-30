@@ -1,4 +1,6 @@
 @echo off
-echo Creating new distribution archive ...
-del IAS-astro-python.7z
-"C:\Program Files\7-Zip\7z.exe" a -t7z -spf -xr!__pycache__ IAS-astro-python.7z @files.dist
+set DISTARC=dist\IAS-astro-python.7z
+set DISTLIST=dist\files.dist
+echo Creating new distribution archive %DISTARC% ...
+del %DISTARC%
+"C:\Program Files\7-Zip\7z.exe" a -t7z -spf -xr!__pycache__ %DISTARC% @%DISTLIST%
