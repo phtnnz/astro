@@ -175,12 +175,13 @@ config = ZipConfig(CONFIG)
 def time_now():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-def date_minus12h_subdir():
-    ## FIXME: behavior if --date is set?
-    return (datetime.datetime.now() - datetime.timedelta(hours=12)).strftime(config.zip_sub())
-
 def date_minus12h():
     return (datetime.datetime.now() - datetime.timedelta(hours=12)).strftime("%Y-%m-%d")
+
+def date_subdir(date=None):
+    if not date:
+        date = date_minus12h()
+    return datetime.date.fromisoformat(date).strftime(config.zip_sub())
 
 
 
@@ -199,7 +200,7 @@ class Options:
     timer     = TIMER
     date      = date_minus12h()
     subdir    = None                        # --subdir
-    zipsub    = date_minus12h_subdir()
+    zipsub    = date_subdir(date_minus12h())
 
 
 
@@ -476,7 +477,7 @@ def main():
         # Re-initialize Options
         Options.datadir   = config.data_dir()
         Options.zipdir    = config.zip_dir()
-        Options.zipsub    = date_minus12h_subdir()
+        Options.zipsub    = date_subdir(Options.date)
         Options.tmpdir    = config.tmp_dir()
         Options.zipprog   = config.zip_prog()
         Options.rcloneprog= config.rclone_prog()
@@ -490,6 +491,7 @@ def main():
     Options.run_last  = args.last
     if args.date:
         Options.date = args.date
+        Options.zipsub = date_subdir(args.date)
         Options.run_last = True
         Options.run_ready = False
     if args.subdir:
