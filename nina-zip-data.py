@@ -200,7 +200,7 @@ class Options:
     timer     = TIMER
     date      = date_minus12h()
     subdir    = None                        # --subdir
-    zipsub    = date_subdir(date_minus12h())
+    zipsub    = date_subdir()
 
 
 
