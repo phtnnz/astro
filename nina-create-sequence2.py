@@ -52,13 +52,15 @@
 #     "target":    "<SINGLE TARGET TEMPLATE>",
 #     "container": "<CONTAINER NAME OR EMPTY>",
 #     "format":    "<TARGETNAME {x}>",
-#     "output":    "<OUTPUT FILENAME {x}>.json"
+#     "output":    "<OUTPUT FILENAME {x}>.json",
+#     "subdir":    "_asteroids_{1}"
 # }
 #
 # Format placeholders:
 # 0=target, 1=date, 2=seq, 3=number
+# "subdir" is optional, or can be blank ""
 
-VERSION = "1.3 / 2024-08-06"
+VERSION = "1.4 / 2024-09-01"
 AUTHOR  = "Martin Junius"
 NAME    = "nina-create-sequence2"
 
@@ -111,7 +113,7 @@ class TargetData:
     """Hold data to update N.I.N.A template"""
 
     def __init__(self, name: str, target: str, coord: Coord, time: datetime, 
-                 number: int, exposure: float, filter: str ="L", binning: str ="2x2"):
+                 number: int, exposure: float, filter: str ="L", binning: str ="2x2", subdir: str =None):
         self.name = name
         self.targetname = target
         self.coord = coord
@@ -124,7 +126,7 @@ class TargetData:
             self.binning = 1
         if str(binning).startswith("2"):
             self.binning = 2
-
+        self.subdir = subdir
 
 
 
@@ -288,8 +290,11 @@ class NINATarget(NINABase):
 
         # Update target for External Script
         if self.script_w_target:
+            ## FIXME: quick'n'dirty to work with new _asteroids_YYYY-MM-DD subdirectories
+            ##        replace nina-flag-ready.bat         
             script = self.script_w_target["Script"]
-            self.script_w_target["Script"] = script.replace("\"TARGET\"", "\"{}\"".format(data.targetname))
+            newtarget = os.path.join(data.subdir, data.targetname)
+            self.script_w_target["Script"] = script.replace("\"TARGET\"", f"\"{newtarget}\"")
 
 
 
@@ -420,7 +425,7 @@ class NINASequence(NINABase):
         self.targets_list.append(target.obj)
 
 
-    def process_csv(self, target_tmpl, file, target_format, tzname):
+    def process_csv(self, target_tmpl, file, target_format, tzname, subdir=None):
         tz_local = ZoneInfo(tzname)
 
         with open(file, newline='') as f:
@@ -490,7 +495,7 @@ class NINASequence(NINABase):
                 print("     {:d}x{:.1f}s filter={}".format(number, exp, filter))
 
                 # default for filter and binning
-                data = TargetData(formatted_target, target, coord, time_local, number, exp, filter)
+                data = TargetData(formatted_target, target, coord, time_local, number, exp, filter, subdir=subdir)
 
                 # create deep copy of target object, update with data read from CSV
                 target_new = copy.deepcopy(target_tmpl)
@@ -558,6 +563,10 @@ def main():
     verbose(f"add target items to container '{container}', empty=target area")
     tzname = setting["timezone"]
     verbose("timezone", tzname)
+    subdir = setting.get("subdir")
+    verbose("subdir (1=date)", subdir)
+    if subdir:
+        subdir = subdir.format("", str(date.today()))
 
     if args.destination_dir:
         destination_dir = args.destination_dir
@@ -581,7 +590,7 @@ def main():
 
     for f in args.filename:
         verbose("processing CSV file", f)
-        sequence.process_csv(target, f, target_format, tzname)
+        sequence.process_csv(target, f, target_format, tzname, subdir)
 
     output_path = os.path.join(destination_dir, output)
     if not args.no_output:
