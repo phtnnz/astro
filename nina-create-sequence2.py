@@ -42,6 +42,9 @@
 # Version 1.3 / 2024-08-06
 #       Use new radec.Coord
 #       More alternatives and defaults for CSV data field names
+# Version 1.4 / 2024-09-02
+#       Added --date option, default today, use this date for output and template format
+#       New "subdir" config setting, see below
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
@@ -60,7 +63,7 @@
 # 0=target, 1=date, 2=seq, 3=number
 # "subdir" is optional, or can be blank ""
 
-VERSION = "1.4 / 2024-09-01"
+VERSION = "1.4 / 2024-09-02"
 AUTHOR  = "Martin Junius"
 NAME    = "nina-create-sequence2"
 
@@ -106,6 +109,7 @@ config = SequenceConfig(CONFIG)
 class Options:
     """ Command line options """
     debug_print_attr = False            # -A --debug-print-attr
+    date = date.today().isoformat()     # --date
 
 
 
@@ -479,9 +483,10 @@ class NINASequence(NINABase):
 
                 # Format target name for templates:
                 # 0=target, 1=date, 2=seq, 3=number
-                # formatted_target = "{1} {2:03d} {0} (n{3:03d})".format(target, time_NA.date(), seq, number)
                 # (from config)
-                date1 = time_local.date() if time_local else ""
+                # date1 = time_local.date() if time_local else ""
+                # Use today or --date
+                date1 = Options.date
                 formatted_target = target_format.format(target, date1, seq, number)
                 ic(target, formatted_target)
 
@@ -529,6 +534,7 @@ def main():
     arg.add_argument("-o", "--output", help="output .json file")
     arg.add_argument("-n", "--no-output", action="store_true", help="dry run, don't create output files")
     arg.add_argument("-S", "--setting", help="use template/target SETTING from config")
+    arg.add_argument("--date", help=f"use DATE for generating sequence (default {Options.date})")
     arg.add_argument("filename", nargs="+", help="CSV target data list")
    
     args = arg.parse_args()
@@ -541,6 +547,9 @@ def main():
         verbose.enable()
 
     Options.debug_print_attr = args.debug_print_attr
+
+    if args.date:
+        Options.date = args.date
 
     if args.setting:
         if not args.setting in config.get_keys():
@@ -566,7 +575,7 @@ def main():
     subdir = setting.get("subdir")
     verbose("subdir (1=date)", subdir)
     if subdir:
-        subdir = subdir.format("", str(date.today()))
+        subdir = subdir.format("", Options.date)
 
     if args.destination_dir:
         destination_dir = args.destination_dir
@@ -576,7 +585,7 @@ def main():
     if args.output:
         output = args.output
     else:
-        output = output_format.format("", str(date.today()))
+        output = output_format.format("", Options.date)
     verbose("output file", output)
 
     target = NINATarget()
