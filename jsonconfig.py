@@ -27,6 +27,8 @@
 #       Search also in .config
 # Version 0.4 / 2024-07-23
 #       Added code for getting the path of Windows' Documents directory
+# Version 0.5 / 2024-08-28
+#       New method .info(), verbose output of config filename and top-level keys
 
 import os
 import sys
@@ -44,7 +46,7 @@ from verbose import verbose, warning, error
 
 
 
-VERSION = "0.4 / 2024-07-23"
+VERSION = "0.5 / 2024-08-28"
 AUTHOR  = "Martin Junius"
 NAME    = "JSONConfig"
 
@@ -71,6 +73,7 @@ class JSONConfig:
         ic(file)
         file1 = self.search_config(file)
         if(file1):
+            self.configfile = file1
             json  = self.read_json(file1)
             # Merge with existing config
             self.config = self.config | json
@@ -79,6 +82,10 @@ class JSONConfig:
         elif warn:
             warning(f"config {file} not found")
 
+
+    def info(self):
+        verbose(f"config file {self.configfile}")
+        verbose("config keys:", " ".join( [k for k in self.config.keys() if not k.startswith("#")] ))
 
     def search_config(self, file):
         # If full path use as is

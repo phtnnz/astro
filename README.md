@@ -35,6 +35,13 @@ The following additional Python libraries must be installed, see also requiremen
 | icecream | https://pypi.org/project/icecream/ |
 | tzdata   | https://pypi.org/project/tzdata/   (support for IANA timezone names on Windows) |
 
+The following external programs are required and must be installed:
+
+| Program | URL |
+| ------- | --- |
+| 7-zip   | https://7-zip.com/ |
+| rclone  | https://rclone.org/downloads/ |
+
 Local modules:
 
 | Library          | Function                           |
@@ -51,52 +58,16 @@ Local modules:
 | radec            | Class Coord for handling RA/DEC coordinates |
 
 
-## nina-create-sequence
-Builds a complete N.I.N.A sequence for the observation night, using a base template (with empty Sequence Target Area) and a target template (repeated for every single object), from a CSV list of targets exported by NEO Planner.
-
-The directories NINA-Templates-IAS/ and NINA-Templates-IAS3/ contain the necessary N.I.N.A templates.
-
-Currently used for the M49, the IAS Remote Telescopes at Hakos, Namibia
-
-```
-usage: nina-create-sequence [-h] [-v] [-T TARGET_TEMPLATE] [-S SEQUENCE_TEMPLATE] [-D DESTINATION_DIR] [-o OUTPUT] [-t] [-p] [-n] [-N] [-3]
-                            filename [filename ...]
-
-Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV
-
-positional arguments:
-  filename              CSV target data list
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         debug messages
-  -T TARGET_TEMPLATE, --target-template TARGET_TEMPLATE
-                        base N.I.N.A target template .json file
-  -S SEQUENCE_TEMPLATE, --sequence-template SEQUENCE_TEMPLATE
-                        base N.I.N.A sequence .json file
-  -D DESTINATION_DIR, --destination-dir DESTINATION_DIR
-                        output dir for created targets/sequence
-  -o OUTPUT, --output OUTPUT
-                        output .json file, default NEO-YYYY-MM-DD
-  -t, --targets-only    create separate targets only
-  -p, --prefix-target   prefix all target names with YYYY-MM-DD NNN
-  -n, --no-output       dry run, don't create output files
-  -N, --add-number      add number of frames (nNNN) to target name
-  -3, --remote3         use templates for Remote3
-
-Version: 1.1 / 2024-06-28 / Martin Junius
-```
-
 
 ## nina-create-sequence2
 Improved version of nina-create-sequence, builds a complete N.I.N.A sequence for the observation night, using a base template and a target template (repeated for every single object in the target area), from a CSV list of targets.
 
-The directories NINA-Templates-IAS/ and NINA-Templates-IAS3/ contain the necessary N.I.N.A templates.
+The directories NINA-Templates-IAS/, NINA-Templates-IAS3/ and NINA-Templates-Common/ contain the necessary N.I.N.A templates.
 
 Currently used for the M49, the IAS Remote Telescopes at Hakos, Namibia
 
 ```
-usage: nina-create-sequence2 [-h] [-v] [-d] [-A] [-D DESTINATION_DIR] [-o OUTPUT] [-n] [-S SETTING] filename [filename ...]
+usage: nina-create-sequence2 [-h] [-v] [-d] [-A] [-D DESTINATION_DIR] [-o OUTPUT] [-n] [-S SETTING] [--date DATE] filename [filename ...]
 
 Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV
 
@@ -116,32 +87,13 @@ options:
   -n, --no-output       dry run, don't create output files
   -S SETTING, --setting SETTING
                         use template/target SETTING from config
+  --date DATE           use DATE for generating sequence (default 2024-09-04)
 
-Version: 1.3 / 2024-08-06 / Martin Junius
+Version: 1.4 / 2024-09-02 / Martin Junius
 ```
 
 Config: nina-create-sequence.json
 
-
-## test-shutter-open
-For Hakos remote observatories roll-off roof control only, checks roof/mount status.
-(Obsolete, use test-hakos-roof instead.)
-
-```
-usage: test-shutter-open [-h] [-v] [-P] [-O]
-
-Test Hakos roof (shutter) status: returns exit code 0, if ok (open/parked), else 1
-
-options:
-  -h, --help     show this help message and exit
-  -v, --verbose  debug messages
-  -P, --parked   test for "parked" status
-  -O, --open     test for "open" status (default)
-
-Version 0.4 / 2024-06-20 / Martin Junius
-```
-
-Config file: hakosroof.json
 
 ## test-hakos-roof
 For Hakos remote observatories roll-off roof control only, refactored status queries
@@ -168,7 +120,6 @@ Config file: hakosroof.json
 Use the batch files/wrappers with full path in N.I.N.A's "External Script" instruction, e.g.
 
 ```
-"D:\Users\remote\Documents\Scripts\test-shutter-open.bat"
 "D:\Users\remote\Documents\Scripts\test-hakos-roof.bat"
 "D:\Users\remote\Documents\Scripts\nina-flag-ready.bat" "TARGET"
 ```
@@ -227,76 +178,57 @@ astro-countsubs.py --filter-set "Baader 36mm" --calibration-set remote3 --csv -o
 Mono camera with Baader filter set, output CSV file for Astrobin import
 
 
-## nina-zip-ready-data
+## nina-zip-data
+Automatically archive N.I.N.A exposure when a target sequence has been completed,
+relying on the .ready flags created by nina-flag-ready.bat, or for all/selected
+targets of an observation night.
+
+Supersedes nina-zip-ready-data and nina-zip-last-night.
+
+```
+usage: nina-zip-data [-h] [-v] [-d] [-n] [-l] [--ready] [--last] [--date DATE] [--subdir SUBDIR] [--targets TARGETS] [--hostname HOSTNAME]
+                     [-t TIME_INTERVAL] [-m]
+
+Zip (7z) N.I.N.A data and upload
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         debug messages
+  -d, --debug           more debug messages
+  -n, --no-action       dry run
+  -l, --low-priority    set process priority to low
+  --ready               run in TARGET.ready mode
+  --last                run in last night mode (2024-08-29)
+  --date DATE           run in archive data from DATE mode
+  --subdir SUBDIR       search SUBDIR_YYYY-MM-DD in data dir for ready targets (--ready)
+  --targets TARGETS     archive TARGET[,TARGET] only (--last / --date)
+  --hostname HOSTNAME   load settings for HOSTNAME (default numenor)
+  -t TIME_INTERVAL, --time-interval TIME_INTERVAL
+                        time interval for checking data directory (default 60s)
+  -m, --zip-max         7-zip max compression -mx7
+
+Version 1.4 / 2024-08-29 / Martin Junius
+```
+
+### --ready / --subdir mode
 Automatically archive N.I.N.A exposure when a target sequence has been completed,
 relying on the .ready flags created by nina-flag-ready.bat run as an External Script
 from within N.I.N.A
-- Search TARGET.ready files in DATADIR
-- Look for corresponding TARGET.7z archive in ZIPDIR
+- Search TARGET.ready files in DATADIR, optional DATADIR/_SUBDIR_YYYY-MM-DD
+- Look for corresponding TARGET.7z archive in TMPDIR or ZIPDIR
 - If exists, skip
 - If not, run 7z.exe to archive TARGET data subdir in DATA to TARGET.7z in ZIPDIR
 - Loop continuously
 
-```
-usage: nina-zip-ready-data [-h] [-v] [-d] [-n] [-l] [-D DATA_DIR] [-Z ZIP_DIR] [-t TIME_INTERVAL] [-z ZIP_PROG] [-m]
-
-Zip target data in N.I.N.A data directory marked as ready
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         debug messages
-  -d, --debug           more debug messages
-  -n, --no-action       dry run
-  -l, --low-priority    set process priority to low
-  -D DATA_DIR, --data-dir DATA_DIR
-                        N.I.N.A data directory (default <...from config ...>)
-  -Z ZIP_DIR, --zip-dir ZIP_DIR
-                        directory for zip (.7z) files (default <...from config ...>)
-  -t TIME_INTERVAL, --time-interval TIME_INTERVAL
-                        time interval for checking data directory (default 60s)
-  -z ZIP_PROG, --zip-prog ZIP_PROG
-                        full path of 7-zip.exe (default <...from config ...>)
-  -m, --zip_max         7-zip max compression -mx7
-
-Version 0.3 / 2024-07-12 / Martin Junius
-```
-
-Config file: nina-zip-config.json
-
-
-## nina-zip-last-night
+### --last / --date mode
 Archive all N.I.N.A data from the last observation night (or date given by the --date option)
-- Search all TARGET/YYYY-MM-DD directories in DATADIR
-- Look for corresponding TARGET-YYYY-MM-DD.7z archive in ZIPDIR
+- Search all TARGET[/_-]YYYY-MM-DD directories in DATADIR
+- Look for corresponding TARGET-YYYY-MM-DD.7z archive in TMPDIR or ZIPDIR
 - If exists, skip
 - If not, run 7z.exe to archive TARGET/YYYY-MM-DD data subdir in DATA to TARGET-YYYY-MM-DD.7z in ZIPDIR
 
-```
-usage: nina-zip-last-night [-h] [-v] [-d] [-n] [-l] [--date DATE] [-t TARGETS] [-D DATA_DIR] [-Z ZIP_DIR] [-z ZIP_PROG] [-m]
-
-Zip target data in N.I.N.A data directory from last night
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         debug messages
-  -d, --debug           more debug messages
-  -n, --no-action       dry run
-  -l, --low-priority    set process priority to low
-  --date DATE           archive target/DATE, default last night 2024-07-16
-  -t TARGETS, --targets TARGETS
-                        archive TARGET[,TARGET] only
-  -D DATA_DIR, --data-dir DATA_DIR
-                        N.I.N.A data directory (default D:/Users/mj/Documents/N.I.N.A-Data)
-  -Z ZIP_DIR, --zip-dir ZIP_DIR
-                        directory for zip (.7z) files (default D:/Users/mj/OneDrive/IAS/Remote-Upload3/TEST)
-  -z ZIP_PROG, --zip-prog ZIP_PROG
-                        full path of 7-zip.exe (default C:/Program Files/7-Zip/7z.exe)
-  -m, --zip_max         7-zip max compression -mx7
-
-Version 0.3 / 2024-06-28 / Martin Junius
-```
-
 Config file: nina-zip-config.json
+
 
 
 ## nina-af-analyzer

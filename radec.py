@@ -137,15 +137,15 @@ def main():
 
     print(f"{args.ra=} {args.dec=}")
     coord1 = Coord(args.ra, args.dec)
-    print(f"{coord1 = }\n{coord1.to_string(format="decimal") = }")
+    print(f"{coord1 = }\n{coord1.to_string(format='decimal') = }")
     print("Regression with coord1 decimal values ...")
     coord2 = Coord(coord1.ra, coord1.dec)
     print(f"{coord2 = }")
-    print(f"{coord2.to_string(format="hmsdms")  = }")
-    print(f"{coord2.to_string(format="decimal") = }")
-    print(f"{coord2.to_string(format=" ")       = }")
-    print(f"{coord2.to_string(format="mpc")     = }")
-    print(f"{coord2.to_string(format="mpc1")    = }")
+    print(f"{coord2.to_string(format='hmsdms')  = }")
+    print(f"{coord2.to_string(format='decimal') = }")
+    print(f"{coord2.to_string(format=' ')       = }")
+    print(f"{coord2.to_string(format='mpc')     = }")
+    print(f"{coord2.to_string(format='mpc1')    = }")
 
     
 
