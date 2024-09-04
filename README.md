@@ -67,7 +67,7 @@ The directories NINA-Templates-IAS/, NINA-Templates-IAS3/ and NINA-Templates-Com
 Currently used for the M49, the IAS Remote Telescopes at Hakos, Namibia
 
 ```
-usage: nina-create-sequence2 [-h] [-v] [-d] [-A] [-D DESTINATION_DIR] [-o OUTPUT] [-n] [-S SETTING] filename [filename ...]
+usage: nina-create-sequence2 [-h] [-v] [-d] [-A] [-D DESTINATION_DIR] [-o OUTPUT] [-n] [-S SETTING] [--date DATE] filename [filename ...]
 
 Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV
 
@@ -87,8 +87,9 @@ options:
   -n, --no-output       dry run, don't create output files
   -S SETTING, --setting SETTING
                         use template/target SETTING from config
+  --date DATE           use DATE for generating sequence (default 2024-09-04)
 
-Version: 1.3 / 2024-08-06 / Martin Junius
+Version: 1.4 / 2024-09-02 / Martin Junius
 ```
 
 Config: nina-create-sequence.json
@@ -209,24 +210,25 @@ options:
 Version 1.4 / 2024-08-29 / Martin Junius
 ```
 
-### --ready mode
+### --ready / --subdir mode
 Automatically archive N.I.N.A exposure when a target sequence has been completed,
 relying on the .ready flags created by nina-flag-ready.bat run as an External Script
 from within N.I.N.A
-- Search TARGET.ready files in DATADIR
-- Look for corresponding TARGET.7z archive in ZIPDIR
+- Search TARGET.ready files in DATADIR, optional DATADIR/_SUBDIR_YYYY-MM-DD
+- Look for corresponding TARGET.7z archive in TMPDIR or ZIPDIR
 - If exists, skip
 - If not, run 7z.exe to archive TARGET data subdir in DATA to TARGET.7z in ZIPDIR
 - Loop continuously
 
 ### --last / --date mode
 Archive all N.I.N.A data from the last observation night (or date given by the --date option)
-- Search all TARGET/YYYY-MM-DD directories in DATADIR
-- Look for corresponding TARGET-YYYY-MM-DD.7z archive in ZIPDIR
+- Search all TARGET[/_-]YYYY-MM-DD directories in DATADIR
+- Look for corresponding TARGET-YYYY-MM-DD.7z archive in TMPDIR or ZIPDIR
 - If exists, skip
 - If not, run 7z.exe to archive TARGET/YYYY-MM-DD data subdir in DATA to TARGET-YYYY-MM-DD.7z in ZIPDIR
 
 Config file: nina-zip-config.json
+
 
 
 ## nina-af-analyzer
