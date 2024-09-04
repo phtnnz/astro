@@ -504,6 +504,7 @@ def main():
     if not Options.upload:
         Options.zipdir  = os.path.abspath(Options.zipdir)
     Options.zipprog = os.path.abspath(Options.zipprog)
+    Options.rcloneprog = os.path.abspath(Options.rcloneprog)
 
     verbose(f"Data directory = {Options.datadir}")
     verbose(f"Dest directory = {Options.zipdir}")
