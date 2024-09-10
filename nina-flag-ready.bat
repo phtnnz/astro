@@ -29,8 +29,5 @@ if %NINADATA%==NONE (exit /b 1)
 
 set CWD=%~dp0
 set TARGET=%1
-echo CWD="%CWD%"
-echo NINDATA="%NINADATA%"
-echo TARGET="%TARGET%"
-rem @echo on
+echo NINDATA="%NINADATA%" TARGET="%TARGET%"
 echo Target %TARGET% - ready. > %NINADATA%\%TARGET%.ready
