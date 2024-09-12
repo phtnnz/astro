@@ -19,10 +19,6 @@ REM # limitations under the License.
 
 set CWD=%~dp0
 set SCRIPT=%~dpn0.py
-echo CWD="%CWD%"
-echo PYTHON="%PYTHON%"
-echo PY="%PY%"
-echo SCRIPT="%SCRIPT%"
-echo ARGS=%*
+echo SCRIPT="%SCRIPT%" ARGS=%*
 
 "%SCRIPT%" %*

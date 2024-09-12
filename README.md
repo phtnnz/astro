@@ -23,9 +23,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-
-(See the most recent working* branch for bleeding edge code)
-
 The following additional Python libraries must be installed, see also requirements.txt:
 
 | Library  | PyPI URL                           |
