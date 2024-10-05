@@ -59,6 +59,8 @@
 # Version 1.4 / 2024-08-29
 #       Added "zip sub" to config file, override of default "%Y/%m" for sub directory
 #       under zip dir
+# Version 1.5 / 2024-10-05
+#       Changed -m (new --mx) Option to directly pass parameter to 7z.exe -mx switch
 
 import os
 import argparse
@@ -84,7 +86,7 @@ from jsonconfig import JSONConfig
 
 NAME        = "nina-zip-data"
 DESCRIPTION = "Zip (7z) N.I.N.A data and upload"
-VERSION     = "1.4 / 2024-08-29"
+VERSION     = "1.5 / 2024-10-05"
 AUTHOR      = "Martin Junius"
 
 TIMER   = 60
@@ -194,7 +196,7 @@ class Options:
     zipprog   = config.zip_prog()
     rcloneprog= config.rclone_prog()
     upload    = config.upload_method()      # False=move, True=rclone
-    zipmx     = 5                           # normal compression, -m --max => 7 = max compression
+    zipmx     = 5                           # Compression, 0=none, 1=fastest, 3=fast, 5=normal, 7=max, 9=ultra
     run_ready = False
     run_last  = False
     timer     = TIMER
@@ -315,7 +317,7 @@ def create_zip_archive(target, datadir, zipfile):
     # 7z.exe a -t7z -mx=7 -r -spf zipfile target
     #   a       add files to archive
     #   -t7z    set archive type to 7z
-    #   -mx7    set compression level to maximum (5=normal, 7=maximum, 9=ultra)
+    #   -mx5    set compression level to maximum (0=none, 3=fast, 5=normal (default), 7=maximum, 9=ultra)
     #   -r      recurse subdirectories
     #   -spf    use fully qualified file paths
     args7z = [ Options.zipprog, "a", "-t7z", f"-mx{Options.zipmx}", "-r", "-spf", zipfile, target ]
@@ -459,7 +461,7 @@ def main():
     arg.add_argument("--targets", help="archive TARGET[,TARGET] only (--last / --date)")
     arg.add_argument("--hostname", help=f"load settings for HOSTNAME (default {ZipConfig.hostname})")
     arg.add_argument("-t", "--time-interval", type=int, help=f"time interval for checking data directory (default {TIMER}s)")
-    arg.add_argument("-m", "--zip-max", action="store_true", help="7-zip max compression -mx7")
+    arg.add_argument("-m", "--mx", type=int, help=f"7-Zip compression setting -mx (default {Options.zipmx}), 0=none, 1=fastest, 3=fast, 5=normal, 7=max, 9=ultra")
     args = arg.parse_args()
 
     if args.verbose:
@@ -483,8 +485,8 @@ def main():
         Options.rcloneprog= config.rclone_prog()
         Options.upload    = config.upload_method()
 
-    if args.zip_max:
-        Options.zipmx   = 7
+    if args.mx:
+        Options.zipmx   = args.mx
     if args.time_interval:
         Options.timer   = args.time_interval
     Options.run_ready = args.ready
