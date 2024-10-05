@@ -16,3 +16,4 @@ __pycache__
 .config/
 IAS-astro-python.7z
 get-scripts.bat
+put-scripts.bat
