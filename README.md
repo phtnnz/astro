@@ -184,7 +184,7 @@ Supersedes nina-zip-ready-data and nina-zip-last-night.
 
 ```
 usage: nina-zip-data [-h] [-v] [-d] [-n] [-l] [--ready] [--last] [--date DATE] [--subdir SUBDIR] [--targets TARGETS] [--hostname HOSTNAME]
-                     [-t TIME_INTERVAL] [-m]
+                     [-t TIME_INTERVAL] [-m MX]
 
 Zip (7z) N.I.N.A data and upload
 
@@ -195,16 +195,16 @@ options:
   -n, --no-action       dry run
   -l, --low-priority    set process priority to low
   --ready               run in TARGET.ready mode
-  --last                run in last night mode (2024-08-29)
+  --last                run in last night mode (2024-10-05)
   --date DATE           run in archive data from DATE mode
   --subdir SUBDIR       search SUBDIR_YYYY-MM-DD in data dir for ready targets (--ready)
   --targets TARGETS     archive TARGET[,TARGET] only (--last / --date)
   --hostname HOSTNAME   load settings for HOSTNAME (default numenor)
   -t TIME_INTERVAL, --time-interval TIME_INTERVAL
                         time interval for checking data directory (default 60s)
-  -m, --zip-max         7-zip max compression -mx7
+  -m MX, --mx MX        7-Zip compression setting -mx (default 5), 0=none, 1=fastest, 3=fast, 5=normal, 7=max, 9=ultra
 
-Version 1.4 / 2024-08-29 / Martin Junius
+Version 1.5 / 2024-10-05 / Martin Junius
 ```
 
 ### --ready / --subdir mode
