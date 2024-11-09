@@ -239,17 +239,27 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
         if Options.csv:
             for wobj in wamo:
                 # CSV output: list of messages in mailbox with complete WAMO data
-                CSVOutput.add_fields([ "Folder", "Message#", "Date", "ACK", "id", "objId", "publication",
-                                           "obs80", "permId", "provId", "discovery", "note1", "note2",
-                                           "obs_date", "ra", "dec", "mag", "band", "catalog",
-                                           "reference", "code" ])
+                CSVOutput.add_fields([  "Folder", "Message#", "Date", "ACK", 
+                                        "id", "objId", "publication",
+                                        "data80", 
+                                        "permId", "provId", "discovery", 
+                                        "note1", "note2",
+                                        "obs_date", "obs_date_minus12", 
+                                        "ra", "dec", 
+                                        "mag", "band", "catalog",
+                                        "reference", "code" ])
+                # Special handling of mag as a float
+                mag = wobj["data"]["mag"]
+                if mag:
+                    mag = float(mag)
                 CSVOutput.add_row([ msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_ack, 
                                         wobj["observationID"], wobj["objID"], wobj["publication"],
                                         wobj["data"]["data"],
                                         wobj["data"]["permId"], wobj["data"]["provId"], wobj["data"]["discovery"],
                                         wobj["data"]["note1"], wobj["data"]["note2"], 
-                                        wobj["data"]["date"], wobj["data"]["ra"], wobj["data"]["dec"], 
-                                        wobj["data"]["mag"], wobj["data"]["band"], wobj["data"]["catalog"], 
+                                        wobj["data"]["date"], wobj["data"]["date_minus12"], 
+                                        wobj["data"]["ra"], wobj["data"]["dec"], 
+                                        mag, wobj["data"]["band"], wobj["data"]["catalog"], 
                                         wobj["data"]["reference"], wobj["data"]["code"]
                                        ])
 
@@ -349,6 +359,7 @@ def main():
             Publication.print()
 
     elif Options.csv:
+        CSVOutput.set_float_format("%.1f")  # for mag
         CSVOutput.write(Options.output)
     elif Options.json:
         JSONOutput.write(Options.output)
