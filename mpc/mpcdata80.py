@@ -213,8 +213,9 @@ class MPCData80:
             ic(m.groups())
             dt = datetime(int(m.group(1)), int(m.group(2)), int(m.group(3))) + timedelta(days=float("0."+m.group(4)))
             dt_minus12 = dt - timedelta(hours=12)
-            ic(dt, dt_minus12)
-            date = str(dt)
+            #FIXME: use string representation as in ADES format
+            date = dt.strftime("%Y-%m-%d %H:%M:%S.%f")
+            ic(dt, dt_minus12, date)
             self.obj["date_minus12"] = str(dt_minus12.date())
         return date
     
