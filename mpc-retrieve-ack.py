@@ -43,6 +43,8 @@
 #       JSONOutput to jsonoutput, fixed output
 # Version 1.7 / 2024-07-17
 #       Added -m --match, -J --json options
+# Version 1.8 / 2024-11-10
+#       Fixed -n --no-wamo-requests
 
 import argparse
 import imaplib
@@ -64,7 +66,7 @@ from jsonoutput       import JSONOutput
 
 
 NAME    = "mpc-retrieve-ack"
-VERSION = "1.7 / 2024-07-17"
+VERSION = "1.8 / 2024-11-10"
 AUTHOR  = "Martin Junius"
 
 CONFIG = "imap-account.json"
