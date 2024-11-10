@@ -142,7 +142,7 @@ def retrieve_from_wamo(ids):
                 warning(f"    {obs}")
 
     # Avoid high load on the MPC server
-    time.sleep(0.2)
+    time.sleep(1.0)
 
     return wamo
 
