@@ -226,64 +226,68 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
     ack_obj["ack"] = msg_ack
     ack_obj["submission"] = msg_submission
 
-    # mpc.mpcwamo module
-    wamo = retrieve_from_wamo(msg_ids)
-    if wamo:
-        # Get publications and add to global list
-        for obs in wamo:
-            pub = obs["publication"]
-            if pub:
-                Publication.add(pub)
-
-        ack_obj["_wamo"].append(wamo)
-        if Options.csv:
-            for wobj in wamo:
-                # CSV output: list of messages in mailbox with complete WAMO data
-                CSVOutput.add_fields([  "Folder", "Message#", "Date", "ACK", 
-                                        "id", "objId", "publication",
-                                        "data80", 
-                                        "permId", "provId", "discovery", 
-                                        "note1", "note2",
-                                        "obs_date", "obs_date_minus12", 
-                                        "ra", "dec", 
-                                        "mag", "band", "catalog",
-                                        "reference", "code" ])
-                # Special handling of mag as a float
-                mag = wobj["data"]["mag"]
-                if mag:
-                    mag = float(mag)
-                CSVOutput.add_row([ msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_ack, 
-                                        wobj["observationID"], wobj["objID"], wobj["publication"],
-                                        wobj["data"]["data"],
-                                        wobj["data"]["permId"], wobj["data"]["provId"], wobj["data"]["discovery"],
-                                        wobj["data"]["note1"], wobj["data"]["note2"], 
-                                        wobj["data"]["date"], wobj["data"]["date_minus12"], 
-                                        wobj["data"]["ra"], wobj["data"]["dec"], 
-                                        mag, wobj["data"]["band"], wobj["data"]["catalog"], 
-                                        wobj["data"]["reference"], wobj["data"]["code"]
-                                       ])
-
-        if Options.overview:
-            # for wobj in wamo:
-            for wobj, orig in zip(wamo, msg_ids.values()):
-                text     = wobj["data"]["data"]
-                key_id   = wobj["objID"]
-                key_date = wobj["data"]["date_minus12"]
-                if Options.sort_by_date:
-                    OverviewOutput.add(key_date, key_id, text)
-                    if Options.submitted:
-                        OverviewOutput.add(key_date, key_id, f"{orig}    << submitted (ACK mail)")
-                else:
-                    OverviewOutput.add(key_id, key_date, text)
-                    if Options.submitted:
-                        OverviewOutput.add(key_id, key_date, f"{orig}    << submitted (ACK mail)")
-       
-    else:
+    if Options.no_wamo:
         if Options.csv:
             for id, obs in msg_ids.items():
                 # CSV output: list of messages in mailbox with id and obs
                 CSVOutput.add_fields([ "Folder", "Message#", "Date", "ACK", "id", "obs" ])
                 CSVOutput.add_row([ msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_ack, id, obs ])
+    else:
+        # mpc.mpcwamo module
+        wamo = retrieve_from_wamo(msg_ids)
+        if wamo:
+            # Get publications and add to global list
+            for obs in wamo:
+                pub = obs["publication"]
+                if pub:
+                    Publication.add(pub)
+
+            ack_obj["_wamo"].append(wamo)
+            if Options.csv:
+                for wobj in wamo:
+                    # CSV output: list of messages in mailbox with complete WAMO data
+                    CSVOutput.add_fields([  "Folder", "Message#", "Date", "ACK", 
+                                            "id", "objId", "publication",
+                                            "data80", 
+                                            "permId", "provId", "discovery", 
+                                            "note1", "note2",
+                                            "obs_date", "obs_date_minus12", 
+                                            "ra", "dec", 
+                                            "mag", "band", "catalog",
+                                            "reference", "code" ])
+                    # Special handling of mag as a float
+                    mag = wobj["data"]["mag"]
+                    if mag:
+                        mag = float(mag)
+                    # Replace objId with permId oder provId
+                    objId = wobj["data"]["permId"] or wobj["data"]["provId"] or wobj["objID"]
+                    ic(mag, objId)
+                    CSVOutput.add_row([ msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_ack, 
+                                            wobj["observationID"], objId, wobj["publication"],
+                                            wobj["data"]["data"],
+                                            wobj["data"]["permId"], wobj["data"]["provId"], wobj["data"]["discovery"],
+                                            wobj["data"]["note1"], wobj["data"]["note2"], 
+                                            wobj["data"]["date"], wobj["data"]["date_minus12"], 
+                                            wobj["data"]["ra"], wobj["data"]["dec"], 
+                                            mag, wobj["data"]["band"], wobj["data"]["catalog"], 
+                                            wobj["data"]["reference"], wobj["data"]["code"]
+                                        ])
+
+            if Options.overview:
+                # for wobj in wamo:
+                for wobj, orig in zip(wamo, msg_ids.values()):
+                    text     = wobj["data"]["data"]
+                    key_id   = wobj["objID"]
+                    key_date = wobj["data"]["date_minus12"]
+                    if Options.sort_by_date:
+                        OverviewOutput.add(key_date, key_id, text)
+                        if Options.submitted:
+                            OverviewOutput.add(key_date, key_id, f"{orig}    << submitted (ACK mail)")
+                    else:
+                        OverviewOutput.add(key_id, key_date, text)
+                        if Options.submitted:
+                            OverviewOutput.add(key_id, key_date, f"{orig}    << submitted (ACK mail)")
+       
 
     return ack_obj
 
