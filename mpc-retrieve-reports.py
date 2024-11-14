@@ -180,9 +180,9 @@ def process_mpc1992(fh, line1):
                 if pub:
                     Publication.add(pub)
                 if Options.sort_by_date:
-                    OverviewOutput.add(obs["data"]["date_minus12"], obs["objID"], obs["data"]["data"])
+                    OverviewOutput.add(obs["data"]["date_minus12"], obs["objId"], obs["data"]["data"])
                 else:
-                    OverviewOutput.add(obs["objID"], obs["data"]["date_minus12"], obs["data"]["data"])
+                    OverviewOutput.add(obs["objId"], obs["data"]["date_minus12"], obs["data"]["data"])
         else:
             warning("data from MPC1992 report not found in WAMO, submitted ADES instead?")
 
@@ -248,9 +248,9 @@ def process_ades(fh, line1):
                 if pub:
                     Publication.add(pub)
                 if Options.sort_by_date:
-                    OverviewOutput.add(obs["data"]["date_minus12"], obs["objID"], obs["data"]["data"])
+                    OverviewOutput.add(obs["data"]["date_minus12"], obs["objId"], obs["data"]["data"])
                 else:
-                    OverviewOutput.add(obs["objID"], obs["data"]["date_minus12"], obs["data"]["data"])
+                    OverviewOutput.add(obs["objId"], obs["data"]["date_minus12"], obs["data"]["data"])
         else:
             warning("data from ADES report not found in WAMO, submitted MPC1992 instead?")
        

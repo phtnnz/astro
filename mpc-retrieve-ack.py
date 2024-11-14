@@ -262,7 +262,7 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
                     if mag:
                         mag = float(mag)
                     # Replace objId with permId oder provId
-                    objId = wobj["data"]["permId"] or wobj["data"]["provId"] or wobj["objID"]
+                    objId = wobj["data"]["permId"] or wobj["data"]["provId"] or wobj["objId"]
                     ic(mag, objId)
                     CSVOutput.add_row([ msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_ack, 
                                             wobj["observationID"], objId, wobj["publication"],
@@ -279,7 +279,7 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
                 # for wobj in wamo:
                 for wobj, orig in zip(wamo, msg_ids.values()):
                     text     = wobj["data"]["data"]
-                    key_id   = wobj["objID"]
+                    key_id   = wobj["objId"]
                     key_date = wobj["data"]["date_minus12"]
                     if Options.sort_by_date:
                         OverviewOutput.add(key_date, key_id, text)
