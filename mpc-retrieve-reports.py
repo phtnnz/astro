@@ -23,6 +23,8 @@
 #       Removed all code for IMAP handling, now solely handled in mpc-retrieve-ack
 # Version 1.6 / 2024-07-15
 #       Major refactoring using the new modules, added Overview processing
+# Version 1.7 / 2024-11-14
+#       Fixed -n --no-wamo-requests
 
 import os
 import argparse
@@ -75,6 +77,7 @@ def retrieve_from_directory(root):
 
 def process_file(file):
     with open(file, "r") as fh:
+        ic(file)
         line1 = fh.readline().strip()
         obj = None
 
@@ -167,20 +170,21 @@ def process_mpc1992(fh, line1):
         if line.startswith("----- end"):
             break
 
-    wamo = retrieve_from_wamo(ids)
-    if wamo:
-        mpc1992_obj["_wamo"] = wamo
-        # Get publications and add to global list
-        for obs in wamo:
-            pub = obs["publication"]
-            if pub:
-                Publication.add(pub)
-            if Options.sort_by_date:
-                OverviewOutput.add(obs["data"]["date_minus12"], obs["objID"], obs["data"]["data"])
-            else:
-                OverviewOutput.add(obs["objID"], obs["data"]["date_minus12"], obs["data"]["data"])
-    else:
-        warning("data from MPC1992 report not found in WAMO, submitted ADES instead?")
+    if not Options.no_wamo:
+        wamo = retrieve_from_wamo(ids)
+        if wamo:
+            mpc1992_obj["_wamo"] = wamo
+            # Get publications and add to global list
+            for obs in wamo:
+                pub = obs["publication"]
+                if pub:
+                    Publication.add(pub)
+                if Options.sort_by_date:
+                    OverviewOutput.add(obs["data"]["date_minus12"], obs["objID"], obs["data"]["data"])
+                else:
+                    OverviewOutput.add(obs["objID"], obs["data"]["date_minus12"], obs["data"]["data"])
+        else:
+            warning("data from MPC1992 report not found in WAMO, submitted ADES instead?")
 
     # verbose("JSON =", json.dumps(mpc1992_obj, indent=4))
 
@@ -234,20 +238,21 @@ def process_ades(fh, line1):
         ids[trk["trkSub"] + " " + trk["stn"]] = True
     ades_obj["_ids"] = ids
 
-    wamo = retrieve_from_wamo(ids)
-    if wamo:
-        ades_obj["_wamo"] = wamo
-        # Get publications and add to global list
-        for obs in wamo:
-            pub = obs["publication"]
-            if pub:
-                Publication.add(pub)
-            if Options.sort_by_date:
-                OverviewOutput.add(obs["data"]["date_minus12"], obs["objID"], obs["data"]["data"])
-            else:
-                OverviewOutput.add(obs["objID"], obs["data"]["date_minus12"], obs["data"]["data"])
-    else:
-        warning("data from ADES report not found in WAMO, submitted MPC1992 instead?")
+    if not Options.no_wamo:
+        wamo = retrieve_from_wamo(ids)
+        if wamo:
+            ades_obj["_wamo"] = wamo
+            # Get publications and add to global list
+            for obs in wamo:
+                pub = obs["publication"]
+                if pub:
+                    Publication.add(pub)
+                if Options.sort_by_date:
+                    OverviewOutput.add(obs["data"]["date_minus12"], obs["objID"], obs["data"]["data"])
+                else:
+                    OverviewOutput.add(obs["objID"], obs["data"]["date_minus12"], obs["data"]["data"])
+        else:
+            warning("data from ADES report not found in WAMO, submitted MPC1992 instead?")
        
     # verbose("JSON =", json.dumps(ades_obj, indent=4))
 
