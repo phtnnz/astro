@@ -235,20 +235,43 @@ def walk_the_dir(dir):
 def md_table(exp):
     """Output overview as markdown table"""
 
+    total = { f: {} for f in FILTER}
+
+    # Header
     print(f"|Date|{"|".join(FILTER)}|")
     print(f"|----|{"|".join(["-" * len(f) for f in FILTER])}|")
 
+    # Print dates and filter/exposures
     for date in exp.keys():
         print(f"|{date}|", end="")
         for f in FILTER:
-            f1 = exp[date].get(f)
-            if f1:
-                time = exp[date][f].keys()
-                tstr = ", ".join([ "{}x {}s".format(exp[date][f][t], t) for t in time ])
+            tdict = exp[date].get(f)
+            if tdict:
+                tlist = tdict.keys()
+                tstr = ", ".join([ "{}x {}s".format(tdict[t], t) for t in tlist ])
+
+                for t in tlist:
+                    n = tdict[t]
+                    if t in total[f]:
+                        total[f][t] += n
+                    else:
+                        total[f][t] = n
             else:
                 tstr = "-"
             print(f"{tstr}|", end="")
         print()
+
+    # Print totals
+    print(f"|Total|", end="")
+    for f in FILTER:
+        tdict = total.get(f)
+        if tdict:
+            tlist = tdict.keys()
+            tstr = ", ".join([ "{}x {}s".format(tdict[t], t) for t in tlist ])
+        else:
+            tstr = "-"
+        print(f"{tstr}|", end="")
+    print()
 
 
 
