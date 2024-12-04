@@ -36,6 +36,8 @@
 # Version 1.2 / 2024-07-15
 #       Added -T --total-only / -N --no-calibration options
 #       Use new module csvoutput
+# Version 1.3 / 2024-11-26
+#       Added -M --markdown option, output as markdown table
 
 import os
 import argparse
@@ -52,7 +54,7 @@ from jsonconfig import JSONConfig, config
 from csvoutput import CSVOutput
 
 
-VERSION = "1.2 / 2024-07-15"
+VERSION = "1.3 / 2024-11-26"
 AUTHOR  = "Martin Junius"
 NAME    = "astro-countsubs"
 
@@ -164,6 +166,7 @@ class Options:
     output = None               # -o --output
     filter_set = None           # -F --filter-set
     calibration_set = None      # --calibration-set
+    markdown = False            # -M --markdown
 
 
 
@@ -222,8 +225,53 @@ def walk_the_dir(dir):
 
     if Options.csv:
         csv_list(exposures)
+    elif Options.markdown:
+        md_table(exposures)
     else:
         print_filter_list(exposures)
+
+
+
+def md_table(exp):
+    """Output overview as markdown table"""
+
+    total = { f: {} for f in FILTER}
+
+    # Header
+    print(f"|Date|{"|".join(FILTER)}|")
+    print(f"|----|{"|".join(["-" * len(f) for f in FILTER])}|")
+
+    # Print dates and filter/exposures
+    for date in exp.keys():
+        print(f"|{date}|", end="")
+        for f in FILTER:
+            tdict = exp[date].get(f)
+            if tdict:
+                tlist = tdict.keys()
+                tstr = ", ".join([ "{}x {}s".format(tdict[t], t) for t in tlist ])
+
+                for t in tlist:
+                    n = tdict[t]
+                    if t in total[f]:
+                        total[f][t] += n
+                    else:
+                        total[f][t] = n
+            else:
+                tstr = "-"
+            print(f"{tstr}|", end="")
+        print()
+
+    # Print totals
+    print(f"|Total|", end="")
+    for f in FILTER:
+        tdict = total.get(f)
+        if tdict:
+            tlist = tdict.keys()
+            tstr = ", ".join([ "{}x {}s".format(tdict[t], t) for t in tlist ])
+        else:
+            tstr = "-"
+        print(f"{tstr}|", end="")
+    print()
 
 
 
@@ -379,6 +427,7 @@ def main():
     arg.add_argument("-m", "--match", help="filename must contain MATCH")
     arg.add_argument("-T", "--total-only", action="store_true", help="list total only")
     arg.add_argument("-N", "--no-calibration", action="store_true", help="don't list calibration data")
+    arg.add_argument("-M", "--markdown", action="store_true", help="output markdown table")
     arg.add_argument("dirname", help="directory name")
 
     args  = arg.parse_args()
@@ -409,6 +458,7 @@ def main():
     Options.match = args.match
     Options.total_only = args.total_only
     Options.no_calibration = args.no_calibration
+    Options.markdown = args.markdown
 
     # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
     # see here https://bugs.python.org/issue39845

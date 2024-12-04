@@ -53,6 +53,8 @@
 #       Moved to mpc/mpcdata80, some fixes
 # Version 1.0 / 2024-07-17
 #       Bumped version number to 1.0
+# Version 1.1 / 2024-11-14
+#       Added parameter type hints to functions, format datetime ADES-like
 
 import argparse
 import re
@@ -67,7 +69,7 @@ ic.disable()
 from verbose import verbose
 
 
-VERSION = "1.0 / 2024-07-17"
+VERSION = "1.1 / 2024-11-14"
 AUTHOR  = "Martin Junius"
 NAME    = "mpcdata80"
 
@@ -139,12 +141,12 @@ mpc_catalog_codes = {
 
 
 class MPCData80:
-    def __init__(self, data):
+    def __init__(self, data: str):
         self.data80 = data
         self.parse_data()
 
 
-    def get_col(self, col1, col2=0):
+    def get_col(self, col1: int, col2: int=0):
         if col2 > 0:
             return self.data80[col1 -1 : col2]
         else:
@@ -197,7 +199,8 @@ class MPCData80:
         self.obj["discovery"] = discovery.strip()
         self.obj["note1"] = note1
         self.obj["note2"] = note2
-        self.obj["date"] = self.parse_date(date)
+        (self.obj["date"], 
+         self.obj["date_minus12"]) = self.parse_date(date)
         self.obj["ra"] = ra.strip()
         self.obj["dec"] = dec.strip()
         self.obj["mag"] = mag.strip()
@@ -207,26 +210,49 @@ class MPCData80:
         self.obj["code"] = code
 
 
-    def parse_date(self, date):
+    def parse_date(self, date: str):
         m = re.search(r'^(\d\d\d\d) (\d\d) (\d\d)\.(\d+)', date)
         if m:
             ic(m.groups())
             dt = datetime(int(m.group(1)), int(m.group(2)), int(m.group(3))) + timedelta(days=float("0."+m.group(4)))
             dt_minus12 = dt - timedelta(hours=12)
-            ic(dt, dt_minus12)
-            date = str(dt)
-            self.obj["date_minus12"] = str(dt_minus12.date())
-        return date
-    
+            #FIXME: use string representation as in ADES format
+            # date = dt.strftime("%Y-%m-%d %H:%M:%S.%f")
+            date_iso = dt.isoformat(timespec="microseconds")
+            date_ades = self._isoformat_ADES(dt)
+            date_minus12 = str(dt_minus12.date())
+            ic(dt, dt_minus12, date_iso, date_ades, date_minus12)
+            return(date_ades, date_minus12)
+        else:
+            return (date, "")
 
-    def get_json(self, indent=4):
+    def _isoformat_ADES(self, dt: datetime, precision: int=1):
+        """Format datetime as ADES-like / ISO-like string, ROUNDING dt.microsecond to required precision"""
+        # Adapted from https://gist.github.com/jarek/354423854a7cc20b1e91
+        frac = dt.microsecond / 1e6
+        rounded = round(frac, precision)
+
+        if rounded < 1:
+            # format the number to have the required amount of decimal digits,
+            # this is important in case the rounded number is 0
+            frac_s = '{:.{prec}f}'.format(rounded, prec=precision)[2:]
+        else:
+            # round up by adding a second to the datetime
+            dt += datetime.timedelta(seconds=1)
+            frac_s = '0' * precision
+
+        # ADES example 2024-10-04T22:05:19.6Z
+        return dt.strftime("%Y-%m-%dT%H:%M:%S.") + frac_s + "Z"
+
+
+    def get_json(self, indent: int=4):
         return json.dumps(self.obj, indent=indent)
 
     def get_obj(self):
         return self.obj
     
 
-    def decode_single(c):
+    def decode_single(c: str):
         v = ord(c)
         if v >= ord("0"):
             if v >= ord("A"):
@@ -236,7 +262,7 @@ class MPCData80:
             return v - ord("0")
         return 0
     
-    def decode_base62(s): 
+    def decode_base62(s: str): 
         """ Input s = ~XXXX """
         return ( ( (  MPCData80.decode_single(s[1]) * 62 
                     + MPCData80.decode_single(s[2])      ) * 62 
@@ -245,7 +271,7 @@ class MPCData80:
 
 
     # Below adapted from https://github.com/IAU-ADES/ADES-Master/blob/master/Python/bin/packUtil.py
-    def unpack_reference(packedref, year):
+    def unpack_reference(packedref, year: str):
         if packedref[0] == "E":                                     # Temporary MPEC
             packedref = "MPEC " + year + "-" + packedref[1] + str( "{:02d}".format(int(packedref[2:])) )
         elif packedref[0] in '0123456789':                          # MPC case A
@@ -265,7 +291,7 @@ class MPCData80:
         return packedref
     
 
-    def unpack_id(packed):
+    def unpack_id(packed: str):
         perm_id = ""
         prov_id = ""
 

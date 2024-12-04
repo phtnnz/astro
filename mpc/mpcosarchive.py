@@ -75,7 +75,7 @@ class MPCOSArchive:
 
     def url_get(self, url = ARCHIVE_URL):
         verbose(f"get {url}")
-        m = re.search('^(https+://[A-Za-z0-9_\-.]+)/', url)
+        m = re.search(r'^(https+://[A-Za-z0-9_\-.]+)/', url)
         if not m:
             raise ValueError
         self.url = url
@@ -89,7 +89,7 @@ class MPCOSArchive:
 
     def search_pub(self, pub):
         verbose(f"search for {pub}")
-        m = re.search('([A-Z]+) *(\d+)$', pub)
+        m = re.search(r'([A-Z]+) *(\d+)$', pub)
         if not m:
             return None
         mpx = m.group(1)
@@ -113,29 +113,29 @@ class MPCOSArchive:
         year = "0000"
         date = "0000/00/00"
         for line in text.splitlines():
-            m = re.search('^<!-- Main content block -->$', line)
+            m = re.search(r'^<!-- Main content block -->$', line)
             if m:
                 in_arc_list = True
-            m = re.search('^<!-- Body postamble -->$', line)
+            m = re.search(r'^<!-- Body postamble -->$', line)
             if m:
                 in_arc_list = False
 
             if in_arc_list:
                 # ic(line)
-                m = re.search('^<h2>(\d\d\d\d)</h2>$', line)
+                m = re.search(r'^<h2>(\d\d\d\d)</h2>$', line)
                 if m:
                     year = m.group(1)
-                m = re.search('^<li>(\d\d\d\d/\d\d/\d\d)$', line)
+                m = re.search(r'^<li>(\d\d\d\d/\d\d/\d\d)$', line)
                 if m:
                     date = m.group(1).replace("/", "-")
-                m = re.search('<li><a href="(/iau/.+\.pdf)"><i>([A-Z]+)</i> *(\d+) *- *(\d+)</a>', line)
+                m = re.search(r'<li><a href="(/iau/.+\.pdf)"><i>([A-Z]+)</i> *(\d+) *- *(\d+)</a>', line)
                 if m:
                     pdf = self.server + m.group(1)
                     mpx = m.group(2)
                     lo  = m.group(3)
                     hi  = m.group(4)
                     self._add_pub(mpx, lo, hi, pdf, year, date)
-                m = re.search('<li><i>([A-Z]+)</i> *(\d+) *- *(\d+)', line)
+                m = re.search(r'<li><i>([A-Z]+)</i> *(\d+) *- *(\d+)', line)
                 if m:
                     pdf = None
                     mpx = m.group(1)

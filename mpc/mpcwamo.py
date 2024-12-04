@@ -93,7 +93,7 @@ def retrieve_from_wamo(ids):
 
             wamo.append({"data":          data80.get_obj(),
                          "observationID": id,
-                         "objID":         obj,
+                         "objId":         obj,
                          "publication":   pub  })
 
         if not m:
@@ -115,7 +115,7 @@ def retrieve_from_wamo(ids):
 
                 wamo.append({"data":          data80.get_obj(),
                             "observationID": id,
-                            "objID":         data80.get_col(6, 12),    # tracklet ID
+                            "objId":         data80.get_col(6, 12),    # tracklet ID
                             "publication":   pub  })
 
         if not m:
@@ -142,7 +142,7 @@ def retrieve_from_wamo(ids):
                 warning(f"    {obs}")
 
     # Avoid high load on the MPC server
-    time.sleep(0.2)
+    time.sleep(1.0)
 
     return wamo
 
