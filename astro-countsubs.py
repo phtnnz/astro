@@ -38,6 +38,9 @@
 #       Use new module csvoutput
 # Version 1.3 / 2024-11-26
 #       Added -M --markdown option, output as markdown table
+# Version 1.4 / 2024-12-07
+#       Added --target get, include target name in date stats,
+#       works with TARGET_YYYY-MM-DD subdirectories only
 
 import os
 import argparse
@@ -54,7 +57,7 @@ from jsonconfig import JSONConfig, config
 from csvoutput import CSVOutput
 
 
-VERSION = "1.3 / 2024-11-26"
+VERSION = "1.4 / 2024-12-07"
 AUTHOR  = "Martin Junius"
 NAME    = "astro-countsubs"
 
@@ -167,6 +170,7 @@ class Options:
     filter_set = None           # -F --filter-set
     calibration_set = None      # --calibration-set
     markdown = False            # -M --markdown
+    target = False              # --target
 
 
 
@@ -183,7 +187,11 @@ def walk_the_dir(dir):
         if not m:
             m = re.search(r'[\\/](\d\d\d\d-\d\d-\d\d)$', dirName)
         if not m:
-            m = re.search(r'[\\/].+_(\d\d\d\d-\d\d-\d\d)$', dirName)
+            basename = os.path.basename(dirName)
+            if Options.target:
+                m = re.search(r'(.+_\d\d\d\d-\d\d-\d\d)$', basename)
+            else:
+                m = re.search(r'.+_(\d\d\d\d-\d\d-\d\d)$', basename)
         if m:
             date = m.group(1)
             verbose(f"date {date}")
@@ -235,7 +243,7 @@ def walk_the_dir(dir):
 def md_table(exp):
     """Output overview as markdown table"""
 
-    total = { f: {} for f in FILTER}
+    total = { f: {} for f in FILTER }
 
     # Header
     print(f"|Date|{"|".join(FILTER)}|")
@@ -425,6 +433,7 @@ def main():
     arg.add_argument("-F", "--filter-set", help="name of filter set for Astrobin CSV (see config)")
     arg.add_argument("--calibration-set", help="name of calibration set (see config)")
     arg.add_argument("-m", "--match", help="filename must contain MATCH")
+    arg.add_argument("--target", action="store_true", help="include target name in date stats")
     arg.add_argument("-T", "--total-only", action="store_true", help="list total only")
     arg.add_argument("-N", "--no-calibration", action="store_true", help="don't list calibration data")
     arg.add_argument("-M", "--markdown", action="store_true", help="output markdown table")
@@ -459,6 +468,10 @@ def main():
     Options.total_only = args.total_only
     Options.no_calibration = args.no_calibration
     Options.markdown = args.markdown
+    Options.target = args.target
+
+    if Options.csv and Options.target:
+        error("can't use both --csv and --target")
 
     # quick hack: Windows PowerShell adds a stray " to the end of dirname if it ends with a backslash \ AND contains a space!!!
     # see here https://bugs.python.org/issue39845
