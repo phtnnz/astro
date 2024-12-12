@@ -426,7 +426,7 @@ def main():
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("-x", "--exclude", help="exclude filter, e.g. Ha,SII")
-    arg.add_argument("-f", "--filter", help="filter list, e.g. L,R,G.B")
+    arg.add_argument("-f", "--filter", help="filter list, e.g. L,R,G,B")
     arg.add_argument("-t", "--exposure-time", help="exposure time (sec) if not present in filename")
     arg.add_argument("-C", "--csv", action="store_true", help="output CSV list for Astrobin")
     arg.add_argument("-o", "--output", help="write CSV to file OUTPUT (default: stdout)")
