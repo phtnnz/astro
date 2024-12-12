@@ -1,12 +1,12 @@
-/activate.bat
-/create-venv.bat
-/OLD
-/py-shell-open.reg
-/tmp
-/venv
+activate.bat
+create-venv.bat
+OLD
+py-shell-open.reg
+tmp
+venv
+test*/
 REST API Hakos Roof.txt
 test-env-config.py
-test1/test.json
 astro.code-workspace
 notizen.txt
 copy-to-*.bat
