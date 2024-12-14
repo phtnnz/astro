@@ -1,0 +1,15 @@
+{
+  "##": "# API keys for Hakos roofmaster by hostname",
+
+  "host1" : {
+    "name": "Box 1",
+    "url": "http://192.168.xxx.xxx:xxxx",
+    "apikey": "xxxxxxxxxx"
+  },
+
+  "host2" : {
+    "name": "Box 2",
+    "url": "http://192.168.xxx.xxx:xxxx",
+    "apikey": "xxxxxxxxxx"
+  }
+}
