@@ -42,7 +42,7 @@ from mpc.mpcosarchive import Publication
 from mpc.mpcwamo      import retrieve_from_wamo
 from mpc.mpcdata80    import MPCData80
 from ovoutput         import OverviewOutput
-from csvoutput        import CSVOutput
+from csvoutput        import csv_output as CSVOutput
 from jsonoutput       import JSONOutput
 
 

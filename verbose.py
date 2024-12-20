@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Martin Junius
+# Copyright 2023-2024 Martin Junius
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,13 @@
 # Version 1.1 / 2024-08-08
 #       Output "exiting" message only if verbose is enabled
 #       errno is now global for verbose, warning, error
+# Version 1.2 / 2024-12-15
+#       Added docstrings
+# Version 1.3 / 2024-12-16
+#       Added message(), just like print(), but can be disabled
 #
-#       Usage:  from verbose import verbose, warning, error
+#       Usage:  from verbose import message, verbose, warning, error
+#               message(print-like-args)
 #               verbose(print-like-args)
 #               warning(print-like-args)
 #               error(print-like-args)
@@ -38,28 +43,38 @@
 import argparse
 import sys
 
-# The following libs must be installed with pip
-from icecream import ic
-# Disable debugging
-ic.disable()
-
-
-VERSION = "1.1 / 2024-08-08"
+VERSION = "1.3 / 2024-12-16"
 AUTHOR  = "Martin Junius"
 NAME    = "verbose"
 
 
 
 class Verbose:
+    """
+    Class for verbose-style objects
+    """
     progname = None             # global program name
     errno    = 1                # exit code, 1 for generic errors
 
-    def __init__(self, flag=False, prefix=None, abort=False):
+    def __init__(self, flag: bool=False, prefix: str=None, abort: bool=False):
+        """
+        Create verbose-style object
+
+        :param flag: enable output flag, defaults to False
+        :type flag: bool, optional
+        :param prefix: output prefix (in addition to program name), defaults to None
+        :type prefix: str, optional
+        :param abort: abort after output flag, defaults to False
+        :type abort: bool, optional
+        """
         self.enabled = flag
         self.prefix = prefix
         self.abort = abort
 
     def __call__(self, *args, **kwargs):
+        """
+        Make verbose-style object callable, all parameters passed to print()
+        """
         if not self.enabled:
             return
         if Verbose.progname:
@@ -70,19 +85,43 @@ class Verbose:
         if self.abort:
             self._exit()
 
-    def enable(self, flag=True):
+    def enable(self, flag: bool=True):
+        """
+        Enable (default) or disable (flag=False) output
+
+        :param flag: enable output flag, defaults to True
+        :type flag: bool, optional
+        """
         self.enabled = flag
 
     def disable(self):
+        """
+        Disable output
+        """
         self.enabled = False
 
-    def set_prog(self, name):
+    def set_prog(self, name: str):
+        """
+        Set program name prefix
+
+        :param name: program name
+        :type name: str
+        """
         Verbose.progname = name
 
-    def set_errno(self, errno):
+    def set_errno(self, errno: int):
+        """
+        Set global errno for abort exit()
+
+        :param errno: error code
+        :type errno: int
+        """
         Verbose.errno = errno
 
     def _exit(self):
+        """
+        Internal, exit program
+        """
         if verbose.enabled:
             if Verbose.progname:
                 print(Verbose.progname + ": ", end="")
@@ -90,6 +129,7 @@ class Verbose:
         sys.exit(Verbose.errno)
 
 
+message = Verbose(True)
 verbose = Verbose()
 warning = Verbose(True, "WARNING")
 error   = Verbose(True, "ERROR", True)
@@ -107,13 +147,14 @@ def main():
 
     args = arg.parse_args()
 
-    verbose.set_prog(NAME)
     if args.verbose:
+        verbose.set_prog(NAME)
         verbose.enable()
     if args.debug:
-        ic.enable()
+        message("Nothing to debug ;-)")
 
-    ic(args)
+    message("Just", "a", "message at the beginning")
+    warning("Just a first warning ;-)")
     verbose("Test", "1", "for", "verbose()")
     verbose("Test", "2", "for more", "verbose()", "with some formatting {:04d}".format(11+12))
     verbose("Changing progname")

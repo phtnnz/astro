@@ -54,7 +54,7 @@ ic.disable()
 # Local modules
 from verbose import verbose, error
 from jsonconfig import JSONConfig, config
-from csvoutput import CSVOutput
+from csvoutput import csv_output as CSVOutput
 
 
 VERSION = "1.4 / 2024-12-07"

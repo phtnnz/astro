@@ -30,7 +30,7 @@ from icecream import ic
 ic.disable()
 # Local modules
 from verbose import verbose, warning, error
-from csvoutput import CSVOutput
+from csvoutput import csv_output as CSVOutput
 
 VERSION = "0.1 / 2024-08-12"
 AUTHOR  = "Martin Junius"

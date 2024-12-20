@@ -238,7 +238,7 @@ class MPCData80:
             frac_s = '{:.{prec}f}'.format(rounded, prec=precision)[2:]
         else:
             # round up by adding a second to the datetime
-            dt += datetime.timedelta(seconds=1)
+            dt += timedelta(seconds=1)
             frac_s = '0' * precision
 
         # ADES example 2024-10-04T22:05:19.6Z
