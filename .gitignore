@@ -15,5 +15,5 @@ measurements.txt
 __pycache__
 .config/
 IAS-astro-python.7z
-get-scripts.bat
-put-scripts.bat
+dist-download-scripts.bat
+dist-upload-scripts.bat
