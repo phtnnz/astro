@@ -62,7 +62,7 @@
       {
         "$id": "9",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.1-discord / 2024-09-11 / Martin Junius",
+        "Text": "Version 1.2/ 2024-12-19 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -197,10 +197,10 @@
             {
               "$id": "25",
               "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
-              "Hours": 6,
-              "Minutes": 5,
+              "Hours": 4,
+              "Minutes": 8,
               "MinutesOffset": 0,
-              "Seconds": 24,
+              "Seconds": 13,
               "SelectedProvider": {
                 "$id": "26",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.NauticalDawnProvider, NINA.Sequencer"
