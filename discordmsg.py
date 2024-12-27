@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # ChangeLog
-# Version 0.0 / 2024-06-27
+# Version 0.1 / 2024-12-27
 #       Simple send a message to discord server
 
 import sys
@@ -31,7 +31,7 @@ from verbose import verbose, warning, error
 from jsonconfig import JSONConfig
 
 
-VERSION = "0.0 / 2024-06-27"
+VERSION = "0.1 / 2024-12-27"
 AUTHOR  = "Martin Junius"
 NAME    = "discordmsg"
 
@@ -54,7 +54,7 @@ class DiscordConfig(JSONConfig):
         if "channels" in self.config:
             channels = self.config["channels"]
             self._channel = channel
-            self._url     = channels[channel]
+            self._url     = channels.get(channel) or error(f"undefined channel {channel}")
 
     def url(self):
         if not self._url:
@@ -66,11 +66,23 @@ class DiscordConfig(JSONConfig):
 config = DiscordConfig(CONFIG)
 
 
-def discord_set_channel(channel):
+def discord_set_channel(channel: str=CHANNEL):
+    """
+    Set Discord channel for messages
+
+    :param channel: channel name, defaults to "#alerts"
+    :type channel: str, optional
+    """
     config.set_channel(channel)
 
 
-def discord_message(msg):
+def discord_message(msg: str):
+    """
+    Send Discord message to a channel
+
+    :param msg: message, "\n" for line breaks
+    :type msg: str
+    """
     ic(config)
     url = config.url()
     data = { "content": msg }
@@ -96,17 +108,16 @@ def main():
 
     if args.debug:
         ic.enable()
-        ic(sys.version_info)
         ic(args)
+        ic(sys.version_info, sys.path)
     if args.verbose:
         verbose.set_prog(NAME)
         verbose.enable()
-    # ... more options ...
+
     if args.channel:
         discord_set_channel(args.channel)
         
-    # ... the action starts here ...
-    discord_message(" ".join(args.message))
+    discord_message("\n".join(args.message))
 
 
 if __name__ == "__main__":
