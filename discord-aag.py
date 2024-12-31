@@ -28,7 +28,7 @@ from icecream import ic
 ic.disable()
 # Local modules
 from verbose import verbose, warning, error
-from discordmsg import discord_message, discord_set_channel
+from discordmsg import config, discord_message, discord_set_channel
 
 VERSION = "0.1 / 2024-12-27"
 AUTHOR  = "Martin Junius"
@@ -40,23 +40,31 @@ AAG_JSON = r'\\aagsolo\AAGSolo\aag_json.dat'
 
 # Command line options
 class Options:
-    aag_json = AAG_JSON     # -A --aag-json
+    aag_json = config.get_obj("aagsolo").get("aag_json") or AAG_JSON     # -A --aag-json
 
 
 
 def aag_to_discord():
     verbose(f"reading AAG status {Options.aag_json}")
-    with open(Options.aag_json, 'r') as f:
-        obj = json.load(f)
-        ic(obj)
 
+    obj = None
     msg_list = []
     msg_list.append('AAG Cloudwatcher Solo') 
-    msg_list.append(f'  Conditions: {"SAFE" if obj["safe"] else "UNSAFE"}')
-    msg_list.append(f'  Wind: {obj["wind"]}/{obj["gust"]}')
-    msg_list.append(f'  Clouds: {obj["clouds"]}')
-    msg_list.append(f'  Light: {obj["light"]}')
-    msg_list.append(f'  Rain: {obj["rain"]}')
+
+    try:
+        with open(Options.aag_json, 'r') as f:
+            obj = json.load(f)
+    except OSError as err:
+        msg_list.append(f"  Can't access status: {err}")
+        
+    ic(obj)
+    if obj:
+        msg_list.append(f'  Conditions: {"SAFE" if obj["safe"] else "UNSAFE"}')
+        msg_list.append(f'  Wind: {obj["wind"]}/{obj["gust"]}')
+        msg_list.append(f'  Clouds: {obj["clouds"]}')
+        msg_list.append(f'  Light: {obj["light"]}')
+        msg_list.append(f'  Rain: {obj["rain"]}')
+
     ic(msg_list)
     message = "\n".join(msg_list)
     verbose(message)
@@ -83,6 +91,7 @@ def main():
     if args.verbose:
         verbose.set_prog(NAME)
         verbose.enable()
+    ic(config.config)
 
     if args.channel:
         discord_set_channel(args.channel)
