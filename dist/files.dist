@@ -9,6 +9,7 @@ nina-create-sequence*.*
 nina-flag-ready.*
 nina-zip-*.*
 test-hakos-roof.*
+discord-aag.*
 
 csvoutput.py
 discordmsg.py

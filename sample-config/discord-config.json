@@ -4,6 +4,9 @@
     "channels": {
         "#alerts": "https://discord.com/api/webhooks/...",
         "#alerts2": "..."
-    }
+    },
 
+    "aagsolo": {
+        "aag_json": "\\\\aagsolo\\AAGSolo\\aag_json.dat"
+    }
 }

@@ -9,7 +9,7 @@ Python scripts for automation of NEO observations with N.I.N.A (and more)
 - Process MPC ACK mails and retrieve observations from MPC WAMO
 - Process MPC 1992 and ADES reports, retrieve observations from MPC WAMO
 
-Copyright 2023-2024 Martin Junius
+Copyright 2023-2025 Martin Junius
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -96,18 +96,19 @@ Config: nina-create-sequence.json
 For Hakos remote observatories roll-off roof control only, refactored status queries
 
 ```
-usage: test-hakos-roof [-h] [-v] [-d] [-P] [-O]
+usage: test-hakos-roof [-h] [-v] [-d] [-P] [-U] [-O]
 
-Test Hakos roof (shutter) status: returns exit code 0, if ok (open/parked), else 1
+Test Hakos roof (shutter) status: returns exit code 0, if ok (open/parked/unparked), else 1
 
 options:
-  -h, --help     show this help message and exit
-  -v, --verbose  debug messages
-  -d, --debug    more debug messages
-  -P, --parked   test for "parked" status
-  -O, --open     test for "open" status (default)
+  -h, --help      show this help message and exit
+  -v, --verbose   debug messages
+  -d, --debug     more debug messages
+  -P, --parked    test for "parked" status
+  -U, --unparked  test for "unparked" status
+  -O, --open      test for "open" status (default)
 
-Version 1.0 / 2024-06-20 / Martin Junius
+Version 1.1 / 2024-07-17 / Martin Junius
 ```
 
 Config file: hakosroof.json
@@ -119,6 +120,7 @@ Use the batch files/wrappers with full path in N.I.N.A's "External Script" instr
 ```
 "D:\Users\remote\Documents\Scripts\test-hakos-roof.bat"
 "D:\Users\remote\Documents\Scripts\nina-flag-ready.bat" "TARGET"
+"D:\Users\remote\Documents\Scripts\discord-aag.bat"
 ```
 
 
@@ -127,7 +129,7 @@ Count sub frames in directory structure and compute total exposure time. Relies 
 
 ```
 usage: astro-countsubs [-h] [-v] [-d] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] [-C] [-o OUTPUT] [-F FILTER_SET] [--calibration-set CALIBRATION_SET]
-                       [-m MATCH] [-T] [-N]
+                       [-m MATCH] [--target] [-T] [-N] [-M]
                        dirname
 
 Traverse directory and count N.I.N.A subs
@@ -142,7 +144,7 @@ options:
   -x EXCLUDE, --exclude EXCLUDE
                         exclude filter, e.g. Ha,SII
   -f FILTER, --filter FILTER
-                        filter list, e.g. L,R,G.B
+                        filter list, e.g. L,R,G,B
   -t EXPOSURE_TIME, --exposure-time EXPOSURE_TIME
                         exposure time (sec) if not present in filename
   -C, --csv             output CSV list for Astrobin
@@ -154,10 +156,12 @@ options:
                         name of calibration set (see config)
   -m MATCH, --match MATCH
                         filename must contain MATCH
+  --target              include target name in date stats
   -T, --total-only      list total only
   -N, --no-calibration  don't list calibration data
+  -M, --markdown        output markdown table
 
-Version: 1.2 / 2024-07-15 / Martin Junius
+Version: 1.4 / 2024-12-07 / Martin Junius
 ```
 
 Config file astro-countsubs-config.json
@@ -283,7 +287,7 @@ options:
   -S, --submitted       add submitted observation to overview
   -D, --sort-by-date    sort overview by observation date (minus 12h)
 
-Version 1.7 / 2024-07-17 / Martin Junius
+Version 1.8 / 2024-11-10 / Martin Junius
 ```
 
 Config file: imap-account.json
@@ -355,6 +359,27 @@ Examples:
 mpc-retrieve-reports.py -A -o ades-reports.json '\Users\someone\Asteroids\reports\'
 ```
 Retrieve all ADES report file from the given directory (recursively), query WAMO, and write results to ades-reports.json
+
+
+## discord-aag
+Send AAG Cloudwatcher Solo status to Discord channel
+
+```
+usage: discord-aag [-h] [-v] [-d] [-A AAG_JSON] [-C CHANNEL]
+
+Send AAG status to Discord channel
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         verbose messages
+  -d, --debug           more debug messages
+  -A AAG_JSON, --aag-json AAG_JSON
+                        path to AAG Cloudwatcher Solo status file
+  -C CHANNEL, --channel CHANNEL
+                        channel name to match in JSON discord-config
+
+Version 0.1 / 2024-12-27 / Martin Junius
+```
 
 
 ## JSON Config Files

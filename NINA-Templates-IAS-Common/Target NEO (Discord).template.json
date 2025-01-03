@@ -42,7 +42,7 @@
       {
         "$id": "7",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Generic template for IAS remote telescope, NEO observations",
+        "Text": "NEO observation template for IAS remote telescopes",
         "Parent": {
           "$ref": "1"
         },
@@ -52,7 +52,7 @@
       {
         "$id": "8",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Used by nina-create.sequence.py",
+        "Text": "Used by nina-create.sequence2.py",
         "Parent": {
           "$ref": "1"
         },
@@ -62,7 +62,7 @@
       {
         "$id": "9",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.2/ 2024-12-19 / Martin Junius",
+        "Text": "Version 1.3 / 2024-12-31 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -198,9 +198,9 @@
               "$id": "25",
               "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
               "Hours": 4,
-              "Minutes": 8,
+              "Minutes": 15,
               "MinutesOffset": 0,
-              "Seconds": 13,
+              "Seconds": 18,
               "SelectedProvider": {
                 "$id": "26",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.NauticalDawnProvider, NINA.Sequencer"
@@ -577,7 +577,7 @@
             {
               "$id": "72",
               "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-              "Text": "Target finished",
+              "Text": "NEO target ready",
               "Parent": {
                 "$ref": "64"
               },
@@ -596,40 +596,116 @@
         },
         "ErrorBehavior": 0,
         "Attempts": 1
+      },
+      {
+        "$id": "74",
+        "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
+        "Strategy": {
+          "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
+        },
+        "Name": "Post-imaging unsafe",
+        "Conditions": {
+          "$id": "75",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
+          "$values": [
+            {
+              "$id": "76",
+              "$type": "NINA.Sequencer.Conditions.LoopCondition, NINA.Sequencer",
+              "CompletedIterations": 0,
+              "Iterations": 1,
+              "Parent": {
+                "$ref": "74"
+              }
+            },
+            {
+              "$id": "77",
+              "$type": "NINA.Sequencer.Conditions.LoopWhileUnsafe, NINA.Sequencer",
+              "Parent": {
+                "$ref": "74"
+              }
+            }
+          ]
+        },
+        "IsExpanded": true,
+        "Items": {
+          "$id": "78",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
+          "$values": [
+            {
+              "$id": "79",
+              "$type": "NINA.Sequencer.SequenceItem.Guider.StopGuiding, NINA.Sequencer",
+              "Parent": {
+                "$ref": "74"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            },
+            {
+              "$id": "80",
+              "$type": "NINA.Sequencer.SequenceItem.Telescope.SetTracking, NINA.Sequencer",
+              "TrackingMode": 5,
+              "Parent": {
+                "$ref": "74"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            },
+            {
+              "$id": "81",
+              "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
+              "Text": "@everyone UNSAFE conditions, terminating",
+              "Parent": {
+                "$ref": "74"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
+            }
+          ]
+        },
+        "Triggers": {
+          "$id": "82",
+          "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
+          "$values": []
+        },
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
       }
     ]
   },
   "Triggers": {
-    "$id": "74",
+    "$id": "83",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
     "$values": [
       {
-        "$id": "75",
+        "$id": "84",
         "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordAlertOnErrorTrigger, Discord Alert",
         "Text": "@everyone ERROR in target sequence",
         "Parent": {
           "$ref": "1"
         },
         "TriggerRunner": {
-          "$id": "76",
+          "$id": "85",
           "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
           "Strategy": {
             "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
           },
           "Name": null,
           "Conditions": {
-            "$id": "77",
+            "$id": "86",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "IsExpanded": true,
           "Items": {
-            "$id": "78",
+            "$id": "87",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "Triggers": {
-            "$id": "79",
+            "$id": "88",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },

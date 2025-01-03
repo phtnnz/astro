@@ -36,7 +36,8 @@ NAME    = "test-hakos-roof"
 VERSION = "1.1 / 2024-07-17"
 AUTHOR  = "Martin Junius"
 
-CONFIG = "hakosroof.json"
+CONFIG  = "hakosroof.json"
+TIMEOUT = 20                # seconds timeout for requests.get()
 
 
 
@@ -77,7 +78,13 @@ def main():
 
     url = cf.url() + "/remobs?action=status&key={}".format(cf.apikey())
     ic(url)
-    response = requests.get(url)
+
+    try:
+        response = requests.get(url, timeout=TIMEOUT)
+    except requests.exceptions.RequestException as e:
+        ic(e)
+        error(f"{e.args[0]}")
+
     ic(response)
     status = response.json()
     ic(status)
