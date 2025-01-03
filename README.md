@@ -1,4 +1,4 @@
-# Astro
+# Astro aka IAS Astro Python Tools
 
 Python scripts for automation of NEO observations with N.I.N.A (and more)
 - Build JSON sequences from target templates and observation data in CSV format
