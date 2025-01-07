@@ -385,11 +385,11 @@ Version 0.1 / 2024-12-27 / Martin Junius
 ## JSON Config Files
 
 All the scripts search the corresponding JSON config in the following directories and in this order:
-- Current directory/
 - Current directory/.config/
 - Current directory/.config/astro-python/
 - %LOCALAPPDATA%/astro-python/
 - %APPDATA%/astro-python/
+- All directories from Python search path sys.path with added /.config/
 
 test-shutter-open only looks in %APPDATA%/astro-python/.
 
