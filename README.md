@@ -391,6 +391,4 @@ All the scripts search the corresponding JSON config in the following directorie
 - %APPDATA%/astro-python/
 - All directories from Python search path sys.path with added /.config/
 
-test-shutter-open only looks in %APPDATA%/astro-python/.
-
 See sample-config/ in the repository for configuration examples.
