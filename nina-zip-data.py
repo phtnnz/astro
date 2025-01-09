@@ -67,6 +67,7 @@
 #       Changed -m (new --mx) Option to directly pass parameter to 7z.exe -mx switch
 # Version 1.6 / 2025-01-09
 #       Slightly changed options logic for --last, --date, --ready, --subdir
+#       When --subdir is specified, upload to ZIPDIR/SUBDIR/ZIPSUB/SUBDIR_DATE
 
 import os
 import argparse
@@ -92,7 +93,7 @@ from jsonconfig import JSONConfig
 
 NAME        = "nina-zip-data"
 DESCRIPTION = "Zip (7z) N.I.N.A data and upload"
-VERSION     = "1.5 / 2024-10-05"
+VERSION     = "1.6 / 2025-01-09"
 AUTHOR      = "Martin Junius"
 
 TIMER   = 60
