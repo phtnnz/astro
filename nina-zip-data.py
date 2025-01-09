@@ -23,19 +23,23 @@
 # - If exists, skip
 # - If not, run 7z.exe to archive TARGET data subdir in DATA to TARGET.7z in ZIPDIR
 # - Loop continuously
-
+#
 ## --last mode
 # Archive all N.I.N.A exposure data from the previous night, i.e. date=yesterday
 # - Search all TARGET*YYYY-MM-DD directories in DATADIR
 # - Look for corresponding TARGET-YYYY-MM-DD.7z archive in ZIPDIR
 # - If exists, skip
 # - If not, run 7z.exe to archive TARGET/YYYY-MM-DD data subdir in DATA to TARGET-YYYY-MM-DD.7z in ZIPDIR
-
+#
 ## --date mode
-# Like --last, but using the specified DATE
-
+# Like --last, but using the specified DATE, can be used together with --subdir, then
+# specifies the date added to SUBDIR
+#
 ## --subdir mode
 # Like --ready, but search in N.I.N.A datadir / SUBDIR_YYYY-MM-DD 
+#
+# Adding --ready and --last override the implied behavior of --date and --subdir
+
 
 # ChangeLog
 # Version 0.1 / 2023-07-08
@@ -61,6 +65,8 @@
 #       under zip dir
 # Version 1.5 / 2024-10-05
 #       Changed -m (new --mx) Option to directly pass parameter to 7z.exe -mx switch
+# Version 1.6 / 2025-01-09
+#       Slightly changed options logic for --last, --date, --ready, --subdir
 
 import os
 import argparse
@@ -394,7 +400,7 @@ def check_rclone_lsf(remote, arcname):
 def upload_join(zipdir, arcname="", remote=True):
     """Add ZIPSUB or SUBDIR to bucket dir"""
     if Options.subdir:
-        subdir = Options.subdir
+        subdir = Options.subdir + "_" + Options.date
     else:
         subdir = Options.zipsub
 
@@ -415,7 +421,7 @@ def upload_join(zipdir, arcname="", remote=True):
 def run_ready():
     datadir = Options.datadir
     if Options.subdir:
-        datadir = os.path.join(datadir, Options.subdir)
+        datadir = os.path.join(datadir, Options.subdir + "_" + Options.date)
     if not os.path.isdir(datadir):
         # If subdir doesn't exist, create it, NINA will create it only with the 1st frame
         warning(f"directory {datadir} doesn't exist, creating it")
@@ -489,17 +495,21 @@ def main():
         Options.zipmx   = args.mx
     if args.time_interval:
         Options.timer   = args.time_interval
-    Options.run_ready = args.ready
-    Options.run_last  = args.last
     if args.date:
-        Options.date = args.date
-        Options.zipsub = date_subdir(args.date)
-        Options.run_last = True
+        Options.date      = args.date
+        Options.zipsub    = date_subdir(args.date)
+        Options.run_last  = True
         Options.run_ready = False
     if args.subdir:
-        Options.subdir = args.subdir + "_" + Options.date
-        Options.run_last = False
+        Options.subdir    = args.subdir
+        Options.run_last  = False
         Options.run_ready = True
+    if args.ready:
+        Options.run_ready = True
+        Options.run_last  = False
+    if args.last:
+        Options.run_ready = False
+        Options.run_last  = True
 
     Options.datadir = os.path.abspath(Options.datadir)
     Options.tmpdir  = os.path.abspath(Options.tmpdir)
@@ -516,7 +526,7 @@ def main():
     verbose(f"rclone program = {Options.rcloneprog}")
     verbose(f"Use rclone     = {Options.upload}")
     verbose(f"Date minus 12h = {Options.date}")
-    verbose(f"Sub directory  = {Options.subdir}")
+    verbose(f"Subdir         = {Options.subdir}")
 
     # Set process priority
     if args.low_priority:
