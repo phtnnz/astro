@@ -199,7 +199,7 @@ options:
   -n, --no-action       dry run
   -l, --low-priority    set process priority to low
   --ready               run in TARGET.ready mode
-  --last                run in last night mode (2024-10-05)
+  --last                run in last night mode (2025-01-09)
   --date DATE           run in archive data from DATE mode
   --subdir SUBDIR       search SUBDIR_YYYY-MM-DD in data dir for ready targets (--ready)
   --targets TARGETS     archive TARGET[,TARGET] only (--last / --date)
@@ -208,7 +208,7 @@ options:
                         time interval for checking data directory (default 60s)
   -m MX, --mx MX        7-Zip compression setting -mx (default 5), 0=none, 1=fastest, 3=fast, 5=normal, 7=max, 9=ultra
 
-Version 1.5 / 2024-10-05 / Martin Junius
+Version 1.6 / 2025-01-09 / Martin Junius
 ```
 
 ### --ready / --subdir mode
