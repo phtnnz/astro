@@ -400,9 +400,12 @@ def check_rclone_lsf(remote, arcname):
 
 def upload_join(zipdir, arcname="", remote=True):
     """Add ZIPSUB or SUBDIR to bucket dir"""
-    if Options.subdir:
+
+    ##FIXME: move to options handling
+    # Build specialized dest path for --ready mode with --subdir
+    if Options.run_ready and Options.subdir:
         # subdir = Options.subdir + "_" + Options.date
-        # if SUBDIR is specified, upload to ZIPDIR/SUBDIR/ZIPSUB/SUBDIR_YYYY-MM-DD
+        # Upload to ZIPDIR/SUBDIR/ZIPSUB/SUBDIR_YYYY-MM-DD
         subdir = Options.subdir + "/" + Options.zipsub + "/" + Options.subdir+"_"+Options.date
     else:
         subdir = Options.zipsub
@@ -416,7 +419,7 @@ def upload_join(zipdir, arcname="", remote=True):
         zip = os.path.join(zipdir, subdir)
         if arcname:
             zip = os.path.join(zip, arcname)
-    ic(zip)
+    ic(subdir, zip)
     return zip
 
 
