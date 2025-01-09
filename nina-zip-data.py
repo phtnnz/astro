@@ -441,11 +441,16 @@ def run_ready():
 
 
 def run_last(targetlist=None):
+    datadir = Options.datadir
+    if Options.subdir:
+        datadir = os.path.join(datadir, Options.subdir)
+    verbose(f"scanning directory {datadir}")
+
     if targetlist:
         targets = targetlist.split(",")
-        scan_targets(Options.datadir, Options.tmpdir, Options.zipdir, targets, Options.date)
+        scan_targets(datadir, Options.tmpdir, Options.zipdir, targets, Options.date)
     else:
-        scan_data_dir_last_mode(Options.datadir, Options.tmpdir, Options.zipdir, Options.date)
+        scan_data_dir_last_mode(datadir, Options.tmpdir, Options.zipdir, Options.date)
 
 
 
