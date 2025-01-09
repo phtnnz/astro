@@ -215,7 +215,7 @@ Version 1.5 / 2024-10-05 / Martin Junius
 Automatically archive N.I.N.A exposure when a target sequence has been completed,
 relying on the .ready flags created by nina-flag-ready.bat run as an External Script
 from within N.I.N.A
-- Search TARGET.ready files in DATADIR, optional DATADIR/_SUBDIR_YYYY-MM-DD
+- Search TARGET.ready files in DATADIR, optional DATADIR/SUBDIR_YYYY-MM-DD
 - Look for corresponding TARGET.7z archive in TMPDIR or ZIPDIR
 - If exists, skip
 - If not, run 7z.exe to archive TARGET data subdir in DATA to TARGET.7z in ZIPDIR
@@ -223,10 +223,13 @@ from within N.I.N.A
 
 ### --last / --date mode
 Archive all N.I.N.A data from the last observation night (or date given by the --date option)
-- Search all TARGET[/_-]YYYY-MM-DD directories in DATADIR
+- Search all TARGET[/_-]YYYY-MM-DD directories in DATADIR (optional DATA/SUBDIR)
 - Look for corresponding TARGET-YYYY-MM-DD.7z archive in TMPDIR or ZIPDIR
 - If exists, skip
 - If not, run 7z.exe to archive TARGET/YYYY-MM-DD data subdir in DATA to TARGET-YYYY-MM-DD.7z in ZIPDIR
+
+Setting --date implies --last, --subdir implies --ready, add an extra --ready or --last to
+override this behavior.
 
 Config file: nina-zip-config.json
 
