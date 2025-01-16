@@ -85,4 +85,46 @@ nina-zip-data: scanning directory D:\Users\remote\Documents\NINA-Data\_asteroids
 Waiting for ready data ... (Ctrl-C to interrupt)
 ```
 
-(to be continued ...)
+Once a target is finished, all data will be packed in a 7z archive and uploaded (output from older test data):
+
+```
+nina-zip-data: target ready: 2023-07-07 006 P21GNQJ (n039)
+2025-01-16 11:03:39 archiving target 2023-07-07 006 P21GNQJ (n039)
+==================================================================
+nina-zip-data: zip file D:\Users\remote\Documents\NINA-Tmp\2023-07-07 006 P21GNQJ (n039).7z
+nina-zip-data: run C:\Program Files\7-Zip\7z.exe a -t7z -mx5 -r -spf D:\Users\remote\Documents\NINA-Tmp\2023-07-07 006 P21GNQJ (n039).7z 2023-07-07 006 P21GNQJ (n039)
+
+7-Zip 24.09 (x64) : Copyright (c) 1999-2024 Igor Pavlov : 2024-11-29
+
+Scanning the drive:
+1 folder, 2 files, 26121600 bytes (25 MiB)
+
+Creating archive: D:\Users\remote\Documents\NINA-Tmp\2023-07-07 006 P21GNQJ (n039).7z
+
+Add new data to archive: 1 folder, 2 files, 26121600 bytes (25 MiB)
+
+Files read from disk: 2
+Archive size: 11109864 bytes (11 MiB)
+Everything is Ok
+==================================================================
+nina-zip-data: upload to iasdata:test-upload (+subdir)
+nina-zip-data: run C:\Tools\rclone\rclone.exe moveto D:\Users\remote\Documents\NINA-Tmp\2023-07-07 006 P21GNQJ (n039).7z iasdata:test-upload/_asteroids/2023/07/_asteroids_2023-07-07/2023-07-07 006 P21GNQJ (n039).7z -v -P
+2025/01/16 11:03:55 INFO  : 2023-07-07 006 P21GNQJ (n039).7z: Copied (new)
+2025/01/16 11:03:55 INFO  : 2023-07-07 006 P21GNQJ (n039).7z: Deleted
+Transferred:       10.595 MiB / 10.595 MiB, 100%, 2.644 MiB/s, ETA 0s
+Checks:                 1 / 1, 100%
+Deleted:                1 (files), 0 (dirs), 10.595 MiB (freed)
+Renamed:                1
+Transferred:            1 / 1, 100%
+Elapsed time:         4.8s
+2025/01/16 11:03:55 INFO  :
+Transferred:       10.595 MiB / 10.595 MiB, 100%, 2.644 MiB/s, ETA 0s
+Checks:                 1 / 1, 100%
+Deleted:                1 (files), 0 (dirs), 10.595 MiB (freed)
+Renamed:                1
+Transferred:            1 / 1, 100%
+Elapsed time:         4.8s
+==================================================================
+```
+
+Archives will be uploaded to the buckets remote-upload2 / remote-upload3 (here it's test-upload) and a subdirectory structure SUBDIR/YYYY/MM/SUBDIR_YYYY-MM-DD. SUBDIR (--subdir option) for NEOs is "_asteroids".
