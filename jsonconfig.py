@@ -95,15 +95,7 @@ class JSONConfig:
         # Search config file in current directory, LOCALAPPDATA, APPDATA
         searchpath = []
 
-        path = os.path.curdir
-        if os.path.isdir(path):
-            searchpath.append(path)
-
         path = os.path.join(os.path.curdir, CONFIG)
-        if os.path.isdir(path):
-            searchpath.append(path)
-
-        path = os.path.join(os.path.curdir, CONFIGDIR)
         if os.path.isdir(path):
             searchpath.append(path)
 
@@ -127,6 +119,10 @@ class JSONConfig:
         else:
             ic("environment APPDATA not set!")
 
+        # Add Python search path to list
+        searchpath.extend([ os.path.join(d, CONFIG) for d in sys.path ])
+
+        # Search for config file in searchpath list
         for path in searchpath:
             ic(path)
             file1 = os.path.join(path, file)
