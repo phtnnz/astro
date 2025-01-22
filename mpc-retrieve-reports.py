@@ -297,7 +297,7 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
         ic(wamo)
         if wamo:
             ades_obj["_wamo"] = wamo
-            # Get publications and add to global list
+            ##TODO: join _wamo and _observations list, check identity using trkId/obsTime/obs_date
             for obs in wamo:
                 pub = obs["publication"]
                 if pub:
