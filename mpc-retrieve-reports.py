@@ -32,6 +32,7 @@ import os
 import argparse
 import re
 import csv
+import typing
 
 # The following libs must be installed with pip
 from icecream import ic
@@ -57,17 +58,18 @@ AUTHOR  = "Martin Junius"
 
 class Options:
     """ Global command line options """
-    no_wamo     = False     # -n --no-wamo-requests
+    wamo        = True      # -n --no-wamo-requests
     mpc1992     = False     # -M --mpc1992-reports
     ades        = False     # -A --ades-reports
     output      = None      # -o --output
     csv         = False     # -C --csv
     overview    = False     # -O --overview
     sort_by_date= False     # -D --sort-by-date
+    json        = False     # -J --json
 
 
 
-def retrieve_from_directory(root):
+def retrieve_from_directory(root: str) -> None:
     for dir, subdirs, files in os.walk(root):
         verbose("Processing directory", dir)
         for f in files:
@@ -77,7 +79,7 @@ def retrieve_from_directory(root):
 
 
 
-def process_file(file):
+def process_file(file: str) -> None:
     with open(file, "r") as fh:
         ic(file)
         line1 = fh.readline().strip()
@@ -107,7 +109,7 @@ def process_file(file):
 
 
 
-def process_mpc1992(fh, line1):
+def process_mpc1992(fh: typing.TextIO, line1: str) -> dict:
     mpc1992_obj = {}
     mpc1992_obj["_observations"] = []
     ids = {}
@@ -172,7 +174,7 @@ def process_mpc1992(fh, line1):
         if line.startswith("----- end"):
             break
 
-    if not Options.no_wamo:
+    if Options.wamo:
         wamo = retrieve_from_wamo_json(ids)
         if wamo:
             mpc1992_obj["_wamo"] = wamo
@@ -194,12 +196,33 @@ def process_mpc1992(fh, line1):
 
 
 
-def dict_remove_ws(dict):
-    """ Remove white space for dict keys and values """
+def dict_remove_ws(dict: dict) -> dict:
+    """
+    Remove white space from dict keys and values
+
+    :param dict: input dict
+    :type dict: dict
+    :return: output dict
+    :rtype: dict
+    """
     return {k.strip():v.strip() for k, v in dict.items()}
 
+def convert_to_float(s: str) -> typing.Any:
+    """
+    Convert string to float with error check
 
-def process_ades(fh, line1):
+    :param s: string
+    :type s: str
+    :return: float, if conversion sucessful, else original string
+    :rtype: typing.Any
+    """
+    try:
+        return float(s)
+    except ValueError:
+        return s
+
+
+def process_ades(fh: typing.TextIO, line1: str) -> dict:
     ades_obj = {}
 
     # For CSV output
@@ -266,7 +289,7 @@ def process_ades(fh, line1):
     data_meta.append( ades_obj["software"]["astrometry"] )
     data_meta.append( ades_obj["software"]["photometry"] )
 
-    if not Options.no_wamo:
+    if Options.wamo:
         if Options.csv:
             fields = fields_meta + get_wamo_fields()
         ic(ids)
@@ -293,8 +316,11 @@ def process_ades(fh, line1):
 
     else:
         if Options.csv:
+            fields = fields_meta + fields_report
             csv_output(fields=fields)
-            csv_output(row=data_meta)
+            for row in ades_obj["_observations"]:
+                data = data_meta + [ convert_to_float(row[k]) for k in fields_report ]
+                csv_output(row=data)
 
     return ades_obj
 
@@ -313,6 +339,7 @@ def main():
     arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports")
     arg.add_argument("-o", "--output", help="write JSON/CSV to OUTPUT file")
     arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format (instead of JSON), NOT YET IMPLEMENTED")
+    arg.add_argument("-J", "--json", action="store_true", help="use JSON output format")
     arg.add_argument("-O", "--overview", action="store_true", help="create overview of objects and observations")
     arg.add_argument("-D", "--sort-by-date", action="store_true", help="sort overview by observation date (minus 12h)")
     args = arg.parse_args()
@@ -322,13 +349,14 @@ def main():
     if args.debug:
         ic.enable()
 
-    Options.no_wamo     = args.no_wamo_requests
+    Options.wamo        = not args.no_wamo_requests
     Options.mpc1992     = args.mpc1992_reports
     Options.ades        = args.ades_reports
     Options.output      = args.output
     Options.csv         = args.csv
     Options.overview    = args.overview
     Options.sort_by_date= args.sort_by_date
+    Options.json        = args.json
 
     if Options.sort_by_date:
         OverviewOutput.set_description1("Total observation dates:  ")
@@ -360,7 +388,8 @@ def main():
         ic("CSV output")
         csv_output.set_float_format("%.2f")
         csv_output.write(Options.output)
-    else:
+
+    elif Options.json:
         JSONOutput.write(Options.output)
 
 
