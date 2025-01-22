@@ -25,6 +25,8 @@
 #       Major refactoring using the new modules, added Overview processing
 # Version 1.7 / 2024-11-14
 #       Fixed -n --no-wamo-requests
+# Version 1.8 / 2025-01-22
+#       Implemented CSV output for ADES reports
 
 import os
 import argparse
@@ -39,16 +41,16 @@ ic.disable()
 # Local modules
 from verbose          import verbose, warning, error
 from mpc.mpcosarchive import Publication
-from mpc.mpcwamo      import retrieve_from_wamo
+from mpc.mpcwamo      import retrieve_from_wamo_json, get_wamo_fields, get_wamo_data
 from mpc.mpcdata80    import MPCData80
 from ovoutput         import OverviewOutput
-from csvoutput        import csv_output as CSVOutput
+from csvoutput        import csv_output
 from jsonoutput       import JSONOutput
 
 
 
 NAME    = "mpc-retrieve-reports"
-VERSION = "1.6 / 2024-07-15"
+VERSION = "1.8 / 2025-01-22"
 AUTHOR  = "Martin Junius"
 
 
@@ -171,7 +173,7 @@ def process_mpc1992(fh, line1):
             break
 
     if not Options.no_wamo:
-        wamo = retrieve_from_wamo(ids)
+        wamo = retrieve_from_wamo_json(ids)
         if wamo:
             mpc1992_obj["_wamo"] = wamo
             # Get publications and add to global list
@@ -200,6 +202,19 @@ def dict_remove_ws(dict):
 def process_ades(fh, line1):
     ades_obj = {}
 
+    # For CSV output
+    fields_meta = ["observatory", "submitter", "observers", "measurers", 
+                   "telescope", "aperture", "fRatio", "detector", "astrometry", "photometry"
+                   ]
+    ##FIXME: get from DictReader?
+    fields_report = ["permID", "provID", "trkSub", "mode", "stn", "obsTime", "ra", "dec",
+                    "rmsRA", "rmsDec", "rmsFit", "astCat", "mag", "rmsMag", "band", "photCat", "photAp",
+                    "logSNR", "exp", "notes", "remarks"
+                    ]
+
+    data_meta = []
+
+
     # Read report txt file
     key1 = None
     key2 = None
@@ -220,6 +235,7 @@ def process_ades(fh, line1):
             if m1 == "!":
                 key2 = m2
                 ades_obj[key1][key2] = m3
+            ic(key1, key2)
 
         # PSV from this line on
         else:
@@ -227,9 +243,9 @@ def process_ades(fh, line1):
             ades_obj["_observations"] = []
             reader = csv.DictReader(fh, delimiter='|', quoting=csv.QUOTE_NONE)
             for row in reader:
-                row1 = dict_remove_ws(row)
-                ic(row1)
-                ades_obj["_observations"].append(row1)
+                row = dict_remove_ws(row)
+                ic(row)
+                ades_obj["_observations"].append(row)
             break
 
     # Get trackIds and mpcCode to query WAMO
@@ -238,8 +254,24 @@ def process_ades(fh, line1):
         ids[trk["trkSub"] + " " + trk["stn"]] = True
     ades_obj["_ids"] = ids
 
+    # Meta data for CSV
+    data_meta.append( ades_obj["observatory"]["mpcCode"] )
+    data_meta.append( ades_obj["submitter"]["name"] )
+    data_meta.append( ades_obj["observers"]["name"] )
+    data_meta.append( ades_obj["measurers"]["name"] )
+    data_meta.append( ades_obj["telescope"]["design"] )
+    data_meta.append( float(ades_obj["telescope"]["aperture"]) )
+    data_meta.append( float(ades_obj["telescope"]["fRatio"]) )
+    data_meta.append( ades_obj["telescope"]["detector"] )
+    data_meta.append( ades_obj["software"]["astrometry"] )
+    data_meta.append( ades_obj["software"]["photometry"] )
+
     if not Options.no_wamo:
-        wamo = retrieve_from_wamo(ids)
+        if Options.csv:
+            fields = fields_meta + get_wamo_fields()
+        ic(ids)
+        wamo = retrieve_from_wamo_json(ids)
+        ic(wamo)
         if wamo:
             ades_obj["_wamo"] = wamo
             # Get publications and add to global list
@@ -247,14 +279,22 @@ def process_ades(fh, line1):
                 pub = obs["publication"]
                 if pub:
                     Publication.add(pub)
-                if Options.sort_by_date:
-                    OverviewOutput.add(obs["data"]["date_minus12"], obs["objId"], obs["data"]["data"])
-                else:
-                    OverviewOutput.add(obs["objId"], obs["data"]["date_minus12"], obs["data"]["data"])
+                if Options.overview:
+                    if Options.sort_by_date:
+                        OverviewOutput.add(obs["data"]["date_minus12"], obs["objId"], obs["data"]["data"])
+                    else:
+                        OverviewOutput.add(obs["objId"], obs["data"]["date_minus12"], obs["data"]["data"])
+                if Options.csv:
+                    data = data_meta + get_wamo_data(obs)
+                    csv_output(fields=fields)
+                    csv_output(row=data)
         else:
             warning("data from ADES report not found in WAMO, submitted MPC1992 instead?")
-       
-    # verbose("JSON =", json.dumps(ades_obj, indent=4))
+
+    else:
+        if Options.csv:
+            csv_output(fields=fields)
+            csv_output(row=data_meta)
 
     return ades_obj
 
@@ -317,7 +357,9 @@ def main():
             Publication.print()
 
     elif Options.csv:
-        CSVOutput.write(Options.output)
+        ic("CSV output")
+        csv_output.set_float_format("%.2f")
+        csv_output.write(Options.output)
     else:
         JSONOutput.write(Options.output)
 
