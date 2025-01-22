@@ -59,7 +59,7 @@ ic.disable()
 from verbose          import verbose, warning, error
 from jsonconfig       import JSONConfig, config
 from mpc.mpcosarchive import Publication
-from mpc.mpcwamo      import retrieve_from_wamo
+from mpc.mpcwamo      import retrieve_from_wamo_json, get_wamo_fields, get_wamo_data
 from ovoutput         import OverviewOutput
 from csvoutput        import csv_output as CSVOutput
 from jsonoutput       import JSONOutput
@@ -236,7 +236,7 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
                 CSVOutput.add_row([ msg_folder, msg_n, msg_date.removeprefix("Date: "), msg_ack, id, obs ])
     else:
         # mpc.mpcwamo module
-        wamo = retrieve_from_wamo(msg_ids)
+        wamo = retrieve_from_wamo_json(msg_ids)
         if wamo:
             # Get publications and add to global list
             for obs in wamo:
@@ -247,6 +247,7 @@ def retrieve_from_msg(msg_folder, msg_n, msg):
             ack_obj["_wamo"].append(wamo)
             if Options.csv:
                 for wobj in wamo:
+                    ##FIXME: use new get_wamo_...() function in mpc.mpcwamo
                     # CSV output: list of messages in mailbox with complete WAMO data
                     CSVOutput.add_fields([  "Folder", "Message#", "Date", "ACK", 
                                             "id", "objId", "publication",
