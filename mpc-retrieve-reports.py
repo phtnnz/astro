@@ -229,11 +229,9 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
     fields_meta = ["observatory", "submitter", "observers", "measurers", 
                    "telescope", "aperture", "fRatio", "detector", "astrometry", "photometry"
                    ]
-    ##FIXME: get from DictReader?
-    fields_report = ["permID", "provID", "trkSub", "mode", "stn", "obsTime", "ra", "dec",
-                    "rmsRA", "rmsDec", "rmsFit", "astCat", "mag", "rmsMag", "band", "photCat", "photAp",
-                    "logSNR", "exp", "notes", "remarks"
-                    ]
+    # Get from PSV data
+    fields_report = None
+    # Get from WAMO module
     fields_wamo = get_wamo_fields()
 
     data_meta = []
@@ -269,6 +267,10 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
             for row in reader:
                 row = dict_remove_ws(row)
                 ic(row)
+                # Get fields from DictReader keys
+                if not fields_report:
+                    fields_report = list(row.keys())
+                    ic(fields_report)
                 ades_obj["_observations"].append(row)
             break
 
