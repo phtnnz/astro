@@ -234,6 +234,7 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
                     "rmsRA", "rmsDec", "rmsFit", "astCat", "mag", "rmsMag", "band", "photCat", "photAp",
                     "logSNR", "exp", "notes", "remarks"
                     ]
+    fields_wamo = get_wamo_fields()
 
     data_meta = []
 
@@ -291,24 +292,37 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
 
     if Options.wamo:
         if Options.csv:
-            fields = fields_meta + get_wamo_fields()
+            fields = fields_meta + fields_report + fields_wamo
         ic(ids)
         wamo = retrieve_from_wamo_json(ids)
         ic(wamo)
         if wamo:
             ades_obj["_wamo"] = wamo
-            ##TODO: join _wamo and _observations list, check identity using trkId/obsTime/obs_date
-            for obs in wamo:
-                pub = obs["publication"]
+    
+            for r_obs, w_obs in zip(ades_obj["_observations"], ades_obj["_wamo"]):
+                # r_obs: observation data from saved report
+                # w_obs: observation data returned from WAMO
+                # Check consistency!
+                if r_obs["provID"] != w_obs["data"]["provId"] or \
+                   r_obs["permID"] != w_obs["data"]["permId"] or \
+                   r_obs["obsTime"] != w_obs["data"]["date"]:
+                    warning(f"report/WAMO mismatch, enable --debug for details")
+                    ic("r_obs/w_objs mismath")
+                    ic(r_obs, w_obs)
+                    continue   
+    
+                pub = w_obs["publication"]
                 if pub:
                     Publication.add(pub)
+
                 if Options.overview:
                     if Options.sort_by_date:
-                        OverviewOutput.add(obs["data"]["date_minus12"], obs["objId"], obs["data"]["data"])
+                        OverviewOutput.add(w_obs["data"]["date_minus12"], w_obs["objId"], w_obs["data"]["data"])
                     else:
-                        OverviewOutput.add(obs["objId"], obs["data"]["date_minus12"], obs["data"]["data"])
+                        OverviewOutput.add(w_obs["objId"], w_obs["data"]["date_minus12"], w_obs["data"]["data"])
+
                 if Options.csv:
-                    data = data_meta + get_wamo_data(obs)
+                    data = data_meta + [ convert_to_float(row[k]) for k in fields_report ] + get_wamo_data(w_obs)
                     csv_output(fields=fields)
                     csv_output(row=data)
         else:
