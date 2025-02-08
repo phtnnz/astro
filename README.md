@@ -331,12 +331,12 @@ Retrieve all ACK mails from ARCHIVE folder, query WAMO, and write detailed data 
 Retrieve Minor Planets Center observation data from locally stored MPC1992/ADES report txt files, and MPC WAMO service
 
 ```
-usage: mpc-retrieve-reports [-h] [-v] [-d] [-n] [-M] [-A] [-o OUTPUT] [-C] [-O] [-D] directory [directory ...]
+usage: mpc-retrieve-reports [-h] [-v] [-d] [-n] [-M] [-A] [-o OUTPUT] [-C] [-J] [-O] [-D] directory [directory ...]
 
 Retrieve MPC reports
 
 positional arguments:
-  directory             read MPC reports from directory/file instead of ACK mails
+  directory             read MPC reports from directory or single file(s)
 
 options:
   -h, --help            show this help message and exit
@@ -349,20 +349,58 @@ options:
   -A, --ades-reports    read new ADES (PSV format) reports
   -o OUTPUT, --output OUTPUT
                         write JSON/CSV to OUTPUT file
-  -C, --csv             use CSV output format (instead of JSON), NOT YET IMPLEMENTED
+  -C, --csv             use CSV output format
+  -J, --json            use JSON output format
   -O, --overview        create overview of objects and observations
   -D, --sort-by-date    sort overview by observation date (minus 12h)
 
-Version 1.6 / 2024-07-15 / Martin Junius
+Version 1.8 / 2025-02-08 / Martin Junius
 ```
 
 Examples:
 
 ```
-mpc-retrieve-reports.py -A -o ades-reports.json '\Users\someone\Asteroids\reports\'
+mpc-retrieve-reports.py -A -o rep.json '\Users\someone\Asteroids\reports\'
 ```
-Retrieve all ADES report file from the given directory (recursively), query WAMO, and write results to ades-reports.json
+Retrieve all ADES reports from the given directory (recursively), query WAMO, and write results to rep.json.
 
+```
+mpc-retrieve-reports.py -o rep.csv -C -v -A '\Users\someone\Asteroids\reports\'
+```
+Retrieve all ADES reports from the given directory (recursively), query WAMO, and write combined observation
+details to rep.csv in CSV format.
+
+```
+mpc-retrieve-reports.py -o rep.csv -C -v -M '\Users\someone\Asteroids\reports\'
+```
+Same behavior, but process MPC1992 reports only.
+
+```
+mpc-retrieve-reports.py -O -A '\Users\someone\Asteroids\reports\'
+```
+Generate and output overview of observations from ADES reports, sorted by object and date. Sample output:
+
+```
+2024 UH5
+    2024-11-02
+             K24U05H 1B2024 11 02.88680701 15 05.304+16 53 29.45         17.7 VZ~8cTUM49
+             K24U05H 1B2024 11 02.88722801 15 04.992+16 53 17.52         17.8 VZ~8cTUM49
+2024 UT3
+    2024-11-02
+             K24U03T 1B2024 11 02.92767202 20 40.518-12 08 44.80         19.2 VZ~8cTUM49
+             K24U03T 1B2024 11 02.92882602 20 41.064-12 08 37.45         19.1 VZ~8cTUM49
+             K24U03T 1B2024 11 02.92981602 20 41.545-12 08 31.16         18.9 VZ~8cTUM49
+2024 UT7
+    2024-11-02
+             K24U07T 1B2024 11 02.99200202 52 40.651-47 41 28.54         16.1 VZ~8cTUM49
+             K24U07T 1B2024 11 02.99244302 52 42.343-47 41 22.30         15.9 VZ~8cTUM49
+             K24U07T 1B2024 11 02.99288502 52 44.099-47 41 15.78         16.1 VZ~8cTUM49
+Total objects:              3
+Total single observations:  8
+
+Published:
+MPS  2314524: https://www.minorplanetcenter.net/iau/ECS/MPCArchive/2025/MPS_20250115.pdf
+```
 
 ## discord-aag
 Send AAG Cloudwatcher Solo status to Discord channel

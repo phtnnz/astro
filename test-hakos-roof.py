@@ -90,6 +90,7 @@ def main():
     ic(status)
 
     status_open = False
+    # stext values: "open", "closed", "closing", "opening", "error"
     if "stext" in status:
         stext = status["stext"]
         status_open = stext == "open"

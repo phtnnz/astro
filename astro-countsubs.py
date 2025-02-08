@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Martin Junius
+# Copyright 2023-2025 Martin Junius
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,6 +41,14 @@
 # Version 1.4 / 2024-12-07
 #       Added --target get, include target name in date stats,
 #       works with TARGET_YYYY-MM-DD subdirectories only
+# Version 1.5 / 2025-02-02
+#       Fixed behavior for normal output without --calibration-set, 
+#       still required for CSV Astrobin output
+#       Option -N is now -n
+
+VERSION = "1.5 / 2025-02-02"
+AUTHOR  = "Martin Junius"
+NAME    = "astro-countsubs"
 
 import os
 import argparse
@@ -56,10 +64,6 @@ from verbose import verbose, error
 from jsonconfig import JSONConfig, config
 from csvoutput import csv_output as CSVOutput
 
-
-VERSION = "1.4 / 2024-12-07"
-AUTHOR  = "Martin Junius"
-NAME    = "astro-countsubs"
 
 
 global FILTER, EXPOSURE
@@ -287,11 +291,12 @@ def print_filter_list(exp):
     calibration_set = Options.calibration_set
 
     total = {}
-    darks = {}
-    flats = {}
-    bias = config.get_calibration(calibration_set, "masterbias")
-    (secs, flatdarks) = config.get_calibration1(calibration_set, "masterflatdark")
     single_filter = len(FILTER) == 1
+    if calibration_set:
+        darks = {}
+        flats = {}
+        bias = config.get_calibration(calibration_set, "masterbias")
+        (secs, flatdarks) = config.get_calibration1(calibration_set, "masterflatdark")
 
     for f in FILTER:
         total[f] = {}
@@ -314,8 +319,9 @@ def print_filter_list(exp):
                 if not Options.total_only:
                     print(f" {n}x {time}s", end="")
 
-                darks[str(time)+"s"] = config.get_calibration(calibration_set, "masterdark", str(time)+"s")
-                flats[f] = config.get_calibration(calibration_set, "masterflat", f)
+                if calibration_set:
+                    darks[str(time)+"s"] = config.get_calibration(calibration_set, "masterdark", str(time)+"s")
+                    flats[f] = config.get_calibration(calibration_set, "masterflat", f)
 
                 if time in total[f]:
                     total[f][time] += n
@@ -352,7 +358,7 @@ def print_filter_list(exp):
     mins  = int((total1 - hours*3600) / 60)
     print(f"   {total1}s / {hours:d}h{mins:02d}")
 
-    if not Options.no_calibration and not Options.total_only:
+    if calibration_set and not Options.no_calibration and not Options.total_only:
         print("Darks")
         for t, n in darks.items():
             print(f"   {n}x {t}", end="")
@@ -435,7 +441,7 @@ def main():
     arg.add_argument("-m", "--match", help="filename must contain MATCH")
     arg.add_argument("--target", action="store_true", help="include target name in date stats")
     arg.add_argument("-T", "--total-only", action="store_true", help="list total only")
-    arg.add_argument("-N", "--no-calibration", action="store_true", help="don't list calibration data")
+    arg.add_argument("-n", "--no-calibration", action="store_true", help="don't list calibration data")
     arg.add_argument("-M", "--markdown", action="store_true", help="output markdown table")
     arg.add_argument("dirname", help="directory name")
 

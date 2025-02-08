@@ -39,6 +39,7 @@ NAME    = "discordmsg"
 
 CHANNEL = "#alerts"
 CONFIG  = "discord-config.json"
+TIMEOUT = 20                # seconds timeout for requests.post()
 
 
 class DiscordConfig(JSONConfig):
@@ -114,7 +115,7 @@ def discord_message(msg: str):
     url = config.url()
     data = { "content": msg }
     ic(url, data)
-    response = requests.post(url, json=data)
+    response = requests.post(url, json=data, timeout=TIMEOUT)
     ic(response.status_code)
 
 
