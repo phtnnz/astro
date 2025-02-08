@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Retrieve MPC ACK mails from IMAP mailbox, measurement IDs, measurement data, MPECs etc.
+# Retrieve saved MPC1992 and ADES reports, complement with WAMO data
 
 # ChangeLog
 # Version 1.4 / 2024-06-26
@@ -26,7 +26,11 @@
 # Version 1.7 / 2024-11-14
 #       Fixed -n --no-wamo-requests
 # Version 1.8 / 2025-01-22
-#       Implemented CSV output for ADES reports
+#       Implemented CSV output for MPC1992 and ADES reports
+
+NAME    = "mpc-retrieve-reports"
+VERSION = "1.8 / 2025-02-08"
+AUTHOR  = "Martin Junius"
 
 import os
 import argparse
@@ -47,12 +51,6 @@ from mpc.mpcdata80    import MPCData80
 from ovoutput         import OverviewOutput
 from csvoutput        import csv_output
 from jsonoutput       import JSONOutput
-
-
-
-NAME    = "mpc-retrieve-reports"
-VERSION = "1.8 / 2025-01-22"
-AUTHOR  = "Martin Junius"
 
 
 
@@ -196,6 +194,11 @@ def process_mpc1992(fh: typing.TextIO, line1: str) -> dict:
     ids = {}
     meta = ReportMeta()
 
+    # For CSV output
+    fields_meta = meta.get_fields()
+    # Get from WAMO module
+    fields_wamo = get_wamo_fields()
+
     line = line1
     while line:
         # meta data header
@@ -249,7 +252,10 @@ def process_mpc1992(fh: typing.TextIO, line1: str) -> dict:
         # data lines
         else:
             data = MPCData80(line)
-            mpc1992_obj["_observations"].append(data.get_obj())
+            # add data80 in WAMO format to observations list
+            mpc1992_obj["_observations"].append( {"data":        data.get_obj(),
+                                                  "publication": None   
+                                                 } )
             ids[line] = True
 
         line = fh.readline().rstrip()
@@ -260,6 +266,8 @@ def process_mpc1992(fh: typing.TextIO, line1: str) -> dict:
     meta.set_from_json(mpc1992_obj)
 
     if Options.wamo:
+        if Options.csv:
+            fields = fields_meta + fields_wamo
         wamo = retrieve_from_wamo_json(ids)
         if wamo:
             mpc1992_obj["_wamo"] = wamo
@@ -268,15 +276,29 @@ def process_mpc1992(fh: typing.TextIO, line1: str) -> dict:
                 pub = obs["publication"]
                 if pub:
                     Publication.add(pub)
+
                 if Options.sort_by_date:
                     OverviewOutput.add(obs["data"]["date_minus12"], obs["objId"], obs["data"]["data"])
                 else:
                     OverviewOutput.add(obs["objId"], obs["data"]["date_minus12"], obs["data"]["data"])
+
+                if Options.csv:
+                    data = meta.get_data() + get_wamo_data(obs)
+                    csv_output(fields=fields)
+                    csv_output(row=data)
         else:
             warning("data from MPC1992 report not found in WAMO, submitted ADES instead?")
 
-    # verbose("JSON =", json.dumps(mpc1992_obj, indent=4))
+    else:
+        if Options.csv:
+            fields = fields_meta + fields_wamo
+            csv_output(fields=fields)
+            for row in mpc1992_obj["_observations"]:
+                ic(row)
+                data = meta.get_data() + get_wamo_data(row)
+                csv_output(row=data)
 
+    # verbose("JSON =", json.dumps(mpc1992_obj, indent=4))
     return mpc1992_obj
 
 
@@ -422,11 +444,11 @@ def main():
     arg.add_argument("-v", "--verbose", action="store_true", help="verbose messages")
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("-n", "--no-wamo-requests", action="store_true", help="don't request observations from minorplanetcenter.net WAMO")
-    arg.add_argument("directory", nargs="+", help="read MPC reports from directory/file instead of ACK mails")
+    arg.add_argument("directory", nargs="+", help="read MPC reports from directory or single file(s)")
     arg.add_argument("-M", "--mpc1992-reports", action="store_true", help="read old MPC 1992 reports")
     arg.add_argument("-A", "--ades-reports", action="store_true", help="read new ADES (PSV format) reports")
     arg.add_argument("-o", "--output", help="write JSON/CSV to OUTPUT file")
-    arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format (instead of JSON), NOT YET IMPLEMENTED")
+    arg.add_argument("-C", "--csv", action="store_true", help="use CSV output format")
     arg.add_argument("-J", "--json", action="store_true", help="use JSON output format")
     arg.add_argument("-O", "--overview", action="store_true", help="create overview of objects and observations")
     arg.add_argument("-D", "--sort-by-date", action="store_true", help="sort overview by observation date (minus 12h)")
