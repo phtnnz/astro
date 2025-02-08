@@ -95,6 +95,25 @@ class ReportMeta:
         return self._fields_meta
 
 
+    def _get2(self, obj: dict, key1: str, key2: str=None) -> typing.Any:
+        """
+        Get value from JSON object, support obj[key1] and nested keys obj[key1][key2]
+
+        :param obj: JSON object
+        :type obj: dict
+        :param key1: key 1
+        :type key1: str
+        :param key2: key 2, default None
+        :type key2: str
+        :return: value from JSON object or "" if key(s) not exist
+        :rtype: typing.Any
+        """
+        v = obj.get(key1) or ""
+        if v and type(v)==dict and key2:
+            v = v.get(key2) or ""
+        return v
+
+
     def set_from_json(self, obj: dict):
         """
         Set meta data from JSON object
@@ -104,16 +123,16 @@ class ReportMeta:
         """
         # Meta data from JSON object
         # ADES
-        self._meta_dict["observatory"] = obj["observatory"]["mpcCode"]
-        self._meta_dict["submitter"]   = obj["submitter"]["name"]
-        self._meta_dict["observers"]   = obj["observers"]["name"]
-        self._meta_dict["measurers"]   = obj["measurers"]["name"]
-        self._meta_dict["telescope"]   = obj["telescope"]["design"]
-        self._meta_dict["aperture"]    = float(obj["telescope"]["aperture"])
-        self._meta_dict["fRatio"]      = float(obj["telescope"]["fRatio"])
-        self._meta_dict["detector"]    = obj["telescope"]["detector"]
-        self._meta_dict["astrometry"]  = obj["software"]["astrometry"]
-        self._meta_dict["photometry"]  = obj["software"]["photometry"]
+        self._meta_dict["observatory"] = self._get2(obj, "observatory", "mpcCode")
+        self._meta_dict["submitter"]   = self._get2(obj, "submitter", "name")
+        self._meta_dict["observers"]   = self._get2(obj, "observers", "name")
+        self._meta_dict["measurers"]   = self._get2(obj, "measurers", "name")
+        self._meta_dict["telescope"]   = self._get2(obj, "telescope", "design")
+        self._meta_dict["aperture"]    = float(self._get2(obj, "telescope", "aperture"))
+        self._meta_dict["fRatio"]      = float(self._get2(obj, "telescope", "fRatio"))
+        self._meta_dict["detector"]    = self._get2(obj, "telescope", "detector")
+        self._meta_dict["astrometry"]  = self._get2(obj, "software", "astrometry")
+        self._meta_dict["photometry"]  = self._get2(obj,"software", "photometry")
         #TODO: missing/additional MPC1992 data
         ic(self._meta_dict)
 
@@ -175,6 +194,7 @@ def process_mpc1992(fh: typing.TextIO, line1: str) -> dict:
     mpc1992_obj = {}
     mpc1992_obj["_observations"] = []
     ids = {}
+    meta = ReportMeta()
 
     line = line1
     while line:
@@ -235,6 +255,9 @@ def process_mpc1992(fh: typing.TextIO, line1: str) -> dict:
         line = fh.readline().rstrip()
         if line.startswith("----- end"):
             break
+
+    # Meta data for CSV
+    meta.set_from_json(mpc1992_obj)
 
     if Options.wamo:
         wamo = retrieve_from_wamo_json(ids)
