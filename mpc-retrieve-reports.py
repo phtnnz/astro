@@ -69,6 +69,68 @@ class Options:
 
 
 
+class ReportMeta:
+    """
+    Class for storing report meta data for MPC1992 and ADES
+    """
+
+    def __init__(self):
+        """
+        Init meta data object
+        """
+        # Fields for CSV output
+        self._fields_meta = ["observatory", "submitter", "observers", "measurers", 
+                            "telescope", "aperture", "fRatio", "detector", "astrometry", "photometry"
+                            ]
+        self._meta_dict = {}
+
+
+    def get_fields(self) -> list:
+        """
+        Get header fields for CSV output
+
+        :return: header fields
+        :rtype: list
+        """
+        return self._fields_meta
+
+
+    def set_from_json(self, obj: dict):
+        """
+        Set meta data from JSON object
+
+        :param obj: JSON object
+        :type obj: dict
+        """
+        # Meta data from JSON object
+        # ADES
+        self._meta_dict["observatory"] = obj["observatory"]["mpcCode"]
+        self._meta_dict["submitter"]   = obj["submitter"]["name"]
+        self._meta_dict["observers"]   = obj["observers"]["name"]
+        self._meta_dict["measurers"]   = obj["measurers"]["name"]
+        self._meta_dict["telescope"]   = obj["telescope"]["design"]
+        self._meta_dict["aperture"]    = float(obj["telescope"]["aperture"])
+        self._meta_dict["fRatio"]      = float(obj["telescope"]["fRatio"])
+        self._meta_dict["detector"]    = obj["telescope"]["detector"]
+        self._meta_dict["astrometry"]  = obj["software"]["astrometry"]
+        self._meta_dict["photometry"]  = obj["software"]["photometry"]
+        #TODO: missing/additional MPC1992 data
+        ic(self._meta_dict)
+
+
+    def get_data(self) -> list:
+        """
+        Get meta data as list corresponding to header fields
+
+        :return: meta data list
+        :rtype: list
+        """
+        data = [ self._meta_dict[k] for k in self._fields_meta ]
+        ic(data)
+        return data
+
+
+
 def retrieve_from_directory(root: str) -> None:
     for dir, subdirs, files in os.walk(root):
         verbose("Processing directory", dir)
@@ -224,18 +286,14 @@ def convert_to_float(s: str) -> typing.Any:
 
 def process_ades(fh: typing.TextIO, line1: str) -> dict:
     ades_obj = {}
+    meta = ReportMeta()
 
     # For CSV output
-    fields_meta = ["observatory", "submitter", "observers", "measurers", 
-                   "telescope", "aperture", "fRatio", "detector", "astrometry", "photometry"
-                   ]
+    fields_meta = meta.get_fields()
     # Get from PSV data
     fields_report = None
     # Get from WAMO module
     fields_wamo = get_wamo_fields()
-
-    data_meta = []
-
 
     # Read report txt file
     key1 = None
@@ -281,16 +339,7 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
     ades_obj["_ids"] = ids
 
     # Meta data for CSV
-    data_meta.append( ades_obj["observatory"]["mpcCode"] )
-    data_meta.append( ades_obj["submitter"]["name"] )
-    data_meta.append( ades_obj["observers"]["name"] )
-    data_meta.append( ades_obj["measurers"]["name"] )
-    data_meta.append( ades_obj["telescope"]["design"] )
-    data_meta.append( float(ades_obj["telescope"]["aperture"]) )
-    data_meta.append( float(ades_obj["telescope"]["fRatio"]) )
-    data_meta.append( ades_obj["telescope"]["detector"] )
-    data_meta.append( ades_obj["software"]["astrometry"] )
-    data_meta.append( ades_obj["software"]["photometry"] )
+    meta.set_from_json(ades_obj)
 
     if Options.wamo:
         if Options.csv:
@@ -324,7 +373,7 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
                         OverviewOutput.add(w_obs["objId"], w_obs["data"]["date_minus12"], w_obs["data"]["data"])
 
                 if Options.csv:
-                    data = data_meta + [ convert_to_float(row[k]) for k in fields_report ] + get_wamo_data(w_obs)
+                    data = meta.get_data() + [ convert_to_float(row[k]) for k in fields_report ] + get_wamo_data(w_obs)
                     csv_output(fields=fields)
                     csv_output(row=data)
         else:
@@ -335,7 +384,7 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
             fields = fields_meta + fields_report
             csv_output(fields=fields)
             for row in ades_obj["_observations"]:
-                data = data_meta + [ convert_to_float(row[k]) for k in fields_report ]
+                data = meta.get_data() + [ convert_to_float(row[k]) for k in fields_report ]
                 csv_output(row=data)
 
     return ades_obj
