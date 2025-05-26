@@ -45,8 +45,10 @@
 #       Fixed behavior for normal output without --calibration-set, 
 #       still required for CSV Astrobin output
 #       Option -N is now -n
+# Version 1.6 / 2025-05-26
+#       Fixed behavior without filter/filter set (OSC w/UVIR cut)
 
-VERSION = "1.5 / 2025-02-02"
+VERSION = "1.6 / 2025-05-26"
 AUTHOR  = "Martin Junius"
 NAME    = "astro-countsubs"
 
@@ -219,8 +221,9 @@ def walk_the_dir(dir):
                         # VdS "Piehler" style
                         match = re.search(r'_(' + f + r')_()\d{4}-\d{2}-\d{2}', fname)
                     if not match:
-                        # OSC old naming without filter
+                        # OSC naming without filter
                         # eg LIGHT_NGC 6744_2024-06-04_01-30-36__-10.00__G120_O30_300.00s_0000.fits
+                        #    LIGHT_CG 8 and 9_2025-04-30_21-49-48__-5.10_G100_O50_300.00s_0015.fits
                         if f == FILTER[0]:
                             match = re.search(r'_()_.+_(\d+)\.00s_', fname)
                     if match:
@@ -310,7 +313,7 @@ def print_filter_list(exp):
 
         for f in exp[date].keys():
             if exp[date][f]:
-                if not Options.total_only:
+                if not Options.total_only and Options.filter_set:
                     print(f"   {f}:", end="")
 
             for time in exp[date][f].keys():
@@ -333,7 +336,10 @@ def print_filter_list(exp):
     print("Total")
     for f in total.keys():
         if total[f]:
-            print(f"   {f}:", end="")
+            if not single_filter:
+                print(f"   {f}:", end="")
+            else:
+                print("  ", end="")
             for time in total[f].keys():
                 n = total[f][time]
                 time = int(time) 
@@ -365,7 +371,10 @@ def print_filter_list(exp):
         print()
         print("Flats")
         for f, n in flats.items():
-            print(f"   {f}: {n}x", end="")
+            if single_filter:
+                print(f"   {n}x", end="")
+            else:
+                print(f"   {f}: {n}x", end="")
         print()
         if bias:
             print(f"Bias\n   {bias}x")
@@ -475,6 +484,8 @@ def main():
     Options.no_calibration = args.no_calibration
     Options.markdown = args.markdown
     Options.target = args.target
+    if not Options.filter_set:
+        FILTER = ["NoFilter"]
 
     if Options.csv and Options.target:
         error("can't use both --csv and --target")
