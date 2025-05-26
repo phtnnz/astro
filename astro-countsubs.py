@@ -46,7 +46,7 @@
 #       still required for CSV Astrobin output
 #       Option -N is now -n
 # Version 1.6 / 2025-05-26
-#       Fixed behavior without filter/filter set (OSC w/UVIR cut)
+#       Fixed behavior without filter/filter set (OSC w/UVIR cut), including CSV output
 
 VERSION = "1.6 / 2025-05-26"
 AUTHOR  = "Martin Junius"
@@ -71,14 +71,6 @@ from csvoutput import csv_output as CSVOutput
 global FILTER, EXPOSURE
 FILTER = ["L", "R", "G", "B", "Ha", "OIII", "SII"]
 EXPOSURE = None
-
-# ASTROBIN_FIELDS = [ "date", "filter", "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
-#                    "darks", "flats", "flatDarks", "bias", "bortle", "meanSqm", "meanFwhm", "temperature"  ]
-ASTROBIN_FIELDS = [ "date", "filter", "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
-                   "darks", "flats", "flatDarks", "bias", "bortle"  ]
-
-
-
 KEY_FILTER_SETS = "filter sets"
 KEY_CALIBRATION_SETS = "calibration sets"
 KEY_SETTINGS = "settings"
@@ -93,11 +85,14 @@ class AstroConfig(JSONConfig):
     def get_filter_id(self, filter_set, filter):
         obj = self.get_json()
         if KEY_FILTER_SETS in obj:
-            sets = obj[KEY_FILTER_SETS]
-            if filter_set in sets:
-                return sets[filter_set][filter]
+            if filter_set:
+                sets = obj[KEY_FILTER_SETS]
+                if filter_set in sets:
+                    return sets[filter_set][filter]
+                else:
+                    error(f"unknown filter set \"{filter_set}\"")
             else:
-                error(f"unknown filter set \"{filter_set}\"")
+                return None
         else:
             error(f"no key \"{KEY_FILTER_SETS}\" in config")
 
@@ -402,7 +397,8 @@ def csv_list(exp):
     # "date", "filter", "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
     # "darks", "flats", "flatDarks", "bias", "bortle", "meanSqm", "meanFwhm", "temperature"
     #
-    # Not all fields must be present, BUT FIELDS MUST NOT BE EMPTY
+    # Not all fields must be present, BUT FIELDS MUST NOT BE EMPTY.
+    # "filter" will be added only if --filter-set is specified.
 
     for date in exp.keys():
         for f in exp[date].keys():
@@ -420,15 +416,23 @@ def csv_list(exp):
                 #             extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
                 #             darks, flats, 0, bias,
                 #             extra("bortle"), extra("sqm"), extra("fwhm"), extra("temperature") ]
-                fields = [  date, filter, n, time, 
-                            extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
-                            darks, flats, flatdarks, bias,
-                            extra("bortle") ]
+                fields = [ date ]
+                if filter_set:
+                    fields.append(filter)
+                fields.extend( [ n, time, 
+                                 extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
+                                 darks, flats, flatdarks, bias,
+                                 extra("bortle") ] )
                 verbose(",".join(map(str, fields)))
                 CSVOutput.add_row(fields)
 
     if Options.csv:
-        CSVOutput.add_fields(ASTROBIN_FIELDS)
+        fields = [ "date" ]
+        if filter_set:
+            fields.append("filter")
+        fields.extend( [ "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
+                         "darks", "flats", "flatDarks", "bias", "bortle" ] )
+        CSVOutput.add_fields(fields)
         CSVOutput.write(Options.output, set_locale=False)
 
    
