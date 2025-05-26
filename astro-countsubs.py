@@ -64,7 +64,7 @@ ic.disable()
 # Local modules
 from verbose import verbose, error
 from jsonconfig import JSONConfig, config
-from csvoutput import csv_output as CSVOutput
+from csvoutput import csv_output
 
 
 
@@ -424,7 +424,7 @@ def csv_list(exp):
                                  darks, flats, flatdarks, bias,
                                  extra("bortle") ] )
                 verbose(",".join(map(str, fields)))
-                CSVOutput.add_row(fields)
+                csv_output.add_row(fields)
 
     if Options.csv:
         fields = [ "date" ]
@@ -432,8 +432,8 @@ def csv_list(exp):
             fields.append("filter")
         fields.extend( [ "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
                          "darks", "flats", "flatDarks", "bias", "bortle" ] )
-        CSVOutput.add_fields(fields)
-        CSVOutput.write(Options.output, set_locale=False)
+        csv_output.add_fields(fields)
+        csv_output.write(Options.output, set_locale=False)
 
    
    
