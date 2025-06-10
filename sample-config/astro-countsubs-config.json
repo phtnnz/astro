@@ -34,6 +34,7 @@
         }
 
     },
+    
     "calibration sets": {
         "remote2": {
             "##": "Settings and number of calibration frames for IAS Remote Box 2 (IAS 10\")",
@@ -99,6 +100,35 @@
             }
         },
 
+        "esprit100ed-m81-2022": {
+            "##": "Settings and number of calibration frames for Esprit 100ED in the backyard",
+            "settings": {
+                "mode": 1,
+                "gain": 56,
+                "offset": 10,
+                "binning": 1,
+                "cooling": -5,
+                "fnumber": 5.5,
+                "bortle": 5
+            },
+            "masterbias": { 
+                "*": 50 
+            },
+            "masterflat": {
+                "L": 20,
+                "R": 20,
+                "G": 20,
+                "B": 20,
+                "Ha": 20,
+                "OIII": 20,
+                "SII": 20
+            },
+            "masterdark": {
+                "200s": 20,
+                "600s": 20
+            }
+        },
+
         "ak3-asi294mc-2024": {
             "##": "Settings and number of calibration frames for AK3 with ASI294MC Pro, June 2024",
             "settings": {
@@ -127,6 +157,32 @@
                 "180s": 40,
                 "300s": 40
             }
+        },
+
+        "ak3-asi2600mcduo-2025": {
+            "##": "Settings and number of calibration frames for AK3 with ASI2600MC Duo, Apr/May 2025",
+            "settings": {
+                "mode": "n/a",
+                "gain": 100,
+                "offset": 50,
+                "binning": 1,
+                "cooling": -5,
+                "fnumber": 3.7,
+                "bortle": 1
+            },
+            "masterbias": { 
+                "*": 50 
+            },
+            "masterflat": {
+                "NoFilter": 30
+            },
+            "masterdark": {
+                "60s": 30,
+                "120s": 30,
+                "180s": 30,
+                "300s": 30
+            }
         }
+
     }
 }
