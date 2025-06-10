@@ -128,8 +128,8 @@ Use the batch files/wrappers with full path in N.I.N.A's "External Script" instr
 Count sub frames in directory structure and compute total exposure time. Relies on *YYYY-MM-DD sub-directories and FITS filenames containing filter name and exposure time. Additional data on calibration from JSON config file.
 
 ```
-usage: astro-countsubs [-h] [-v] [-d] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] [-C] [-o OUTPUT] [-F FILTER_SET] [--calibration-set CALIBRATION_SET]
-                       [-m MATCH] [--target] [-T] [-N] [-M]
+usage: astro-countsubs [-h] [-v] [-d] [-x EXCLUDE] [-f FILTER] [-t EXPOSURE_TIME] [-C] [-o OUTPUT] [-F FILTER_SET] [--calibration-set CALIBRATION_SET] [-m MATCH]
+                       [--target] [-T] [-n] [-M]
                        dirname
 
 Traverse directory and count N.I.N.A subs
@@ -158,15 +158,24 @@ options:
                         filename must contain MATCH
   --target              include target name in date stats
   -T, --total-only      list total only
-  -N, --no-calibration  don't list calibration data
+  -n, --no-calibration  don't list calibration data
   -M, --markdown        output markdown table
 
-Version: 1.4 / 2024-12-07 / Martin Junius
+Version: 1.6 / 2025-05-26 / Martin Junius
 ```
 
 Config file astro-countsubs-config.json
 
 Examples:
+
+```
+astro-countsubs.py --markdown --calibration-set ak3-asi2600mcduo-2025 '\Images\NGC 5139\'
+```
+OSC without filter (builtin UV/IR cut), output markdown table like this:
+|Date|NoFilter|
+|----|--------|
+|2025-05-03|66x 60s|
+|Total|66x 60s|
 
 ```
 astro-countsubs.py --filter-set "Astronomik 2in" --calibration-set ak3-asi294mc-2024 --filter L '\Images\NGC 6744\'

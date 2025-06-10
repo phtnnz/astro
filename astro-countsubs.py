@@ -45,8 +45,10 @@
 #       Fixed behavior for normal output without --calibration-set, 
 #       still required for CSV Astrobin output
 #       Option -N is now -n
+# Version 1.6 / 2025-05-26
+#       Fixed behavior without filter/filter set (OSC w/UVIR cut), including CSV output
 
-VERSION = "1.5 / 2025-02-02"
+VERSION = "1.6 / 2025-05-26"
 AUTHOR  = "Martin Junius"
 NAME    = "astro-countsubs"
 
@@ -62,21 +64,13 @@ ic.disable()
 # Local modules
 from verbose import verbose, error
 from jsonconfig import JSONConfig, config
-from csvoutput import csv_output as CSVOutput
+from csvoutput import csv_output
 
 
 
 global FILTER, EXPOSURE
 FILTER = ["L", "R", "G", "B", "Ha", "OIII", "SII"]
 EXPOSURE = None
-
-# ASTROBIN_FIELDS = [ "date", "filter", "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
-#                    "darks", "flats", "flatDarks", "bias", "bortle", "meanSqm", "meanFwhm", "temperature"  ]
-ASTROBIN_FIELDS = [ "date", "filter", "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
-                   "darks", "flats", "flatDarks", "bias", "bortle"  ]
-
-
-
 KEY_FILTER_SETS = "filter sets"
 KEY_CALIBRATION_SETS = "calibration sets"
 KEY_SETTINGS = "settings"
@@ -91,11 +85,14 @@ class AstroConfig(JSONConfig):
     def get_filter_id(self, filter_set, filter):
         obj = self.get_json()
         if KEY_FILTER_SETS in obj:
-            sets = obj[KEY_FILTER_SETS]
-            if filter_set in sets:
-                return sets[filter_set][filter]
+            if filter_set:
+                sets = obj[KEY_FILTER_SETS]
+                if filter_set in sets:
+                    return sets[filter_set][filter]
+                else:
+                    error(f"unknown filter set \"{filter_set}\"")
             else:
-                error(f"unknown filter set \"{filter_set}\"")
+                return None
         else:
             error(f"no key \"{KEY_FILTER_SETS}\" in config")
 
@@ -219,8 +216,9 @@ def walk_the_dir(dir):
                         # VdS "Piehler" style
                         match = re.search(r'_(' + f + r')_()\d{4}-\d{2}-\d{2}', fname)
                     if not match:
-                        # OSC old naming without filter
+                        # OSC naming without filter
                         # eg LIGHT_NGC 6744_2024-06-04_01-30-36__-10.00__G120_O30_300.00s_0000.fits
+                        #    LIGHT_CG 8 and 9_2025-04-30_21-49-48__-5.10_G100_O50_300.00s_0015.fits
                         if f == FILTER[0]:
                             match = re.search(r'_()_.+_(\d+)\.00s_', fname)
                     if match:
@@ -310,7 +308,7 @@ def print_filter_list(exp):
 
         for f in exp[date].keys():
             if exp[date][f]:
-                if not Options.total_only:
+                if not Options.total_only and Options.filter_set:
                     print(f"   {f}:", end="")
 
             for time in exp[date][f].keys():
@@ -333,7 +331,10 @@ def print_filter_list(exp):
     print("Total")
     for f in total.keys():
         if total[f]:
-            print(f"   {f}:", end="")
+            if not single_filter:
+                print(f"   {f}:", end="")
+            else:
+                print("  ", end="")
             for time in total[f].keys():
                 n = total[f][time]
                 time = int(time) 
@@ -365,7 +366,10 @@ def print_filter_list(exp):
         print()
         print("Flats")
         for f, n in flats.items():
-            print(f"   {f}: {n}x", end="")
+            if single_filter:
+                print(f"   {n}x", end="")
+            else:
+                print(f"   {f}: {n}x", end="")
         print()
         if bias:
             print(f"Bias\n   {bias}x")
@@ -393,7 +397,8 @@ def csv_list(exp):
     # "date", "filter", "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
     # "darks", "flats", "flatDarks", "bias", "bortle", "meanSqm", "meanFwhm", "temperature"
     #
-    # Not all fields must be present, BUT FIELDS MUST NOT BE EMPTY
+    # Not all fields must be present, BUT FIELDS MUST NOT BE EMPTY.
+    # "filter" will be added only if --filter-set is specified.
 
     for date in exp.keys():
         for f in exp[date].keys():
@@ -411,16 +416,24 @@ def csv_list(exp):
                 #             extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
                 #             darks, flats, 0, bias,
                 #             extra("bortle"), extra("sqm"), extra("fwhm"), extra("temperature") ]
-                fields = [  date, filter, n, time, 
-                            extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
-                            darks, flats, flatdarks, bias,
-                            extra("bortle") ]
+                fields = [ date ]
+                if filter_set:
+                    fields.append(filter)
+                fields.extend( [ n, time, 
+                                 extra("binning"), extra("gain"), extra("cooling"), extra("fnumber"),
+                                 darks, flats, flatdarks, bias,
+                                 extra("bortle") ] )
                 verbose(",".join(map(str, fields)))
-                CSVOutput.add_row(fields)
+                csv_output.add_row(fields)
 
     if Options.csv:
-        CSVOutput.add_fields(ASTROBIN_FIELDS)
-        CSVOutput.write(Options.output, set_locale=False)
+        fields = [ "date" ]
+        if filter_set:
+            fields.append("filter")
+        fields.extend( [ "number", "duration", "binning", "gain", "sensorCooling", "fNumber", 
+                         "darks", "flats", "flatDarks", "bias", "bortle" ] )
+        csv_output.add_fields(fields)
+        csv_output.write(Options.output, set_locale=False)
 
    
    
@@ -475,6 +488,8 @@ def main():
     Options.no_calibration = args.no_calibration
     Options.markdown = args.markdown
     Options.target = args.target
+    if not Options.filter_set:
+        FILTER = ["NoFilter"]
 
     if Options.csv and Options.target:
         error("can't use both --csv and --target")
