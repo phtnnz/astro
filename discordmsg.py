@@ -176,7 +176,7 @@ def main():
     if args.dateminus12:
         timestamp = date_minus12h()
     if timestamp:
-        args.message.insert(0, timestamp)
+        args.message.insert(0, timestamp + ": ")
     discord_message("\n".join(args.message))
 
 
