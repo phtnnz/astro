@@ -10,9 +10,9 @@ nina-flag-ready.*
 nina-zip-*.*
 test-hakos-roof.*
 discord-aag.*
+discordmsg.*
 
 csvoutput.py
-discordmsg.py
 jsonconfig.py
 jsonoutput.py
 ovoutput.py
