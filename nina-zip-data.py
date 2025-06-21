@@ -68,6 +68,8 @@
 # Version 1.6 / 2025-01-09
 #       Slightly changed options logic for --last, --date, --ready, --subdir
 #       When --subdir is specified, upload to ZIPDIR/SUBDIR/ZIPSUB/SUBDIR_DATE
+# Version 1.7 / 2025-06-19
+#       If archive already exists in tmp dir and not at dest, retry upload
 
 import os
 import argparse
@@ -93,7 +95,7 @@ from jsonconfig import JSONConfig
 
 NAME        = "nina-zip-data"
 DESCRIPTION = "Zip (7z) N.I.N.A data and upload"
-VERSION     = "1.6 / 2025-01-09"
+VERSION     = "1.7 / 2025-06-19"
 AUTHOR      = "Martin Junius"
 
 TIMER   = 60
@@ -289,18 +291,17 @@ def scan_targets(datadir, tmpdir, zipdir, targets, date):
 
         arcname = target + "-" + date + ".7z"
         verbose(f"target to archive: {target} -> {arcname}")
-        # zipfile1 = os.path.join(tmpdir, target + ".7z")
         zipfile  = os.path.join(tmpdir, arcname)
-        # if os.path.exists(zipfile1):
-        #     verbose(f"7z file {zipfile1} already exists")
-        # elif os.path.exists(zipfile):
-        if os.path.exists(zipfile):
-            verbose(f"file {zipfile} already exists")
-        elif check_upload(zipdir, arcname):
+        if check_upload(zipdir, arcname):
             verbose(f"archive {arcname} already uploaded")
         else:
+            # Archive already exists
+            if os.path.exists(zipfile):
+                verbose(f"file {zipfile} already exists, retrying upload")
+                upload_zip_archive(zipfile, zipdir, arcname)
+
             # TARGET-YYYY-MM-DD/ directories
-            if os.path.isdir(os.path.join(datadir, target + "-" + date)):
+            elif os.path.isdir(os.path.join(datadir, target + "-" + date)):
                 verbose(f"{time_now()} archiving {target}-{date}")
                 create_zip_archive(target + "-" + date, datadir, zipfile)
                 upload_zip_archive(zipfile, zipdir, arcname)

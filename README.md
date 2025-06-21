@@ -196,8 +196,7 @@ targets of an observation night.
 Supersedes nina-zip-ready-data and nina-zip-last-night.
 
 ```
-usage: nina-zip-data [-h] [-v] [-d] [-n] [-l] [--ready] [--last] [--date DATE] [--subdir SUBDIR] [--targets TARGETS] [--hostname HOSTNAME]
-                     [-t TIME_INTERVAL] [-m MX]
+usage: nina-zip-data [-h] [-v] [-d] [-n] [-l] [--ready] [--last] [--date DATE] [--subdir SUBDIR] [--targets TARGETS] [--hostname HOSTNAME] [-t TIME_INTERVAL] [-m MX]
 
 Zip (7z) N.I.N.A data and upload
 
@@ -208,7 +207,7 @@ options:
   -n, --no-action       dry run
   -l, --low-priority    set process priority to low
   --ready               run in TARGET.ready mode
-  --last                run in last night mode (2025-01-09)
+  --last                run in last night mode (2025-06-21)
   --date DATE           run in archive data from DATE mode
   --subdir SUBDIR       search SUBDIR_YYYY-MM-DD in data dir for ready targets (--ready)
   --targets TARGETS     archive TARGET[,TARGET] only (--last / --date)
@@ -217,7 +216,7 @@ options:
                         time interval for checking data directory (default 60s)
   -m MX, --mx MX        7-Zip compression setting -mx (default 5), 0=none, 1=fastest, 3=fast, 5=normal, 7=max, 9=ultra
 
-Version 1.6 / 2025-01-09 / Martin Junius
+Version 1.7 / 2025-06-19 / Martin Junius
 ```
 
 ### --ready / --subdir mode
@@ -239,6 +238,11 @@ Archive all N.I.N.A data from the last observation night (or date given by the -
 
 Setting --date implies --last, --subdir implies --ready, add an extra --ready or --last to
 override this behavior.
+
+If upload to "zip dir" fails, the already archived data will be kept in "tmp dir". 
+The script will retry the upload on the next run, if the original data still exists.
+Orphaned archives can be re-uploaded by creating an empty target directory in "data dir" and 
+specifying the correct date with --date.
 
 Config file: nina-zip-config.json
 
