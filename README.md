@@ -8,6 +8,7 @@ Python scripts for automation of NEO observations with N.I.N.A (and more)
 - Count # of frames in data directory, output CSV for Astrobin import
 - Process MPC ACK mails and retrieve observations from MPC WAMO
 - Process MPC 1992 and ADES reports, retrieve observations from MPC WAMO
+- Send message to Discord channel
 
 Copyright 2023-2025 Martin Junius
 
@@ -49,7 +50,7 @@ Local modules:
 | jsonconfig       | Read/write JSON config files for the astro scripts |
 | verbose          | verbose(), warning() and error() messages |
 | csvoutput        | Handle output to CSV file |
-| discordmsg       | Send message via Discord webhook |
+| discordmsg       | Send message via Discord webhook (can also be used directly) |
 | jsonoutput       | Handle output to JSON file |
 | ovoutput         | Handle output to overview text file |
 | radec            | Class Coord for handling RA/DEC coordinates |
@@ -118,9 +119,10 @@ Config file: hakosroof.json
 Use the batch files/wrappers with full path in N.I.N.A's "External Script" instruction, e.g.
 
 ```
-"D:\Users\remote\Documents\Scripts\test-hakos-roof.bat"
-"D:\Users\remote\Documents\Scripts\nina-flag-ready.bat" "TARGET"
-"D:\Users\remote\Documents\Scripts\discord-aag.bat"
+"D:\Users\someone\someplace\test-hakos-roof.bat"
+"D:\Users\someone\someplace\nina-flag-ready.bat" "TARGET"
+"D:\Users\someone\someplace\discord-msg.bat" "MESSAGE"
+"D:\Users\someone\someplace\discord-aag.bat"
 ```
 
 
@@ -415,6 +417,33 @@ Published:
 MPS  2314524: https://www.minorplanetcenter.net/iau/ECS/MPCArchive/2025/MPS_20250115.pdf
 ```
 
+
+## discordmsg
+Send message to Discord channel via webhook
+
+```
+usage: discordmsg [-h] [-v] [-d] [-C CHANNEL] [-T] [-D] message [message ...]
+
+Test sending message to Discord channel
+
+positional arguments:
+  message               message
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         verbose messages
+  -d, --debug           more debug messages
+  -C CHANNEL, --channel CHANNEL
+                        channel name to match in JSON config
+  -T, --datetime        prefix with current date/time
+  -D, --dateminus12     prefix with current date - 12h
+
+Version 0.3 / 2025-06-21 / Martin Junius
+```
+
+Config file: discord-config.json
+
+
 ## discord-aag
 Send AAG Cloudwatcher Solo status to Discord channel
 
@@ -434,6 +463,8 @@ options:
 
 Version 0.1 / 2024-12-27 / Martin Junius
 ```
+
+Config file: discord-config.json
 
 
 ## JSON Config Files
