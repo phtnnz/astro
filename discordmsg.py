@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2024 Martin Junius
+# Copyright 2024-2025 Martin Junius
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,9 +19,12 @@
 #       Simple send a message to discord server
 # Version 0.2 / 2024-12-31
 #       Clean-up, typing, docstrings, added get_obj
+# Version 0.3 / 2025-06-21
+#       Added -T / --datetime and -D / --dateminus12 options
 
 import sys
 import argparse
+import datetime
 
 # The following libs must be installed with pip
 import requests
@@ -33,7 +36,7 @@ from verbose import verbose, warning, error
 from jsonconfig import JSONConfig
 
 
-VERSION = "0.2 / 2024-12-31"
+VERSION = "0.3 / 2025-06-21"
 AUTHOR  = "Martin Junius"
 NAME    = "discordmsg"
 
@@ -95,6 +98,26 @@ class DiscordConfig(JSONConfig):
 config = DiscordConfig(CONFIG)
 
 
+def time_now() -> str:
+    """
+    Current date and time
+
+    :return: current date time as YYYY-MM-DD HH:MM:SS
+    :rtype: str
+    """
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def date_minus12h() -> str:
+    """
+    Start date of upcoming session night
+
+    :return: start date of upcoming night as YYYY-MM-DD
+    :rtype: str
+    """
+    return (datetime.datetime.now() - datetime.timedelta(hours=12)).strftime("%Y-%m-%d")
+
+
+
 def discord_set_channel(channel: str=CHANNEL):
     """
     Set Discord channel for messages
@@ -121,7 +144,7 @@ def discord_message(msg: str):
 
 
 
-### Test run as a command line script ###
+### Run as a stand-alone logging script ###
 def main():
     arg = argparse.ArgumentParser(
         prog        = NAME,
@@ -130,6 +153,8 @@ def main():
     arg.add_argument("-v", "--verbose", action="store_true", help="verbose messages")
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
     arg.add_argument("-C", "--channel", help="channel name to match in JSON config")
+    arg.add_argument("-T", "--datetime", action="store_true", help="prefix with current date/time")
+    arg.add_argument("-D", "--dateminus12", action="store_true", help="prefix with current date - 12h")
     arg.add_argument("message", nargs="+", help="message")
 
     args = arg.parse_args()
@@ -144,7 +169,14 @@ def main():
 
     if args.channel:
         discord_set_channel(args.channel)
-        
+
+    timestamp = None
+    if args.datetime:
+        timestamp = time_now()
+    if args.dateminus12:
+        timestamp = date_minus12h()
+    if timestamp:
+        args.message.insert(0, timestamp + ": ")
     discord_message("\n".join(args.message))
 
 
