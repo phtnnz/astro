@@ -38,7 +38,7 @@
       {
         "$id": "6",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.3-discord / 2024-09-10 / Martin Junius",
+        "Text": "Version 1.4-discord / 2024-07-19 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -165,13 +165,13 @@
                 "$id": "21",
                 "$type": "WhenPlugin.When.Expr, WhenPlugin",
                 "Expression": "",
-                "Type": null
+                "Type": "Any"
               },
               "DurExpr": {
                 "$id": "22",
                 "$type": "WhenPlugin.When.Expr, WhenPlugin",
                 "Expression": "",
-                "Type": null
+                "Type": "Any"
               },
               "TemperatureExpr": null,
               "DurationExpr": null,
@@ -215,9 +215,9 @@
               "$id": "26",
               "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTime, NINA.Sequencer",
               "Hours": 19,
-              "Minutes": 35,
+              "Minutes": 20,
               "MinutesOffset": 0,
-              "Seconds": 50,
+              "Seconds": 24,
               "SelectedProvider": {
                 "$id": "27",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.NauticalDuskProvider, NINA.Sequencer"
@@ -307,11 +307,21 @@
               },
               "ErrorBehavior": 0,
               "Attempts": 1
+            },
+            {
+              "$id": "36",
+              "$type": "NINA.Sequencer.SequenceItem.Utility.ExternalScript, NINA.Sequencer",
+              "Script": "\"D:\\Users\\remote\\Documents\\Scripts\\discord-aag.bat\"",
+              "Parent": {
+                "$ref": "11"
+              },
+              "ErrorBehavior": 0,
+              "Attempts": 1
             }
           ]
         },
         "Triggers": {
-          "$id": "36",
+          "$id": "37",
           "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
           "$values": []
         },
@@ -324,36 +334,36 @@
     ]
   },
   "Triggers": {
-    "$id": "37",
+    "$id": "38",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
     "$values": [
       {
-        "$id": "38",
+        "$id": "39",
         "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordAlertOnErrorTrigger, Discord Alert",
         "Text": "@everyone ERROR in startup sequence",
         "Parent": {
           "$ref": "1"
         },
         "TriggerRunner": {
-          "$id": "39",
+          "$id": "40",
           "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
           "Strategy": {
             "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
           },
           "Name": null,
           "Conditions": {
-            "$id": "40",
+            "$id": "41",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "IsExpanded": true,
           "Items": {
-            "$id": "41",
+            "$id": "42",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "Triggers": {
-            "$id": "42",
+            "$id": "43",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },

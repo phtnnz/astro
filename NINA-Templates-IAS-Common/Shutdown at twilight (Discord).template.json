@@ -38,7 +38,7 @@
       {
         "$id": "6",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.3 / 2024-12-31 / Martin Junius",
+        "Text": "Version 1.4 / 2025-07-19 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -81,7 +81,7 @@
           "$ref": "1"
         },
         "ErrorBehavior": 2,
-        "Attempts": 1
+        "Attempts": 2
       },
       {
         "$id": "11",
@@ -159,8 +159,8 @@
             {
               "$id": "20",
               "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTime, NINA.Sequencer",
-              "Hours": 4,
-              "Minutes": 15,
+              "Hours": 6,
+              "Minutes": 41,
               "MinutesOffset": 0,
               "Seconds": 18,
               "SelectedProvider": {
@@ -189,7 +189,7 @@
       {
         "$id": "23",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Final park (also mitigates sometimes strange behaviour of DDM85), test parked status of Hakos roof API",
+        "Text": "Final park (also mitigates sometimes strange behaviour of DDM85)",
         "Parent": {
           "$ref": "1"
         },
@@ -213,7 +213,7 @@
           "$ref": "1"
         },
         "ErrorBehavior": 2,
-        "Attempts": 1
+        "Attempts": 2
       },
       {
         "$id": "26",
