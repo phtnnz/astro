@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Martin Junius
+# Copyright 2023-2025 Martin Junius
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,6 +45,8 @@
 # Version 1.4 / 2024-09-02
 #       Added --date option, default today, use this date for output and template format
 #       New "subdir" config setting, see below
+# Version 1.5 / 2025-08-20
+#       Added -l --list-targets option, just output the list of targets
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
@@ -63,7 +65,7 @@
 # 0=target, 1=date, 2=seq, 3=number
 # "subdir" is optional, or can be blank ""
 
-VERSION = "1.4 / 2024-09-02"
+VERSION = "1.5 / 2025-08-20"
 AUTHOR  = "Martin Junius"
 NAME    = "nina-create-sequence2"
 
@@ -110,6 +112,7 @@ class Options:
     """ Command line options """
     debug_print_attr = False            # -A --debug-print-attr
     date = date.today().isoformat()     # --date
+    list_targets = False                # -l --list-targets
 
 
 
@@ -494,6 +497,11 @@ class NINASequence(NINABase):
                 # in filename templates under Options > Imaging
                 target = formatted_target
 
+                # Just output the target list
+                if Options.list_targets:
+                    print(target)
+                    continue
+
                 print("#{:03d} target={} RA={} DEC={}".format(seq, target, ra, dec))
                 if time_utc:
                     print("     UT={} / local {}".format(time_utc, time_local))
@@ -533,6 +541,7 @@ def main():
     arg.add_argument("-D", "--destination-dir", help="output dir for created sequence")
     arg.add_argument("-o", "--output", help="output .json file")
     arg.add_argument("-n", "--no-output", action="store_true", help="dry run, don't create output files")
+    arg.add_argument("-l", "--list-targets", action="store_true", help="list targets only")
     arg.add_argument("-S", "--setting", help="use template/target SETTING from config")
     arg.add_argument("--date", help=f"use DATE for generating sequence (default {Options.date})")
     arg.add_argument("filename", nargs="+", help="CSV target data list")
@@ -547,6 +556,7 @@ def main():
         verbose.enable()
 
     Options.debug_print_attr = args.debug_print_attr
+    Options.list_targets = args.list_targets
 
     if args.date:
         Options.date = args.date
@@ -602,7 +612,7 @@ def main():
         sequence.process_csv(target, f, target_format, tzname, subdir)
 
     output_path = os.path.join(destination_dir, output)
-    if not args.no_output:
+    if not args.no_output and not args.list_targets:
         verbose("writing JSON sequence", output_path)
         sequence.write_json(output_path)
 
