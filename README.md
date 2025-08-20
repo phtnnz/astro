@@ -65,7 +65,7 @@ The directories NINA-Templates-IAS/, NINA-Templates-IAS3/ and NINA-Templates-Com
 Currently used for the M49, the IAS Remote Telescopes at Hakos, Namibia
 
 ```
-usage: nina-create-sequence2 [-h] [-v] [-d] [-A] [-D DESTINATION_DIR] [-o OUTPUT] [-n] [-S SETTING] [--date DATE] filename [filename ...]
+usage: nina-create-sequence2 [-h] [-v] [-d] [-A] [-D DESTINATION_DIR] [-o OUTPUT] [-n] [-l] [-S SETTING] [--date DATE] filename [filename ...]
 
 Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV
 
@@ -83,11 +83,12 @@ options:
   -o OUTPUT, --output OUTPUT
                         output .json file
   -n, --no-output       dry run, don't create output files
+  -l, --list-targets    list targets only
   -S SETTING, --setting SETTING
                         use template/target SETTING from config
-  --date DATE           use DATE for generating sequence (default 2024-09-04)
+  --date DATE           use DATE for generating sequence (default 2025-08-20)
 
-Version: 1.4 / 2024-09-02 / Martin Junius
+Version: 1.5 / 2025-08-20 / Martin Junius
 ```
 
 Config: nina-create-sequence.json
