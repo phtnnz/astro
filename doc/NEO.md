@@ -59,10 +59,10 @@ As of 2025-08-20, the sequence works with N.I.N.A. 3.1.2 and 3.2 BETA2.
 
 ## nina-zip-data
 
-nina-zip-data.py runs in parallel with the observation sequence in N.I.N.A, waiting for data to be flagged as ".ready":
+nina-zip-data.py runs in parallel with the observation sequence in N.I.N.A, waiting for data to be flagged as ".ready". Compression is set to fastest to speed up the archiving.
 
 ```
-nina-zip-data.py -v --ready --subdir=_asteroids
+nina-zip-data.py -v --ready --subdir=_asteroids --mx 1
 ```
 
 Example Output:
@@ -93,7 +93,7 @@ nina-zip-data: target ready: 2025-08-20 003 P22d84P (n036)
 2025-08-20 21:13:05 archiving target 2025-08-20 003 P22d84P (n036)
 ==================================================================
 nina-zip-data: zip file D:\Users\remote\Documents\NINA-Tmp\2025-08-20 003 P22d84P (n036).7z
-nina-zip-data: run C:\Program Files\7-Zip\7z.exe a -t7z -mx5 -r -spf D:\Users\remote\Documents\NINA-Tmp\2025-08-20 003 P22d84P (n036).7z 2025-08-20 003 P22d84P (n036)
+nina-zip-data: run C:\Program Files\7-Zip\7z.exe a -t7z -mx1 -r -spf D:\Users\remote\Documents\NINA-Tmp\2025-08-20 003 P22d84P (n036).7z 2025-08-20 003 P22d84P (n036)
 
 7-Zip 25.00 (x64) : Copyright (c) 1999-2025 Igor Pavlov : 2025-07-05
 
