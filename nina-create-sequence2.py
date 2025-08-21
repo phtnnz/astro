@@ -85,7 +85,7 @@ from icecream import ic
 ic.disable()
 
 # Local modules
-from verbose          import verbose, warning, error
+from verbose          import verbose, warning, error, message
 from jsonconfig       import JSONConfig, config
 from radec            import Coord
 
@@ -497,15 +497,17 @@ class NINASequence(NINABase):
                 # in filename templates under Options > Imaging
                 target = formatted_target
 
+                verbose("------------------------------------------------------------------")
+                verbose(f"#{seq:03d} {target:32s} {coord}")
+
                 # Just output the target list
                 if Options.list_targets:
                     print(target)
                     continue
 
-                print("#{:03d} target={} RA={} DEC={}".format(seq, target, ra, dec))
                 if time_utc:
-                    print("     UT={} / local {}".format(time_utc, time_local))
-                print("     {:d}x{:.1f}s filter={}".format(number, exp, filter))
+                    verbose(f"UT={time_utc} / local {time_local}")
+                verbose(f"{number:d}x{exp:.1f}s filter={filter}")
 
                 # default for filter and binning
                 data = TargetData(formatted_target, target, coord, time_local, number, exp, filter, subdir=subdir)
