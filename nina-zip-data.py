@@ -205,7 +205,7 @@ class Options:
     zipprog   = config.zip_prog()
     rcloneprog= config.rclone_prog()
     upload    = config.upload_method()      # False=move, True=rclone
-    zipmx     = 5                           # Compression, 0=none, 1=fastest, 3=fast, 5=normal, 7=max, 9=ultra
+    zipmx     = 1                           # Compression, 0=none, 1=fastest, 3=fast, 5=normal, 7=max, 9=ultra
     run_ready = False
     run_last  = False
     timer     = TIMER
