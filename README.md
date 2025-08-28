@@ -218,7 +218,7 @@ options:
   --hostname HOSTNAME   load settings for HOSTNAME (default numenor)
   -t TIME_INTERVAL, --time-interval TIME_INTERVAL
                         time interval for checking data directory (default 60s)
-  -m MX, --mx MX        7-Zip compression setting -mx (default 5), 0=none, 1=fastest, 3=fast, 5=normal, 7=max, 9=ultra
+  -m MX, --mx MX        7-Zip compression setting -mx (default 1), 0=none, 1=fastest, 3=fast, 5=normal, 7=max, 9=ultra
 
 Version 1.7 / 2025-06-19 / Martin Junius
 ```
