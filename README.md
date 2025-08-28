@@ -124,6 +124,7 @@ Use the batch files/wrappers with full path in N.I.N.A's "External Script" instr
 "D:\Users\someone\someplace\nina-flag-ready.bat" "TARGET"
 "D:\Users\someone\someplace\discord-msg.bat" "MESSAGE"
 "D:\Users\someone\someplace\discord-aag.bat"
+"D:\Users\someone\someplace\nina-zip-data.bat"
 ```
 
 
