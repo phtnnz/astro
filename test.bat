@@ -3,7 +3,7 @@ rem
 rem Wrapper for Python script: runs a Python script with the same basename in the same directory as the .bat file
 rem
 
-REM # Copyright 2023 Martin Junius
+REM # Copyright 2023-2025 Martin Junius
 REM #
 REM # Licensed under the Apache License, Version 2.0 (the "License");
 REM # you may not use this file except in compliance with the License.
