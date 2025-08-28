@@ -102,13 +102,13 @@ class Coord:
         if format == "decimal":
             return f"{self.ra:.7f} {self.dec:.7f}"
         elif format == " ":
-            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:06.3f} {self.dec_d:+02d} {self.dec_m:02d} {self.dec_s:06.3f}"
+            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:06.3f} {self.dec_d:+03d} {self.dec_m:02d} {self.dec_s:06.3f}"
         elif format == "mpc":
-            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:06.3f}{self.dec_d:+02d} {self.dec_m:02d} {self.dec_s:05.2f}"
+            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:06.3f}{self.dec_d:+03d} {self.dec_m:02d} {self.dec_s:05.2f}"
         elif format == "mpc1":
-            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:05.2f} {self.dec_d:+02d} {self.dec_m:02d} {self.dec_s:04.1f} "
+            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:05.2f} {self.dec_d:+03d} {self.dec_m:02d} {self.dec_s:04.1f} "
         else:
-            return f"{self.ra_h:02d}h{self.ra_m:02d}m{self.ra_s:06.3f}s {self.dec_d:+02d}d{self.dec_m:02d}m{self.dec_s:06.3f}s"
+            return f"{self.ra_h:02d}h{self.ra_m:02d}m{self.ra_s:06.3f}s {self.dec_d:+03d}d{self.dec_m:02d}m{self.dec_s:06.3f}s"
 
 
     def __repr__(self):

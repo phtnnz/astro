@@ -65,7 +65,7 @@ The directories NINA-Templates-IAS/, NINA-Templates-IAS3/ and NINA-Templates-Com
 Currently used for the M49, the IAS Remote Telescopes at Hakos, Namibia
 
 ```
-usage: nina-create-sequence2 [-h] [-v] [-d] [-A] [-D DESTINATION_DIR] [-o OUTPUT] [-n] [-S SETTING] [--date DATE] filename [filename ...]
+usage: nina-create-sequence2 [-h] [-v] [-d] [-A] [-D DESTINATION_DIR] [-o OUTPUT] [-n] [-l] [-S SETTING] [--date DATE] filename [filename ...]
 
 Create/populate multiple N.I.N.A target templates/complete sequence with data from NEO Planner CSV
 
@@ -83,11 +83,12 @@ options:
   -o OUTPUT, --output OUTPUT
                         output .json file
   -n, --no-output       dry run, don't create output files
+  -l, --list-targets    list targets only
   -S SETTING, --setting SETTING
                         use template/target SETTING from config
-  --date DATE           use DATE for generating sequence (default 2024-09-04)
+  --date DATE           use DATE for generating sequence (default 2025-08-20)
 
-Version: 1.4 / 2024-09-02 / Martin Junius
+Version: 1.5 / 2025-08-20 / Martin Junius
 ```
 
 Config: nina-create-sequence.json
@@ -123,6 +124,7 @@ Use the batch files/wrappers with full path in N.I.N.A's "External Script" instr
 "D:\Users\someone\someplace\nina-flag-ready.bat" "TARGET"
 "D:\Users\someone\someplace\discord-msg.bat" "MESSAGE"
 "D:\Users\someone\someplace\discord-aag.bat"
+"D:\Users\someone\someplace\nina-zip-data.bat"
 ```
 
 
@@ -216,7 +218,7 @@ options:
   --hostname HOSTNAME   load settings for HOSTNAME (default numenor)
   -t TIME_INTERVAL, --time-interval TIME_INTERVAL
                         time interval for checking data directory (default 60s)
-  -m MX, --mx MX        7-Zip compression setting -mx (default 5), 0=none, 1=fastest, 3=fast, 5=normal, 7=max, 9=ultra
+  -m MX, --mx MX        7-Zip compression setting -mx (default 1), 0=none, 1=fastest, 3=fast, 5=normal, 7=max, 9=ultra
 
 Version 1.7 / 2025-06-19 / Martin Junius
 ```
