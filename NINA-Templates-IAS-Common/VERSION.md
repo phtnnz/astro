@@ -30,7 +30,7 @@ Switch on all devices, connect all devices, and power-on motors (Autoslew)
 
 ### Startup when safe (NAUTICAL)
 
-Check observatory roof/mount status, wait for safe conditions, open observatory roof, switch on fan, wait for astronomical (default) / nautical dusk (variant NAUTICAL), switch off fan, and unpark scope (tracking stopped).
+Check observatory roof/mount status, wait for safe conditions, open observatory roof, switch on fan, cool camera, wait for astronomical (default) / nautical dusk (variant NAUTICAL), switch off fan, and unpark scope (tracking stopped).
 
 
 ## Shutdown Templates
