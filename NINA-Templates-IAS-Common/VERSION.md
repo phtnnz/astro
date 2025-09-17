@@ -90,3 +90,8 @@ Dito, special target template for variable stars observation.
 ### Loop Objects (NAUTICAL)
 
 Template for continous loop of e.g. Target VS objects.
+
+### Waiting
+
+Wait for user interaction (NINA message box).
+
