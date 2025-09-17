@@ -452,13 +452,20 @@ class NINASequence(NINABase):
                 # Date / time UTC and local
                 ## FIXME: should be way more flexible
                 time_utc = time_local = None
-                date1 = row.get("observation date")
-                time1 = row.get("time ut")
-                if date1 and time1:
-                    time_utc = datetime.fromisoformat(date1.replace(" ", "-") + "T" + time1 + ":00+00:00")
-                    # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
-                    # convert to local time zone (now configurable)
+                # Try ISO format first
+                obstime = row.get("obstime") or row.get("observation time")
+                if obstime:
+                    time_utc = datetime.fromisoformat(obstime)
                     time_local = time_utc.astimezone(tz_local)
+                # NEO Planner CSV output
+                else:
+                    date1 = row.get("observation date")
+                    time1 = row.get("time ut")
+                    if date1 and time1:
+                        time_utc = datetime.fromisoformat(date1.replace(" ", "-") + "T" + time1 + ":00+00:00")
+                        # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
+                        # convert to local time zone (now configurable)
+                        time_local = time_utc.astimezone(tz_local)
 
                 # Use various field names for RA/DEC coordinates in CSV data
                 ra  = row.get("ram")  or row.get("ra")
