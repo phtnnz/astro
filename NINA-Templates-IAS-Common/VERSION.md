@@ -1,6 +1,6 @@
 # IAS Templates for Remote Telescopes @ Hakos
 
-Version 1.6 / 2025-09-10 / Martin Junius
+Version 1.6 / 2025-09-23 / Martin Junius
 
 Required plugins: 10 Micron Tools (remote2 only), ASA Tools (remote3 only), Connector, Discord Alert, Sequencer Powerups
 
