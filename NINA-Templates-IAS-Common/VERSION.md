@@ -17,6 +17,14 @@ Base sequence for telescope remote2 (10 Micron), contains all the necessary star
 
 Base sequence for telescope remote3 (ASA), otherwise same as for remote2.
 
+### Base Loop Remote2 NAUTICAL
+
+Base sequence variant for remote2, including Loop Objects NAUTICAL
+
+### Base Loop Remote3 NAUTICAL
+
+Base sequence variant for remote3, including Loop Objects NAUTICAL
+
 
 ## Start-up Templates
 
