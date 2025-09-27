@@ -120,7 +120,8 @@ class TargetData:
     """Hold data to update N.I.N.A template"""
 
     def __init__(self, name: str, target: str, coord: Coord, time: datetime, 
-                 number: int, exposure: float, filter: str ="L", binning: str ="2x2", subdir: str =None):
+                 number: int, exposure: float, filter: str="L", binning: str="2x2", subdir: str=None,
+                 no_autofocus: bool=False):
         self.name = name
         self.targetname = target
         self.coord = coord
@@ -134,6 +135,7 @@ class TargetData:
         if str(binning).startswith("2"):
             self.binning = 2
         self.subdir = subdir
+        self.no_autofocus = no_autofocus
 
 
 
@@ -232,18 +234,19 @@ class NINATarget(NINABase):
     """Holds data read from N.I.N.A JSON template for target"""
 
     def __init__(self):
-        self.name        = None # template name
-        self.targetname  = None # astro target name
+        self.name            = None # template name
+        self.targetname      = None # astro target name
         # instance variables created by process_data(), referencing the data objects, used by update_target_data()
-        self.target      = None
-        self.coord       = None
-        self.waitfortime = None
-        self.conditions0 = None
-        self.filter      = None
-        self.exposure    = None
-        self.binning     = None
-        self.timecondition = None
+        self.target          = None
+        self.coord           = None
+        self.waitfortime     = None
+        self.conditions0     = None
+        self.filter          = None
+        self.exposure        = None
+        self.binning         = None
+        self.timecondition   = None
         self.script_w_target = None
+        self.autofocus       = None
         # Instance variables created by process_data(), referencing the inner containers
         # Items in container
         # [0] Pre-imaging (slew, AF, WaitForTime)
@@ -303,6 +306,17 @@ class NINATarget(NINABase):
             newtarget = os.path.join(data.subdir, data.targetname)
             self.script_w_target["Script"] = script.replace("\"TARGET\"", f"\"{newtarget}\"")
 
+        # Disable autofocus
+        if self.autofocus:
+            if data.no_autofocus:
+                verbose("skipping autofocus")
+                # hack, convert to Annotation, del won't work because this needs the container
+                # and we only have the item here
+                self.autofocus["$type"] = "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer"
+                self.autofocus["Text"] = f"{NAME}: removed Run Autofocus"
+            ic(self.autofocus)
+            pass
+
 
 
     def process_data(self):
@@ -352,6 +366,9 @@ class NINATarget(NINABase):
 
                 if "ExternalScript" in item["$type"]:
                     self.script_w_target = item
+
+                if "RunAutofocus" in item["$type"]:
+                    self.autofocus = item
 
 
     def add_parent(self, id):
@@ -403,10 +420,9 @@ class NINASequence(NINABase):
         self.start_id     = self.area_list[0]["$id"]
         self.targets_id   = self.area_list[1]["$id"]
         self.end_id       = self.area_list[2]["$id"]
-        if ic.enabled:
-            ic(self.start_id, self.start_list)
-            ic(self.targets_id, self.targets_list)
-            ic(self.end_id, self.end_list)
+        # ic(self.start_id, self.start_list)
+        # ic(self.targets_id, self.targets_list)
+        # ic(self.end_id, self.end_list)
 
 
     def search_container(self, container):
@@ -432,11 +448,14 @@ class NINASequence(NINABase):
         self.targets_list.append(target.obj)
 
 
-    def process_csv(self, target_tmpl, file, target_format, tzname, subdir=None):
+    def process_csv(self, target_tmpl: NINATarget, 
+                    file: str, target_format: str, tzname: str, 
+                    subdir: str=None, autofocus1: bool=False):
         tz_local = ZoneInfo(tzname)
 
         with open(file, newline='') as f:
             reader = csv.DictReader(f)
+            first_target = True
             for count, row1 in enumerate(reader):
                 # Make field names lower case
                 row = { key.lower():val for key, val in row1.items() if key}
@@ -516,8 +535,11 @@ class NINASequence(NINABase):
                     verbose(f"UT={time_utc} / local {time_local}")
                 verbose(f"{number:d}x{exp:.1f}s filter={filter}")
 
-                # default for filter and binning
-                data = TargetData(formatted_target, target, coord, time_local, number, exp, filter, subdir=subdir)
+                # AF only for first target if option "autofocus_first_target_only" is set
+                no_af = autofocus1 and not first_target
+                # default for binning
+                data = TargetData(formatted_target, target, coord, time_local, number, exp, filter, 
+                                  subdir=subdir, no_autofocus=no_af)
 
                 # create deep copy of target object, update with data read from CSV
                 target_new = copy.deepcopy(target_tmpl)
@@ -532,6 +554,8 @@ class NINASequence(NINABase):
                 # collapse view
                 target_new.set_expanded(False)
                 self.append_target(target_new)
+
+                first_target = False
 
         # update all SelectedProvider {...} with references
         self.traverse(NINABase.process_provider, self.provider_dict)
@@ -595,6 +619,8 @@ def main():
     verbose("subdir (1=date)", subdir)
     if subdir:
         subdir = subdir.format("", Options.date)
+    autofocus_first_target_only = setting.get("autofocus_first_target_only") or False
+    verbose(f"autofocus first target only = {autofocus_first_target_only}")
 
     if args.destination_dir:
         destination_dir = args.destination_dir
@@ -618,7 +644,7 @@ def main():
 
     for f in args.filename:
         verbose("processing CSV file", f)
-        sequence.process_csv(target, f, target_format, tzname, subdir)
+        sequence.process_csv(target, f, target_format, tzname, subdir, autofocus_first_target_only)
 
     output_path = os.path.join(destination_dir, output)
     if not args.no_output and not args.list_targets:
