@@ -47,6 +47,9 @@
 #       New "subdir" config setting, see below
 # Version 1.5 / 2025-08-20
 #       Added -l --list-targets option, just output the list of targets
+# Version 1.6 / 2025-09-27
+#       Added "autofocus_first_target_only" setting to config
+
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
@@ -58,14 +61,15 @@
 #     "container": "<CONTAINER NAME OR EMPTY>",
 #     "format":    "<TARGETNAME {x}>",
 #     "output":    "<OUTPUT FILENAME {x}>.json",
-#     "subdir":    "_asteroids_{1}"
+#     "subdir":    "_asteroids_{1}",            (optional)
+#     "autofocus_first_target_only": "yes"      (optional)
 # }
 #
 # Format placeholders:
 # 0=target, 1=date, 2=seq, 3=number
 # "subdir" is optional, or can be blank ""
 
-VERSION = "1.5 / 2025-08-20"
+VERSION = "1.6 / 2025-09-27"
 AUTHOR  = "Martin Junius"
 NAME    = "nina-create-sequence2"
 
@@ -117,7 +121,7 @@ class Options:
 
 
 class TargetData:
-    """Hold data to update N.I.N.A template"""
+    """ Hold data to update N.I.N.A template """
 
     def __init__(self, name: str, target: str, coord: Coord, time: datetime, 
                  number: int, exposure: float, filter: str="L", binning: str="2x2", subdir: str=None,
@@ -140,7 +144,7 @@ class TargetData:
 
 
 class NINABase:
-    """Base class for NINASequence and NINATarget"""
+    """ Base class for NINASequence and NINATarget """
 
     def __init__(self):
         self.obj = None
@@ -231,7 +235,7 @@ class NINABase:
 
 
 class NINATarget(NINABase):
-    """Holds data read from N.I.N.A JSON template for target"""
+    """ Holds data read from N.I.N.A JSON template for target """
 
     def __init__(self):
         self.name            = None # template name
@@ -384,7 +388,7 @@ class NINATarget(NINABase):
 
 
 class NINASequence(NINABase):
-    """Holds data read from N.I.N.A JSON sequence"""
+    """ Holds data read from N.I.N.A JSON sequence """
 
     def __init__(self):
         self.name         = None # template name
