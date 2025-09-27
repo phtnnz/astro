@@ -86,9 +86,9 @@ options:
   -l, --list-targets    list targets only
   -S SETTING, --setting SETTING
                         use template/target SETTING from config
-  --date DATE           use DATE for generating sequence (default 2025-08-20)
+  --date DATE           use DATE for generating sequence (default 2025-09-27)
 
-Version: 1.5 / 2025-08-20 / Martin Junius
+Version: 1.6 / 2025-09-27 / Martin Junius
 ```
 
 Config: nina-create-sequence.json
