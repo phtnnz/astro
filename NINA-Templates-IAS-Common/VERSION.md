@@ -1,10 +1,15 @@
 # IAS Templates for Remote Telescopes @ Hakos
 
-Version 1.6 / 2025-09-23 / Martin Junius
+Version 1.6 / 2025-09-29 / Martin Junius
 
-Required plugins: 10 Micron Tools (remote2 only), ASA Tools (remote3 only), Connector, Discord Alert, Sequencer Powerups
+Required plugins: 
+- 10 Micron Tools (remote2 only)
+- ASA Tools (remote3 only)
+- Connector
+- Discord Alert
+- Sequencer Powerups
 
-All templates will send status messages to the corresponding Discord channels, which must be configured (webhook) in the Discord Alert setup.
+All templates will send status messages to the corresponding Discord channel, which must be configured (webhook) in the Discord Alert setup.
 
 
 ## Base Sequences
@@ -90,7 +95,7 @@ Special target template for NEO observations, used with ```nina-create-sequence2
 
 ### Target VS
 
-Dito, special target template for variable stars observation.
+Dito, special target template for variable stars observation, to be place inside Loop see below.
 
 
 ## Misc Templates
