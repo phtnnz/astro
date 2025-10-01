@@ -38,7 +38,7 @@
       {
         "$id": "6",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.6 / 2025-09-10 / Martin Junius",
+        "Text": "Version 1.6 / 2025-01-01 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -47,6 +47,23 @@
       },
       {
         "$id": "7",
+        "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTime, NINA.Sequencer",
+        "Hours": 18,
+        "Minutes": 0,
+        "MinutesOffset": 0,
+        "Seconds": 0,
+        "SelectedProvider": {
+          "$id": "8",
+          "$type": "NINA.Sequencer.Utility.DateTimeProvider.TimeProvider, NINA.Sequencer"
+        },
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "9",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
         "Text": "Switch 1-4 = Out 1-4, Switch 5-10 = USB 1-6",
         "Parent": {
@@ -56,7 +73,7 @@
         "Attempts": 1
       },
       {
-        "$id": "8",
+        "$id": "10",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Switch",
         "Parent": {
@@ -66,31 +83,9 @@
         "Attempts": 1
       },
       {
-        "$id": "9",
+        "$id": "11",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
         "Text": "Output 1 = QHY 268 M, Output 3 = MFOC, USB 1 = QHY 268 M, USB 5 = MFOC, USB 6 = Lodestar X2",
-        "Parent": {
-          "$ref": "1"
-        },
-        "ErrorBehavior": 0,
-        "Attempts": 1
-      },
-      {
-        "$id": "10",
-        "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
-        "Value": 1.0,
-        "SwitchIndex": 0,
-        "Parent": {
-          "$ref": "1"
-        },
-        "ErrorBehavior": 0,
-        "Attempts": 1
-      },
-      {
-        "$id": "11",
-        "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
-        "Value": 1.0,
-        "SwitchIndex": 2,
         "Parent": {
           "$ref": "1"
         },
@@ -101,7 +96,7 @@
         "$id": "12",
         "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
         "Value": 1.0,
-        "SwitchIndex": 4,
+        "SwitchIndex": 0,
         "Parent": {
           "$ref": "1"
         },
@@ -112,7 +107,7 @@
         "$id": "13",
         "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
         "Value": 1.0,
-        "SwitchIndex": 8,
+        "SwitchIndex": 2,
         "Parent": {
           "$ref": "1"
         },
@@ -123,7 +118,7 @@
         "$id": "14",
         "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
         "Value": 1.0,
-        "SwitchIndex": 9,
+        "SwitchIndex": 4,
         "Parent": {
           "$ref": "1"
         },
@@ -132,6 +127,28 @@
       },
       {
         "$id": "15",
+        "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
+        "Value": 1.0,
+        "SwitchIndex": 8,
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "16",
+        "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
+        "Value": 1.0,
+        "SwitchIndex": 9,
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "17",
         "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTimeSpan, NINA.Sequencer",
         "Time": 60.0,
         "Parent": {
@@ -141,7 +158,7 @@
         "Attempts": 1
       },
       {
-        "$id": "16",
+        "$id": "18",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Camera",
         "Parent": {
@@ -151,7 +168,7 @@
         "Attempts": 1
       },
       {
-        "$id": "17",
+        "$id": "19",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Filter Wheel",
         "Parent": {
@@ -161,7 +178,7 @@
         "Attempts": 1
       },
       {
-        "$id": "18",
+        "$id": "20",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Focuser",
         "Parent": {
@@ -171,7 +188,7 @@
         "Attempts": 1
       },
       {
-        "$id": "19",
+        "$id": "21",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Telescope",
         "Parent": {
@@ -181,7 +198,7 @@
         "Attempts": 1
       },
       {
-        "$id": "20",
+        "$id": "22",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Guider",
         "Parent": {
@@ -191,7 +208,7 @@
         "Attempts": 1
       },
       {
-        "$id": "21",
+        "$id": "23",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Weather",
         "Parent": {
@@ -201,7 +218,7 @@
         "Attempts": 1
       },
       {
-        "$id": "22",
+        "$id": "24",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Dome",
         "Parent": {
@@ -211,7 +228,7 @@
         "Attempts": 1
       },
       {
-        "$id": "23",
+        "$id": "25",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Safety Monitor",
         "Parent": {
@@ -221,7 +238,7 @@
         "Attempts": 1
       },
       {
-        "$id": "24",
+        "$id": "26",
         "$type": "NINA.Photon.Plugin.ASA.SequenceItems.PowerOn, NINA.Photon.Plugin.ASA",
         "Parent": {
           "$ref": "1"
@@ -230,7 +247,7 @@
         "Attempts": 1
       },
       {
-        "$id": "25",
+        "$id": "27",
         "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
         "Text": "All devices powered on and connected",
         "Parent": {
@@ -242,36 +259,36 @@
     ]
   },
   "Triggers": {
-    "$id": "26",
+    "$id": "28",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
     "$values": [
       {
-        "$id": "27",
+        "$id": "29",
         "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordAlertOnErrorTrigger, Discord Alert",
         "Text": "@everyone ERROR in Pre-Startup Remote3",
         "Parent": {
           "$ref": "1"
         },
         "TriggerRunner": {
-          "$id": "28",
+          "$id": "30",
           "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
           "Strategy": {
             "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
           },
           "Name": null,
           "Conditions": {
-            "$id": "29",
+            "$id": "31",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "IsExpanded": true,
           "Items": {
-            "$id": "30",
+            "$id": "32",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "Triggers": {
-            "$id": "31",
+            "$id": "33",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
