@@ -40,13 +40,13 @@ from verbose import verbose, warning, error
 class Coord:
     """ Simple coordinate class for storing RA/DEC """
 
-    def __init__(self, ra=None, dec=None):
+    def __init__(self, ra: Any=None, dec: Any=None):
         if ra and dec:
             ic(ra, dec)
             self.parse_ra_dec(ra, dec)
 
 
-    def parse_ra_dec(self, ra, dec):
+    def parse_ra_dec(self, ra: Any, dec: Any):
         self.ra,  sign, self.ra_h,  self.ra_m,  self.ra_s  = self._parse_string(ra,  type="RA")
         self.dec, sign, self.dec_d, self.dec_m, self.dec_s = self._parse_string(dec, type="DEC")
         self.dec_sign, self.dec_pm, self.dec_neg = self._dec_sign(self.dec)
@@ -106,7 +106,7 @@ class Coord:
         raise ValueError(f"illegal {type} coordinate {s}")
 
 
-    def to_string(self, format="hmsdms"):
+    def to_string(self, format: str="hmsdms") -> str:
         if format == "decimal":
             return f"{self.ra:.7f} {self.dec:.7f}"
         elif format == " ":
@@ -119,7 +119,7 @@ class Coord:
             return f"{self.ra_h:02d}h{self.ra_m:02d}m{self.ra_s:06.3f}s {self.dec_pm}{self.dec_d:02d}d{self.dec_m:02d}m{self.dec_s:06.3f}s"
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.to_string()
 
 
