@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Martin Junius
+# Copyright 2023-2025 Martin Junius
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,9 +17,16 @@
 # ChangeLog
 # Version 0.1 / 2024-07-29
 #       Module for parsing ra/dec coordinates in various format, not depending on astropy
+# Version 0.2 / 2025-10-03
+#       Fixed sign handling for DEC
+
+VERSION = "0.2 / 2025-10-03"
+AUTHOR  = "Martin Junius"
+NAME    = "radec"
 
 import argparse
 import re
+from  typing import Tuple, Any
 
 # The following libs must be installed with pip
 from icecream import ic
@@ -27,11 +34,6 @@ from icecream import ic
 ic.disable()
 # Local modules
 from verbose import verbose, warning, error
-
-
-VERSION = "0.1 / 2024-07-29"
-AUTHOR  = "Martin Junius"
-NAME    = "radec"
 
 
 
@@ -45,25 +47,30 @@ class Coord:
 
 
     def parse_ra_dec(self, ra, dec):
-        (self.ra,  self.ra_h,  self.ra_m,  self.ra_s)  = self._parse_string(ra,  type="RA")
-        (self.dec, self.dec_d, self.dec_m, self.dec_s) = self._parse_string(dec, type="DEC")
-        ic(self.ra, self.ra_h, self.ra_m, self.ra_s, self.dec, self.dec_d, self.dec_m, self.dec_s)
+        self.ra,  sign, self.ra_h,  self.ra_m,  self.ra_s  = self._parse_string(ra,  type="RA")
+        self.dec, sign, self.dec_d, self.dec_m, self.dec_s = self._parse_string(dec, type="DEC")
+        self.dec_sign, self.dec_pm, self.dec_neg = self._dec_sign(self.dec)
+        ic(self.ra, self.ra_h, self.ra_m, self.ra_s, 
+           self.dec, self.dec_sign, self.dec_pm, self.dec_neg, self.dec_d, self.dec_m, self.dec_s)
+
+    def _dec_sign(self, v: float) -> Tuple[int, str, bool]:
+        return (-1, "-", True) if v < 0 else (+1, "+", False)
 
 
-    def _decimal_from_dms(self, d, m, s):
-        return d + m/60 + s/3600 if d >= 0 else d - m/60 - s/3600
+    def _decimal_from_dms(self, sign: int, d: int, m: int, s: float) -> float:
+        return sign * (d + m/60 + s/3600)
     
-    def _decimal_to_dms(self, v):
+    def _decimal_to_dms(self, v: float) -> Tuple[int, int, int, int]:
         sign = -1 if v < 0 else +1
         va   = abs(v)
         d = int(va)
         m = int((va - d) * 60)
         s = float((va - d - m/60) * 3600)
-        return (d*sign, m, s)
+        return (sign, d, m, s)
 
 
-    def _parse_string(self, s, type=""):
-        # Convert float() &c. to string
+    def _parse_string(self, s: Any, type: str="") -> Tuple[float, int, int, int, float]:
+        # Convert float &c. to string
         s = str(s)
 
         if type == "DEC":
@@ -78,22 +85,23 @@ class Coord:
         m = re.match(regex1, s)
         if m:
             ic(m.groups())
-            m1 = int(m.group(1)+ m.group(2))
+            sign = -1 if m.group(1) == "-" else +1
+            m1 = int(m.group(2))
             m2 = int(m.group(3))
             m3 = float(m.group(4))
-            md = self._decimal_from_dms(m1, m2, m3)
+            md = self._decimal_from_dms(sign, m1, m2, m3)
             if (type == "RA" and md < 24 and m2 < 60 and m3 < 60 or
                 type == "DEC" and md >= -90 and md <= +90 and m2 < 60 and m3 < 60):
-                return (md, m1, m2, m3)
+                return (md, sign, m1, m2, m3)
 
         m = re.match(regex2, s)
         if m:
             ic(m.groups())
             md = float(m.group(1))
-            (m1, m2, m3) = self._decimal_to_dms(md)
+            (sign, m1, m2, m3) = self._decimal_to_dms(md)
             if (type == "RA" and md < 24 or
                 type == "DEC" and md >= -90 and md <= +90):
-                return (md, m1, m2, m3)
+                return (md, sign, m1, m2, m3)
 
         raise ValueError(f"illegal {type} coordinate {s}")
 
@@ -102,13 +110,13 @@ class Coord:
         if format == "decimal":
             return f"{self.ra:.7f} {self.dec:.7f}"
         elif format == " ":
-            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:06.3f} {self.dec_d:+03d} {self.dec_m:02d} {self.dec_s:06.3f}"
+            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:06.3f} {self.dec_pm}{self.dec_d:02d} {self.dec_m:02d} {self.dec_s:06.3f}"
         elif format == "mpc":
-            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:06.3f}{self.dec_d:+03d} {self.dec_m:02d} {self.dec_s:05.2f}"
+            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:06.3f}{self.dec_pm}{self.dec_d:02d} {self.dec_m:02d} {self.dec_s:05.2f}"
         elif format == "mpc1":
-            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:05.2f} {self.dec_d:+03d} {self.dec_m:02d} {self.dec_s:04.1f} "
+            return f"{self.ra_h:02d} {self.ra_m:02d} {self.ra_s:05.2f} {self.dec_pm}{self.dec_d:02d} {self.dec_m:02d} {self.dec_s:04.1f} "
         else:
-            return f"{self.ra_h:02d}h{self.ra_m:02d}m{self.ra_s:06.3f}s {self.dec_d:+03d}d{self.dec_m:02d}m{self.dec_s:06.3f}s"
+            return f"{self.ra_h:02d}h{self.ra_m:02d}m{self.ra_s:06.3f}s {self.dec_pm}{self.dec_d:02d}d{self.dec_m:02d}m{self.dec_s:06.3f}s"
 
 
     def __repr__(self):

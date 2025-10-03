@@ -276,7 +276,7 @@ class NINATarget(NINABase):
         self.coord["RAHours"]   = int(data.coord.ra_h)
         self.coord["RAMinutes"] = int(data.coord.ra_m)
         self.coord["RASeconds"] = float(data.coord.ra_s)
-        self.coord["NegativeDec"] = True if int(data.coord.dec_d) < 0 else False
+        self.coord["NegativeDec"] = data.coord.dec_neg
         self.coord["DecDegrees"] = int(data.coord.dec_d)
         self.coord["DecMinutes"] = int(data.coord.dec_m)
         self.coord["DecSeconds"] = float(data.coord.dec_s)
