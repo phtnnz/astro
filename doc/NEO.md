@@ -22,8 +22,9 @@ Target names are created by nina-create-sequence2.py using the "format" setting 
 Create the complete N.I.N.A sequence for the observation night, default date is today (tonight).
 
 ```
-nina-create-sequence2.py -v --date 2025-08-25 --setting common-neo M49_cam#3_Revise_2025-08-25-05-02-55.csv
+nina-create-sequence2.py -v --setting remote3-neo PLAN.csv
 ```
+(Use remote2-neo or remote3-neo and the NEO planner or neocp.py CSV output.)
 
 Example output: 
 
