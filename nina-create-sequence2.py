@@ -47,6 +47,9 @@
 #       New "subdir" config setting, see below
 # Version 1.5 / 2025-08-20
 #       Added -l --list-targets option, just output the list of targets
+# Version 1.6 / 2025-09-27
+#       Added "autofocus_first_target_only" setting to config
+
 
 # See here https://www.newtonsoft.com/json/help/html/SerializingJSON.htm for the JSON serializing used in N.I.N.A
 
@@ -58,14 +61,15 @@
 #     "container": "<CONTAINER NAME OR EMPTY>",
 #     "format":    "<TARGETNAME {x}>",
 #     "output":    "<OUTPUT FILENAME {x}>.json",
-#     "subdir":    "_asteroids_{1}"
+#     "subdir":    "_asteroids_{1}",            (optional)
+#     "autofocus_first_target_only": "yes"      (optional)
 # }
 #
 # Format placeholders:
 # 0=target, 1=date, 2=seq, 3=number
 # "subdir" is optional, or can be blank ""
 
-VERSION = "1.5 / 2025-08-20"
+VERSION = "1.6 / 2025-09-27"
 AUTHOR  = "Martin Junius"
 NAME    = "nina-create-sequence2"
 
@@ -117,10 +121,11 @@ class Options:
 
 
 class TargetData:
-    """Hold data to update N.I.N.A template"""
+    """ Hold data to update N.I.N.A template """
 
     def __init__(self, name: str, target: str, coord: Coord, time: datetime, 
-                 number: int, exposure: float, filter: str ="L", binning: str ="2x2", subdir: str =None):
+                 number: int, exposure: float, filter: str="L", binning: str="2x2", subdir: str=None,
+                 no_autofocus: bool=False):
         self.name = name
         self.targetname = target
         self.coord = coord
@@ -134,11 +139,12 @@ class TargetData:
         if str(binning).startswith("2"):
             self.binning = 2
         self.subdir = subdir
+        self.no_autofocus = no_autofocus
 
 
 
 class NINABase:
-    """Base class for NINASequence and NINATarget"""
+    """ Base class for NINASequence and NINATarget """
 
     def __init__(self):
         self.obj = None
@@ -229,21 +235,22 @@ class NINABase:
 
 
 class NINATarget(NINABase):
-    """Holds data read from N.I.N.A JSON template for target"""
+    """ Holds data read from N.I.N.A JSON template for target """
 
     def __init__(self):
-        self.name        = None # template name
-        self.targetname  = None # astro target name
+        self.name            = None # template name
+        self.targetname      = None # astro target name
         # instance variables created by process_data(), referencing the data objects, used by update_target_data()
-        self.target      = None
-        self.coord       = None
-        self.waitfortime = None
-        self.conditions0 = None
-        self.filter      = None
-        self.exposure    = None
-        self.binning     = None
-        self.timecondition = None
+        self.target          = None
+        self.coord           = None
+        self.waitfortime     = None
+        self.conditions0     = None
+        self.filter          = None
+        self.exposure        = None
+        self.binning         = None
+        self.timecondition   = None
         self.script_w_target = None
+        self.autofocus       = None
         # Instance variables created by process_data(), referencing the inner containers
         # Items in container
         # [0] Pre-imaging (slew, AF, WaitForTime)
@@ -269,8 +276,9 @@ class NINATarget(NINABase):
         self.coord["RAHours"]   = int(data.coord.ra_h)
         self.coord["RAMinutes"] = int(data.coord.ra_m)
         self.coord["RASeconds"] = float(data.coord.ra_s)
-        self.coord["NegativeDec"] = True if int(data.coord.dec_d) < 0 else False
-        self.coord["DecDegrees"] = int(data.coord.dec_d)
+        self.coord["NegativeDec"] = data.coord.dec_neg
+        # NINA: for negative DEC values, both NegativeDec is set to Ture *and* DecDegrees is negative!
+        self.coord["DecDegrees"] = int(data.coord.dec_d) * data.coord.dec_sign
         self.coord["DecMinutes"] = int(data.coord.dec_m)
         self.coord["DecSeconds"] = float(data.coord.dec_s)
 
@@ -302,6 +310,17 @@ class NINATarget(NINABase):
             script = self.script_w_target["Script"]
             newtarget = os.path.join(data.subdir, data.targetname)
             self.script_w_target["Script"] = script.replace("\"TARGET\"", f"\"{newtarget}\"")
+
+        # Disable autofocus
+        if self.autofocus:
+            if data.no_autofocus:
+                verbose("skipping autofocus")
+                # hack, convert to Annotation, del won't work because this needs the container
+                # and we only have the item here
+                self.autofocus["$type"] = "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer"
+                self.autofocus["Text"] = f"{NAME}: removed Run Autofocus"
+            ic(self.autofocus)
+            pass
 
 
 
@@ -353,6 +372,9 @@ class NINATarget(NINABase):
                 if "ExternalScript" in item["$type"]:
                     self.script_w_target = item
 
+                if "RunAutofocus" in item["$type"]:
+                    self.autofocus = item
+
 
     def add_parent(self, id):
         # verbose("NINATarget(add_parent):", "id =", id)
@@ -367,7 +389,7 @@ class NINATarget(NINABase):
 
 
 class NINASequence(NINABase):
-    """Holds data read from N.I.N.A JSON sequence"""
+    """ Holds data read from N.I.N.A JSON sequence """
 
     def __init__(self):
         self.name         = None # template name
@@ -403,10 +425,9 @@ class NINASequence(NINABase):
         self.start_id     = self.area_list[0]["$id"]
         self.targets_id   = self.area_list[1]["$id"]
         self.end_id       = self.area_list[2]["$id"]
-        if ic.enabled:
-            ic(self.start_id, self.start_list)
-            ic(self.targets_id, self.targets_list)
-            ic(self.end_id, self.end_list)
+        # ic(self.start_id, self.start_list)
+        # ic(self.targets_id, self.targets_list)
+        # ic(self.end_id, self.end_list)
 
 
     def search_container(self, container):
@@ -432,11 +453,14 @@ class NINASequence(NINABase):
         self.targets_list.append(target.obj)
 
 
-    def process_csv(self, target_tmpl, file, target_format, tzname, subdir=None):
+    def process_csv(self, target_tmpl: NINATarget, 
+                    file: str, target_format: str, tzname: str, 
+                    subdir: str=None, autofocus1: bool=False):
         tz_local = ZoneInfo(tzname)
 
         with open(file, newline='') as f:
             reader = csv.DictReader(f)
+            first_target = True
             for count, row1 in enumerate(reader):
                 # Make field names lower case
                 row = { key.lower():val for key, val in row1.items() if key}
@@ -452,13 +476,20 @@ class NINASequence(NINABase):
                 # Date / time UTC and local
                 ## FIXME: should be way more flexible
                 time_utc = time_local = None
-                date1 = row.get("observation date")
-                time1 = row.get("time ut")
-                if date1 and time1:
-                    time_utc = datetime.fromisoformat(date1.replace(" ", "-") + "T" + time1 + ":00+00:00")
-                    # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
-                    # convert to local time zone (now configurable)
+                # Try ISO format first
+                obstime = row.get("obstime") or row.get("observation time")
+                if obstime:
+                    time_utc = datetime.fromisoformat(obstime)
                     time_local = time_utc.astimezone(tz_local)
+                # NEO Planner CSV output
+                else:
+                    date1 = row.get("observation date")
+                    time1 = row.get("time ut")
+                    if date1 and time1:
+                        time_utc = datetime.fromisoformat(date1.replace(" ", "-") + "T" + time1 + ":00+00:00")
+                        # Python 3.9 doesn't like the "Z" timezone declaration, thus +00:00
+                        # convert to local time zone (now configurable)
+                        time_local = time_utc.astimezone(tz_local)
 
                 # Use various field names for RA/DEC coordinates in CSV data
                 ra  = row.get("ram")  or row.get("ra")
@@ -509,8 +540,11 @@ class NINASequence(NINABase):
                     verbose(f"UT={time_utc} / local {time_local}")
                 verbose(f"{number:d}x{exp:.1f}s filter={filter}")
 
-                # default for filter and binning
-                data = TargetData(formatted_target, target, coord, time_local, number, exp, filter, subdir=subdir)
+                # AF only for first target if option "autofocus_first_target_only" is set
+                no_af = autofocus1 and not first_target
+                # default for binning
+                data = TargetData(formatted_target, target, coord, time_local, number, exp, filter, 
+                                  subdir=subdir, no_autofocus=no_af)
 
                 # create deep copy of target object, update with data read from CSV
                 target_new = copy.deepcopy(target_tmpl)
@@ -525,6 +559,8 @@ class NINASequence(NINABase):
                 # collapse view
                 target_new.set_expanded(False)
                 self.append_target(target_new)
+
+                first_target = False
 
         # update all SelectedProvider {...} with references
         self.traverse(NINABase.process_provider, self.provider_dict)
@@ -588,6 +624,8 @@ def main():
     verbose("subdir (1=date)", subdir)
     if subdir:
         subdir = subdir.format("", Options.date)
+    autofocus_first_target_only = setting.get("autofocus_first_target_only") or False
+    verbose(f"autofocus first target only = {autofocus_first_target_only}")
 
     if args.destination_dir:
         destination_dir = args.destination_dir
@@ -611,7 +649,7 @@ def main():
 
     for f in args.filename:
         verbose("processing CSV file", f)
-        sequence.process_csv(target, f, target_format, tzname, subdir)
+        sequence.process_csv(target, f, target_format, tzname, subdir, autofocus_first_target_only)
 
     output_path = os.path.join(destination_dir, output)
     if not args.no_output and not args.list_targets:

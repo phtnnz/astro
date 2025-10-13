@@ -20,9 +20,9 @@
         "$id": "4",
         "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
         "Hours": 5,
-        "Minutes": 55,
+        "Minutes": 27,
         "MinutesOffset": 0,
-        "Seconds": 7,
+        "Seconds": 6,
         "SelectedProvider": {
           "$id": "5",
           "$type": "NINA.Sequencer.Utility.DateTimeProvider.DawnProvider, NINA.Sequencer"
@@ -51,7 +51,7 @@
       {
         "$id": "8",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 0.2 / 2024-08-22 / Martin Junius",
+        "Text": "Version 1.6 / 2025-09-23 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -97,7 +97,7 @@
       {
         "$id": "13",
         "$type": "NINA.Sequencer.Trigger.Autofocus.AutofocusAfterTimeTrigger, NINA.Sequencer",
-        "Amount": 30.0,
+        "Amount": 60.0,
         "Parent": {
           "$ref": "1"
         },

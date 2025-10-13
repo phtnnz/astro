@@ -9,6 +9,8 @@ Slew/center = 90 s
 
 Autofocus = 100 s
 
+Start guiding = 30 s
+
 Meridian flip = 210 s
 
 Overhead per image = 1.5 s
@@ -18,6 +20,8 @@ Overhead per image = 1.5 s
 Slew/center = 80 s
 
 Autofocus = 95 s
+
+Start guiding = 30 s
 
 Meridian flip = ?
 

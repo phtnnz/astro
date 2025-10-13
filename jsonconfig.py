@@ -29,11 +29,19 @@
 #       Added code for getting the path of Windows' Documents directory
 # Version 0.5 / 2024-08-28
 #       New method .info(), verbose output of config filename and top-level keys
+# Version 0.6 / 2025-06-29
+#       Method .get() now supports nested keys, e.g. config.get("main", "sub", "setting")
+# Version 0.7 / 2025-09-25
+#       Map access to undefined attributes to .get()
+#       Top-level in JSON config must be a dictionary {}
+#       Added warning/error for missing keys, use .set_warn_on_missing() / 
+#       .set_error_on_missing() to enable
 
 import os
 import sys
 import argparse
 import json
+from typing import Any
 # Windows specific
 import ctypes.wintypes
 
@@ -46,7 +54,7 @@ from verbose import verbose, warning, error
 
 
 
-VERSION = "0.5 / 2024-08-28"
+VERSION = "0.7 / 2025-09-25"
 AUTHOR  = "Martin Junius"
 NAME    = "JSONConfig"
 
@@ -61,18 +69,79 @@ ic(CONFIGDIR, CONFIGFILE)
 
 
 class JSONConfig:
-    """ JSONConfig base class """
+    """
+    Base class for JSON config
+    """
+    def __init__(self, file: str, warn: bool=True, err: bool=True):
+        """
+        Initialize JSON config object, read config files
 
-    def __init__(self, file, warn=True, err=True):
+        Parameters
+        ----------
+        file : str
+            Base name of config file
+        warn : bool, optional
+            Warning if config not found, by default True
+        err : bool, optional
+            Error if config not found, by default True
+        """
         ic("config init", file)
         self.config = {}
         self.read_config(file, warn, err)
+        self.warn_on_missing = False
+        self.error_on_missing = False
 
 
-    def read_config(self, file, warn=True, err=True):
+    def __getattr__(self, name: str) -> Any:
+        """
+        Map undefined attributes to .get()
+
+        Parameters
+        ----------
+        name : str
+            Attribute name
+
+        Returns
+        -------
+        Any
+            Value of attribute
+        """
+        ic("getattr", name)
+        value = self.get(name)
+        self.__dict__[name] = value
+        return value
+    
+
+    def set_warn_on_missing(self):
+        """
+        Set warning on missing key(s)
+        """
+        self.warn_on_missing = True
+
+
+    def set_error_on_missing(self):
+        """
+        Set warning on missing key(s)
+        """
+        self.error_on_missing = True
+        
+
+    def read_config(self, file: str, warn: bool=True, err: bool=True):
+        """
+        Read config files
+
+        Parameters
+        ----------
+        file : str
+            Base name of config file
+        warn : bool, optional
+            Warning if config not found, by default True
+        err : bool, optional
+            Error if config not found, by default True
+        """
         ic(file)
         file1 = self.search_config(file)
-        if(file1):
+        if file1:
             self.configfile = file1
             json  = self.read_json(file1)
             # Merge with existing config
@@ -84,10 +153,27 @@ class JSONConfig:
 
 
     def info(self):
+        """
+        Verbose info, print config file and top-level keys
+        """
         verbose(f"config file {self.configfile}")
         verbose("config keys:", " ".join( [k for k in self.config.keys() if not k.startswith("#")] ))
 
-    def search_config(self, file):
+
+    def search_config(self, file: str) -> str:
+        """
+        Search config file in various directories
+
+        Parameters
+        ----------
+        file : str
+            Base name of config file
+
+        Returns
+        -------
+        str
+            Full path of config file
+        """
         # If full path use as is
         if os.path.isfile(file):
             return file
@@ -133,30 +219,96 @@ class JSONConfig:
         return None
 
 
-    def read_json(self, file):
+    def read_json(self, file: str) -> dict:
+        """
+        Read JSON from config file
+
+        Parameters
+        ----------
+        file : str
+            Full path of config files
+
+        Returns
+        -------
+        dict
+            JSON object
+        """
         with open(file, 'r') as f:
             return json.load(f)
 
 
-    def write_json(self, file):
+    def write_json(self, file: str):
+        """
+        Write JSON to config file
+
+        Parameters
+        ----------
+        file : str
+            Full path of config file
+        """
         with open(file, 'w') as f:
             json.dump(self.config, f, indent = 2)
 
 
-    def get(self, key):
-        return self.config[key] if key in self.config else None
+    def get(self, *keys: str) -> Any:
+        """
+        Get value for hierarchical keys from config
+
+        e.g. { "group": {"text": "something"} }
+        .get("group", "text")
+
+        Returns
+        -------
+        Any
+            Value for JSON key(s)
+        *keys : str
+            Multiple keys for nested JSON
+        """
+        cf = self.config
+        for k in keys:
+            cf = cf.get(k)
+            if cf == None:
+                if self.warn_on_missing:
+                    warning("not such key(s):", *keys)
+                if self.error_on_missing:
+                    error("not such key(s):", *keys)
+                return None
+        return cf
 
 
-    def get_keys(self):
+    def get_keys(self) -> list[str]:
+        """
+        Return list of top-level keys
+
+        Returns
+        -------
+        list[str]
+            Top-level keys
+        """
         return self.config.keys()
 
 
-    def get_json(self):
-        # For backwards compatibility
+    def get_json(self) -> dict:
+        """
+        Get JSON config attribute for backwards compatibility
+
+        Returns
+        -------
+        dict
+            JSON config
+        """
         return self.config
 
 
-    def get_documents_path(self):
+    def get_documents_path(self) -> str:
+        """
+        Get actual "My Documents" path on Windows, not used in the JSONConfig class
+
+        Returns
+        -------
+        str
+            Documents full path
+        """
         # Windows hack to get path of Documents folder, which might reside on other drives than C:
         CSIDL_PERSONAL = 5       # My Documents
         SHGFP_TYPE_CURRENT = 0   # Get current, not default value
@@ -166,7 +318,9 @@ class JSONConfig:
 
 
 
-# Global config object
+"""
+Default global config object
+"""
 config = JSONConfig(CONFIGFILE, False, False)
 
 
@@ -193,6 +347,8 @@ def main():
 
     print("JSON config keys =", ", ".join(config.get_keys()))
     print("Documents path =", config.get_documents_path())
+
+    ic(config.test_1, config.test_2)
 
 
 
