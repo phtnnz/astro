@@ -63,7 +63,7 @@ class RoofConfig(JSONConfig):
 def main():
     arg = argparse.ArgumentParser(
         prog        = NAME,
-        description = "Test Hakos roof (shutter) status: returns exit code 0, if ok (open/parked/unparked/locked/unlocked), else 1",
+        description = "Test Hakos roof (shutter) status: returns exit code 0, if test ok, else 1",
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="debug messages")
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
