@@ -66,6 +66,9 @@ def main():
     arg.add_argument("-P", "--parked", action="store_true", help="test for \"parked\" status")
     arg.add_argument("-U", "--unparked", action="store_true", help="test for \"unparked\" status")
     arg.add_argument("-O", "--open", action="store_true", help="test for \"open\" status (default)")
+    arg.add_argument("-L", "--locked", action="store_true", help="test for \"locked\" status")
+    arg.add_argument("--unlocked", action="store_true", help="test for \"unlocked\" status")
+    arg.add_argument("-D", "--discord", action="store_true", help="send status message to Discord")
 
     args = arg.parse_args()
 
@@ -88,6 +91,13 @@ def main():
     ic(response)
     status = response.json()
     ic(status)
+
+    status_locked = False
+    # status: {'lock': True, ...
+    if "lock" in status:
+        status_locked = status["lock"]
+        ic(status_locked)
+        verbose(f"status locked={status_locked}")
 
     status_open = False
     # stext values: "open", "closed", "closing", "opening", "error"
@@ -128,6 +138,14 @@ def main():
     if args.unparked:
         # exit code 0 == OK, if telescope status is "unparked"
         if not status_parked:
+            exit_code = 0
+    if args.locked:
+        # exit code 0 = OK, if roofs are "locked"
+        if status_locked:
+            exit_code = 0
+    if args.unlocked:
+        # exit code 0 = OK, if roofs are "unlocked"
+        if not status_locked:
             exit_code = 0
     
     verbose(f'exit={exit_code} ({"not " if exit_code else ""}ok)')
