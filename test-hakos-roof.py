@@ -80,6 +80,8 @@ def main():
         response = requests.get(url, timeout=TIMEOUT)
     except requests.exceptions.RequestException as e:
         ic(e)
+        if args.discord:
+            discord_message(f"Hakos roof: status request failed with error: {e.args[0]}")
         error(f"{e.args[0]}")
 
     ic(response)
