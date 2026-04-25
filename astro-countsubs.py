@@ -16,7 +16,7 @@
 
 # ChangeLog
 # Version 0.1 / 2023-07-07
-#       Added to repository asto
+#       Added to repository astro
 # Version 0.2 / 2023-10-10
 #       Allow VdS-style filename, new exposure time option
 # Version 0.3 / 2023-12-18
