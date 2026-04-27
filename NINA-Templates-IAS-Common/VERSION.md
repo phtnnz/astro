@@ -10,7 +10,7 @@ Required plugins:
 - Sequencer Powerups
 - Ground Station
 
-All templates will send status messages to the corresponding Discord channel, which must be configured (webhook) in the Discord Alert setup.
+All templates will send status messages to the corresponding Discord channel, which must be configured (webhook) in Ground Station setup.
 
 
 ## Base Sequences
