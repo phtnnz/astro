@@ -35,11 +35,12 @@ Base sequence variant for remote3, including Loop Objects NAUTICAL
 ## Start-up Templates
 
 ### Pre-Startup Remote2
-LOCAL UPDATED!
-Power-on 10u mount (Wake on LAN, configure broadcast IP in 10 Micron Tools setup!), switch on all devices, and connect all devices.
+UPDATED!
+Power-on 10u mount (Wake on LAN, configure broadcast IP in 10 Micron Tools setup!), switch on all devices, and connect all devices for main 10" Newtonian telescope
 
-### Pre-Startup Remote2e
-TODO!
+### Pre-Startup Remote2 Epsilon
+UPDATED!
+Power-on 10u mount (Wake on LAN, configure broadcast IP in 10 Micron Tools setup!), switch on all devices, and connect all devices for piggybacked Epsilon 130 telescope
 
 ### Pre-Startup Remote3
 
@@ -47,7 +48,7 @@ Switch on all devices, connect all devices, and power-on motors (Autoslew)
 
 ### Startup when safe (NAUTICAL)
 
-Check observatory roof/mount status, wait for safe conditions, open observatory roof, switch on fan, cool camera, wait for astronomical (default) / nautical dusk (variant NAUTICAL), switch off fan, and unpark scope (tracking stopped).
+Check observatory roof/mount status, wait for safe conditions, open observatory roof, switch on fan, cool camera, wait for astronomical (default) / nautical dusk (variant NAUTICAL), switch off fan, unpark scope, stop tracking.
 
 
 ## Shutdown Templates
@@ -57,7 +58,7 @@ Check observatory roof/mount status, wait for safe conditions, open observatory 
 Stop and park mount, close observatory roof, and warm camera.
 
 ### Post-Shutdown Remote2
-
+UPDATED!
 Disconnect all devices, power off 10u mount, switch off all devices. (10 Micron Tools instruction Shutdown Mount followed by Disconnect may result in an error message, can be safely ignored.)
 
 ### Post-Shutdown Remote3
@@ -113,7 +114,7 @@ Template for continous loop of e.g. Target VS objects.
 Wait for user interaction (NINA message box).
 
 
-## Assignment of Switch Ports (Pegasus PB Ultimate)
+## Assignment of Switch Ports (PegasusAstro UPBv2)
 
 Switch 1-4 = 12 V Output 1-4, Switch 5-10 = USB3 1-4, USB2 5-6
 
