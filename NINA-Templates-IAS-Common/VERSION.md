@@ -35,7 +35,7 @@ Base sequence variant for remote3, including Loop Objects NAUTICAL
 ## Start-up Templates
 
 ### Pre-Startup Remote2
-UPDATED!
+LOCAL UPDATED!
 Power-on 10u mount (Wake on LAN, configure broadcast IP in 10 Micron Tools setup!), switch on all devices, and connect all devices.
 
 ### Pre-Startup Remote2e
