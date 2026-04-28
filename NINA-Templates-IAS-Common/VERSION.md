@@ -47,7 +47,7 @@ Power-on 10u mount (Wake on LAN, configure broadcast IP in 10 Micron Tools setup
 Switch on all devices, connect all devices, and power-on motors (Autoslew)
 
 ### Startup when safe (NAUTICAL)
-
+UPDATED!
 Check observatory roof/mount status, wait for safe conditions, open observatory roof, switch on fan, cool camera, wait for astronomical (default) / nautical dusk (variant NAUTICAL), switch off fan, unpark scope, stop tracking.
 
 
@@ -69,9 +69,6 @@ Power off motors (Autoslew), disconnect all devices, and switch off all devices.
 
 Wait until sunrise + 1h, upload data to storage.
 
-### Shutdown at twilight
-
-Old shutdown templates, obsolete and will be removed in a future release.
 
 
 ## Target Templates
