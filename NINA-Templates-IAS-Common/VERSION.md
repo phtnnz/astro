@@ -54,7 +54,7 @@ Check observatory roof/mount status, wait for safe conditions, open observatory 
 ## Shutdown Templates
 
 ### Shutdown
-
+UPDATED!
 Stop and park mount, close observatory roof, and warm camera.
 
 ### Post-Shutdown Remote2
@@ -66,7 +66,7 @@ Disconnect all devices, power off 10u mount, switch off all devices. (10 Micron 
 Power off motors (Autoslew), disconnect all devices, and switch off all devices.
 
 ### Post-Shutdwon Data Upload
-
+UPDATED!
 Wait until sunrise + 1h, upload data to storage.
 
 
