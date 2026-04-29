@@ -153,6 +153,9 @@ def main():
     
     verbose(f'exit={exit_code} ({"not " if exit_code else ""}ok)')
     if exit_code and args.discord:
+        if status_locked:
+            verbose("Hakos roofs are locked!")
+            discord_message("Hakos roofs are locked!")
         discord_message(f"Hakos roof: status \"open={status_open}, parked={status_parked}, locked={status_locked}\" not expected, terminating sequence")
     sys.exit(exit_code)
 
