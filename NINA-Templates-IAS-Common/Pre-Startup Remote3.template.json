@@ -118,7 +118,7 @@
       {
         "$id": "14",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Output 1 = QHY 268 M, Output 3 = MFOC, USB 1 = QHY 268 M, USB 5 = MFOC, USB 6 = Lodestar X2",
+        "Text": "Output 1 = QHY 268 M, Output 3 = MFOC, Output 4 = Fan, USB 1 = QHY 268 M, USB 5 = MFOC, USB 6 = ASI 174 MM",
         "Parent": {
           "$ref": "1"
         },
