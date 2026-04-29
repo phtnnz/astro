@@ -48,7 +48,7 @@
       {
         "$id": "7",
         "$type": "NINA.Sequencer.SequenceItem.Utility.ExternalScript, NINA.Sequencer",
-        "Script": "\"D:\\Users\\remote\\Documents\\Scripts\\test-hakos-roof.bat\" -v --start --discord",
+        "Script": "\"D:\\Users\\remote\\Documents\\Scripts\\test-hakos-roof.bat\" -v --startup --discord",
         "Parent": {
           "$ref": "1"
         },
@@ -226,7 +226,7 @@
               "Hours": 19,
               "Minutes": 46,
               "MinutesOffset": 0,
-              "Seconds": 57,
+              "Seconds": 21,
               "SelectedProvider": {
                 "$id": "27",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.DuskProvider, NINA.Sequencer"
