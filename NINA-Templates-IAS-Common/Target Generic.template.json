@@ -28,7 +28,7 @@
   "Strategy": {
     "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
   },
-  "Name": "Target Generic (Discord)",
+  "Name": "Target Generic",
   "Conditions": {
     "$id": "5",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
@@ -52,7 +52,7 @@
       {
         "$id": "8",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.4-discord / 2025-07-21 / Martin Junius",
+        "Text": "Version 2.0 / 2026-05-01 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -99,10 +99,10 @@
             {
               "$id": "14",
               "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
-              "Hours": 6,
-              "Minutes": 13,
+              "Hours": 5,
+              "Minutes": 58,
               "MinutesOffset": 0,
-              "Seconds": 38,
+              "Seconds": 11,
               "SelectedProvider": {
                 "$id": "15",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.DawnProvider, NINA.Sequencer"
@@ -191,8 +191,11 @@
             },
             {
               "$id": "25",
-              "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-              "Text": "Start target",
+              "$type": "DaleGhent.NINA.GroundStation.DiscordWebhook.SendToDiscordWebhook, DaleGhent.NINA.GroundStation",
+              "Message": "Start target $$TARGET_NAME$$\r\n$$TARGET_RA$$ $$TARGET_DEC$$",
+              "EmbedTitle": "",
+              "EmbedText": "",
+              "EmbedEdgeColor": "#FF206694",
               "Parent": {
                 "$ref": "10"
               },
@@ -276,10 +279,10 @@
             {
               "$id": "34",
               "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
-              "Hours": 6,
-              "Minutes": 13,
+              "Hours": 5,
+              "Minutes": 58,
               "MinutesOffset": 0,
-              "Seconds": 38,
+              "Seconds": 11,
               "SelectedProvider": {
                 "$ref": "15"
               },
@@ -389,7 +392,7 @@
                       "_focusOffset": 0,
                       "_position": 0,
                       "_autoFocusExposureTime": -1.0,
-                      "_autoFocusFilter": false,
+                      "_autoFocusFilter": true,
                       "FlatWizardFilterSettings": {
                         "$id": "49",
                         "$type": "NINA.Core.Model.Equipment.FlatWizardFilterSettings, NINA.Core",
@@ -833,7 +836,7 @@
                       "$id": "100",
                       "$type": "NINA.Core.Model.Equipment.FilterInfo, NINA.Core",
                       "_name": "B",
-                      "_focusOffset": 9377,
+                      "_focusOffset": 0,
                       "_position": 3,
                       "_autoFocusExposureTime": -1.0,
                       "_autoFocusFilter": false,
@@ -1674,8 +1677,11 @@
             },
             {
               "$id": "200",
-              "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-              "Text": "End target",
+              "$type": "DaleGhent.NINA.GroundStation.DiscordWebhook.SendToDiscordWebhook, DaleGhent.NINA.GroundStation",
+              "Message": "End target $$TARGET_NAME$$",
+              "EmbedTitle": "",
+              "EmbedText": "",
+              "EmbedEdgeColor": "#FF206694",
               "Parent": {
                 "$ref": "193"
               },
@@ -1750,8 +1756,11 @@
             },
             {
               "$id": "209",
-              "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-              "Text": "@everyone UNSAFE conditions, terminating",
+              "$type": "DaleGhent.NINA.GroundStation.DiscordWebhook.SendToDiscordWebhook, DaleGhent.NINA.GroundStation",
+              "Message": "Unsafe conditions, terminating",
+              "EmbedTitle": "",
+              "EmbedText": "",
+              "EmbedEdgeColor": "#FF206694",
               "Parent": {
                 "$ref": "202"
               },
@@ -1789,8 +1798,7 @@
     "$values": [
       {
         "$id": "213",
-        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordAlertOnErrorTrigger, Discord Alert",
-        "Text": "@everyone ERROR in target sequence",
+        "$type": "DaleGhent.NINA.GroundStation.FailuresToDiscordWebhookTrigger.FailuresToDiscordWebhookTrigger, DaleGhent.NINA.GroundStation",
         "Parent": {
           "$ref": "1"
         },
