@@ -2,8 +2,6 @@
 
 Version 2.0 / 2026-05-01 / Martin Junius
 
-UPDATE IN PROGRESS!
-
 Required plugins: 
 - 10 Micron Tools (remote2 only)
 - ASA Tools (remote3 only)
@@ -18,6 +16,10 @@ All templates will send status messages to the corresponding Discord channel, wh
 ### Base Remote2 (NAUTICAL)
 
 Base sequence for telescope remote2 (10 Micron), contains all the necessary start-up and shutdown templates. Waits until astronomical dusk (default) or nautical dusk (variant NAUTICAL).
+
+### Base Remote2 Epsilon
+
+Base sequence for piggybacked Epsilon 130 on remote2.
 
 ### Base Remote3 (NAUTICAL)
 
@@ -35,38 +37,38 @@ Base sequence variant for remote3, including Loop Objects NAUTICAL
 ## Start-up Templates
 
 ### Pre-Startup Remote2
-UPDATED!
+
 Power-on 10u mount (Wake on LAN, configure broadcast IP in 10 Micron Tools setup!), switch on all devices, and connect all devices for main 10" Newtonian telescope
 
 ### Pre-Startup Remote2 Epsilon
-UPDATED!
+
 Power-on 10u mount (Wake on LAN, configure broadcast IP in 10 Micron Tools setup!), switch on all devices, and connect all devices for piggybacked Epsilon 130 telescope
 
 ### Pre-Startup Remote3
-UPDATED!
+
 Switch on all devices, connect all devices, and power-on motors (Autoslew)
 
 ### Startup when safe (NAUTICAL)
-UPDATED!
+
 Check observatory roof/mount status, wait for safe conditions, open observatory roof, switch on fan, cool camera, wait for astronomical (default) / nautical dusk (variant NAUTICAL), switch off fan, unpark scope, stop tracking.
 
 
 ## Shutdown Templates
 
 ### Shutdown
-UPDATED!
+
 Stop and park mount, close observatory roof, and warm camera.
 
 ### Post-Shutdown Remote2
-UPDATED!
+
 Disconnect all devices, power off 10u mount, switch off all devices. (10 Micron Tools instruction Shutdown Mount followed by Disconnect may result in an error message, can be safely ignored.)
 
 ### Post-Shutdown Remote3
-UPDATED!
+
 Power off motors (Autoslew), disconnect all devices, and switch off all devices.
 
 ### Post-Shutdwon Data Upload
-UPDATED!
+
 Wait until sunrise + 1h, upload data to storage.
 
 
@@ -74,21 +76,21 @@ Wait until sunrise + 1h, upload data to storage.
 ## Target Templates
 
 ### Target Generic
-UPDATED!
+
 Generic target template: configurable start time, slew and center, auto-focus, checks object altitude, moon altitude, total exposure time 6h or until astronomical dawn, stop when condition becomes unsafe.
 
 Exposure loop: 15x L 120s, 5x R/G/B 120s, 5x SII/Ha/OIII 180s
 
 ### Target OSC (rotate)
-NEW!
+
 Dito for one-shot-color cameras, variant "rotate" with image rotation, exposure loop: 120s
 
 ### Target LRGB stars
-UPDATED!
+
 Dito for e.g. star clusters, exposure loop: 15x L 60s, 5x R/G/B 60s
 
 ### Target RGB NB
-UPDATED!
+
 Dito for narrowband + RGB stars, exposure loop: 5x R/G/B 60s, 5x SII/Ha/OIII 180s
 
 ### Target slew only
@@ -96,23 +98,24 @@ Dito for narrowband + RGB stars, exposure loop: 5x R/G/B 60s, 5x SII/Ha/OIII 180
 Slow and center, auto-focus only, wait for user interaction
 
 ### Target NEO
-UPDATED!
+
 Special target template for NEO observations, used with ```nina-create-sequence2``` script.
 
 ### Target VS
-UPDATED!
+
 Dito, special target template for variable stars observation, to be place inside Loop see below.
 
 
 ## Misc Templates
 
 ### Loop Objects (NAUTICAL)
-UPDATED!
+
 Template for continous loop of e.g. Target VS objects.
 
 ### Waiting
-UPDATED!
+
 Wait for user interaction (NINA message box).
+
 
 
 ## Assignment of Switch Ports (PegasusAstro UPBv2)
