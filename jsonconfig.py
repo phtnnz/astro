@@ -157,7 +157,7 @@ class JSONConfig:
         Verbose info, print config file and top-level keys
         """
         verbose(f"JSON config file = {self.configfile}")
-        verbose(f"config keys = {", ".join( [k for k in self.config.keys() if not k.startswith("#")] )}")
+        verbose(f"config keys = {', '.join( [k for k in self.config.keys() if not k.startswith('#')] )}")
 
 
     def search_config(self, file: str) -> str:
