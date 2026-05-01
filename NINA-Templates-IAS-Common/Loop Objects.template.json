@@ -4,7 +4,7 @@
   "Strategy": {
     "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
   },
-  "Name": "Loop Objects (Discord)",
+  "Name": "Loop Objects",
   "Conditions": {
     "$id": "2",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
@@ -20,9 +20,9 @@
         "$id": "4",
         "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
         "Hours": 5,
-        "Minutes": 27,
+        "Minutes": 58,
         "MinutesOffset": 0,
-        "Seconds": 6,
+        "Seconds": 11,
         "SelectedProvider": {
           "$id": "5",
           "$type": "NINA.Sequencer.Utility.DateTimeProvider.DawnProvider, NINA.Sequencer"
@@ -51,7 +51,7 @@
       {
         "$id": "8",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.6 / 2025-09-23 / Martin Junius",
+        "Text": "Version 2.0 / 2026-05-01 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -80,8 +80,11 @@
       },
       {
         "$id": "11",
-        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-        "Text": "Loop objects next iteration",
+        "$type": "DaleGhent.NINA.GroundStation.DiscordWebhook.SendToDiscordWebhook, DaleGhent.NINA.GroundStation",
+        "Message": "Loop objects next iteration",
+        "EmbedTitle": "",
+        "EmbedText": "",
+        "EmbedEdgeColor": "#FF206694",
         "Parent": {
           "$ref": "1"
         },
