@@ -28,7 +28,7 @@
   "Strategy": {
     "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
   },
-  "Name": "Target NEO (Discord)",
+  "Name": "Target NEO",
   "Conditions": {
     "$id": "5",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
@@ -62,7 +62,7 @@
       {
         "$id": "9",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.6 / 2025-10-03 / Martin Junius",
+        "Text": "Version 2.0/ 2026-05-01 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -197,10 +197,10 @@
             {
               "$id": "25",
               "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
-              "Hours": 5,
-              "Minutes": 43,
+              "Hours": 6,
+              "Minutes": 24,
               "MinutesOffset": 0,
-              "Seconds": 4,
+              "Seconds": 43,
               "SelectedProvider": {
                 "$id": "26",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.NauticalDawnProvider, NINA.Sequencer"
@@ -306,7 +306,7 @@
                       "_focusOffset": 0,
                       "_position": 0,
                       "_autoFocusExposureTime": -1.0,
-                      "_autoFocusFilter": false,
+                      "_autoFocusFilter": true,
                       "FlatWizardFilterSettings": {
                         "$id": "40",
                         "$type": "NINA.Core.Model.Equipment.FlatWizardFilterSettings, NINA.Core",
@@ -586,8 +586,11 @@
             },
             {
               "$id": "73",
-              "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-              "Text": "NEO target ready",
+              "$type": "DaleGhent.NINA.GroundStation.DiscordWebhook.SendToDiscordWebhook, DaleGhent.NINA.GroundStation",
+              "Message": "NEO target $$TARGET_NAME$$ ready",
+              "EmbedTitle": "",
+              "EmbedText": "",
+              "EmbedEdgeColor": "#FF206694",
               "Parent": {
                 "$ref": "64"
               },
@@ -662,8 +665,11 @@
             },
             {
               "$id": "82",
-              "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-              "Text": "@everyone UNSAFE conditions, terminating",
+              "$type": "DaleGhent.NINA.GroundStation.DiscordWebhook.SendToDiscordWebhook, DaleGhent.NINA.GroundStation",
+              "Message": "Unsafe conditions, terminating",
+              "EmbedTitle": "",
+              "EmbedText": "",
+              "EmbedEdgeColor": "#FF206694",
               "Parent": {
                 "$ref": "75"
               },
@@ -691,8 +697,7 @@
     "$values": [
       {
         "$id": "85",
-        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordAlertOnErrorTrigger, Discord Alert",
-        "Text": "@everyone ERROR in target sequence",
+        "$type": "DaleGhent.NINA.GroundStation.FailuresToDiscordWebhookTrigger.FailuresToDiscordWebhookTrigger, DaleGhent.NINA.GroundStation",
         "Parent": {
           "$ref": "1"
         },

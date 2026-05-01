@@ -1,6 +1,6 @@
 # IAS Templates for Remote Telescopes @ Hakos
 
-Version 2.0 / xxx / Martin Junius
+Version 2.0 / 2026-05-01 / Martin Junius
 
 UPDATE IN PROGRESS!
 
@@ -74,17 +74,21 @@ Wait until sunrise + 1h, upload data to storage.
 ## Target Templates
 
 ### Target Generic
-
+UPDATED!
 Generic target template: configurable start time, slew and center, auto-focus, checks object altitude, moon altitude, total exposure time 6h or until astronomical dawn, stop when condition becomes unsafe.
 
 Exposure loop: 15x L 120s, 5x R/G/B 120s, 5x SII/Ha/OIII 180s
 
-### Target LRGB 
+### Target OSC (rotate)
+NEW!
+Dito for one-shot-color cameras, variant "rotate" with image rotation, exposure loop: 120s
 
+### Target LRGB stars
+UPDATED!
 Dito for e.g. star clusters, exposure loop: 15x L 60s, 5x R/G/B 60s
 
 ### Target RGB NB
-
+UPDATED!
 Dito for narrowband + RGB stars, exposure loop: 5x R/G/B 60s, 5x SII/Ha/OIII 180s
 
 ### Target slew only
@@ -92,22 +96,22 @@ Dito for narrowband + RGB stars, exposure loop: 5x R/G/B 60s, 5x SII/Ha/OIII 180
 Slow and center, auto-focus only, wait for user interaction
 
 ### Target NEO
-
+UPDATED!
 Special target template for NEO observations, used with ```nina-create-sequence2``` script.
 
 ### Target VS
-
+UPDATED!
 Dito, special target template for variable stars observation, to be place inside Loop see below.
 
 
 ## Misc Templates
 
 ### Loop Objects (NAUTICAL)
-
+UPDATED!
 Template for continous loop of e.g. Target VS objects.
 
 ### Waiting
-
+UPDATED!
 Wait for user interaction (NINA message box).
 
 

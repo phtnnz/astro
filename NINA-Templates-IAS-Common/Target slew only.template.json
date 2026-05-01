@@ -52,7 +52,7 @@
       {
         "$id": "8",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.2 / 2024-12-19 / Martin Junius",
+        "Text": "Version 2.0 / 2026-05-01 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -89,10 +89,10 @@
             {
               "$id": "13",
               "$type": "NINA.Sequencer.Conditions.TimeCondition, NINA.Sequencer",
-              "Hours": 3,
-              "Minutes": 36,
+              "Hours": 5,
+              "Minutes": 58,
               "MinutesOffset": 0,
-              "Seconds": 49,
+              "Seconds": 11,
               "SelectedProvider": {
                 "$id": "14",
                 "$type": "NINA.Sequencer.Utility.DateTimeProvider.DawnProvider, NINA.Sequencer"
@@ -110,8 +110,11 @@
           "$values": [
             {
               "$id": "16",
-              "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-              "Text": "Slew and center target",
+              "$type": "DaleGhent.NINA.GroundStation.DiscordWebhook.SendToDiscordWebhook, DaleGhent.NINA.GroundStation",
+              "Message": "Slew and center target $$TARGET_NAME$$",
+              "EmbedTitle": "",
+              "EmbedText": "",
+              "EmbedEdgeColor": "#FF206694",
               "Parent": {
                 "$ref": "9"
               },
@@ -151,7 +154,7 @@
             {
               "$id": "20",
               "$type": "NINA.Sequencer.SequenceItem.Utility.MessageBox, NINA.Sequencer",
-              "Text": "Slew and center target done.",
+              "Text": "Slew and center target done",
               "Parent": {
                 "$ref": "9"
               },
@@ -208,10 +211,10 @@
             {
               "$id": "27",
               "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTime, NINA.Sequencer",
-              "Hours": 3,
-              "Minutes": 36,
+              "Hours": 5,
+              "Minutes": 58,
               "MinutesOffset": 0,
-              "Seconds": 49,
+              "Seconds": 11,
               "SelectedProvider": {
                 "$ref": "14"
               },
@@ -242,8 +245,7 @@
     "$values": [
       {
         "$id": "30",
-        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordAlertOnErrorTrigger, Discord Alert",
-        "Text": "@everyone ERROR in target sequence",
+        "$type": "DaleGhent.NINA.GroundStation.FailuresToDiscordWebhookTrigger.FailuresToDiscordWebhookTrigger, DaleGhent.NINA.GroundStation",
         "Parent": {
           "$ref": "1"
         },
