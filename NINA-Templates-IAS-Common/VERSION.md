@@ -36,6 +36,10 @@ Base sequence variant for remote3, including Loop Objects NAUTICAL
 
 ## Start-up Templates
 
+*WARNING*: The pre-startup templates for Remote2 use the 10 Micron Tools plugin. Alas, there's currently a bug with the "Load Model" instructions in the saved templates, the model name can't be saved and is empty, the instruction will fail.
+
+Work-around: manually load the corresponding model "Main70" for the 10" Newtonian, "Epsilon70" for the Epsilon 130 on the "10u model" tab of the imaging screen.
+
 ### Pre-Startup Remote2
 
 Power-on 10u mount (Wake on LAN, configure broadcast IP in 10 Micron Tools setup!), switch on all devices, and connect all devices for main 10" Newtonian telescope
