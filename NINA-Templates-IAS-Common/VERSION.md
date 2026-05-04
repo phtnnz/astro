@@ -155,3 +155,7 @@ Switch 1-4 = 12 V Output 1-4, Switch 5-10 = USB3 1-4, USB2 5-6
 | 8  | USB3 4   | -          |
 | 9  | USB2 5   | MFOC       |
 | 10 | USB2 6   | ASI 174 MM |
+
+
+## TODOs
+- Move Set Readout Mode to Pre-Startup templates, not supported bei ASI 2600
