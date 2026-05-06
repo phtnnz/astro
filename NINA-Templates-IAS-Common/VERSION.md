@@ -1,6 +1,6 @@
 # IAS Templates for Remote Telescopes @ Hakos
 
-Version 2.0 / 2026-05-01 / Martin Junius
+Version 2.0 / 2026-05-06 / Martin Junius
 
 Required plugins: 
 - 10 Micron Tools (remote2 only)
