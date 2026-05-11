@@ -376,7 +376,7 @@ def print_filter_list(exp):
         if flatdarks:
             print(f"Flatdarks\n   {flatdarks}x {secs}")
         print("Settings")
-        for key in ("mode", "gain", "offset", "cooling"):
+        for key in ("binning", "mode", "gain", "offset", "cooling"):
             print(f"   {key}: {extra(key)}", end="")
         print()
 
