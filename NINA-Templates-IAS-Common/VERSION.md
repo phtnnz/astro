@@ -158,4 +158,4 @@ Switch 1-4 = 12 V Output 1-4, Switch 5-10 = USB3 1-4, USB2 5-6
 
 
 ## TODOs
-
+- Don't switch on fan of 10" telescope when using the Epsilon template
