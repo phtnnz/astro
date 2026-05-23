@@ -11,6 +11,7 @@ nina-zip-*.*
 test-hakos-roof.*
 discord-aag.*
 discordmsg.*
+run-*.bat
 
 csvoutput.py
 jsonconfig.py
