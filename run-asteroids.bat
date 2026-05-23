@@ -18,7 +18,7 @@ REM # See the License for the specific language governing permissions and
 REM # limitations under the License.
 
 set CWD=%~dp0
-set SCRIPT=%CWD%\nina-zip-data.py
+set SCRIPT=%CWD%nina-zip-data.py
 set ARGS=-v --ready --subdir=_asteroids
 echo SCRIPT="%SCRIPT%" ARGS=%ARGS%
 
