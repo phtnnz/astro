@@ -109,6 +109,10 @@ Special target template for NEO observations, used with ```nina-create-sequence2
 
 Dito, special target template for variable stars observation, to be place inside Loop see below.
 
+### Target L only
+
+Special target template for photometric observations, fixed number auf exposures with filter L.
+
 
 ## Misc Templates
 
