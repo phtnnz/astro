@@ -38,7 +38,7 @@
       {
         "$id": "6",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 2.0 / 2026-04-27 / Martin Junius",
+        "Text": "Version 2.0 / 2026-05-26 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -191,46 +191,6 @@
       },
       {
         "$id": "21",
-        "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTimeSpan, NINA.Sequencer",
-        "Time": 30.0,
-        "Parent": {
-          "$ref": "1"
-        },
-        "ErrorBehavior": 0,
-        "Attempts": 1
-      },
-      {
-        "$id": "22",
-        "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
-        "SelectedDevice": "Camera",
-        "Parent": {
-          "$ref": "1"
-        },
-        "ErrorBehavior": 2,
-        "Attempts": 1
-      },
-      {
-        "$id": "23",
-        "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
-        "SelectedDevice": "Filter Wheel",
-        "Parent": {
-          "$ref": "1"
-        },
-        "ErrorBehavior": 2,
-        "Attempts": 1
-      },
-      {
-        "$id": "24",
-        "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
-        "SelectedDevice": "Focuser",
-        "Parent": {
-          "$ref": "1"
-        },
-        "ErrorBehavior": 2,
-        "Attempts": 1
-      },
-      {
-        "$id": "25",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Mount",
         "Parent": {
@@ -240,26 +200,57 @@
         "Attempts": 1
       },
       {
-        "$id": "26",
-        "$type": "NINA.Joko.Plugin.TenMicron.SequenceItems.LoadModel, NINA.Joko.Plugin.TenMicron",
+        "$id": "22",
+        "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTimeSpan, NINA.Sequencer",
+        "Time": 90.0,
         "Parent": {
           "$ref": "1"
         },
         "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "23",
+        "$type": "NINA.Joko.Plugin.TenMicron.SequenceItems.LoadModel, NINA.Joko.Plugin.TenMicron",
+        "ModelName": "Main70",
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "24",
+        "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
+        "SelectedDevice": "Camera",
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 2,
+        "Attempts": 1
+      },
+      {
+        "$id": "25",
+        "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
+        "SelectedDevice": "Filter Wheel",
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 2,
+        "Attempts": 1
+      },
+      {
+        "$id": "26",
+        "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
+        "SelectedDevice": "Focuser",
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 2,
         "Attempts": 1
       },
       {
         "$id": "27",
-        "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTimeSpan, NINA.Sequencer",
-        "Time": 30.0,
-        "Parent": {
-          "$ref": "1"
-        },
-        "ErrorBehavior": 0,
-        "Attempts": 1
-      },
-      {
-        "$id": "28",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Guider",
         "Parent": {
@@ -269,7 +260,7 @@
         "Attempts": 1
       },
       {
-        "$id": "29",
+        "$id": "28",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Weather",
         "Parent": {
@@ -279,7 +270,7 @@
         "Attempts": 1
       },
       {
-        "$id": "30",
+        "$id": "29",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Dome",
         "Parent": {
@@ -289,7 +280,7 @@
         "Attempts": 1
       },
       {
-        "$id": "31",
+        "$id": "30",
         "$type": "NINA.Sequencer.SequenceItem.Connect.ConnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Safety Monitor",
         "Parent": {
@@ -299,7 +290,7 @@
         "Attempts": 1
       },
       {
-        "$id": "32",
+        "$id": "31",
         "$type": "DaleGhent.NINA.GroundStation.DiscordWebhook.SendToDiscordWebhook, DaleGhent.NINA.GroundStation",
         "Message": "All devices powered on and connected:\r\n$$CAMERA_NAME$$\r\n$$FWHEEL_NAME$$\r\n$$FOCUSER_NAME$$\r\n$$ROTATOR_NAME$$\r\n$$MOUNT_NAME$$\r\n$$WX_NAME$$\r\n$$DOME_NAME$$\r\n$$SAFETY_NAME$$",
         "EmbedTitle": "",
@@ -314,35 +305,35 @@
     ]
   },
   "Triggers": {
-    "$id": "33",
+    "$id": "32",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
     "$values": [
       {
-        "$id": "34",
+        "$id": "33",
         "$type": "DaleGhent.NINA.GroundStation.FailuresToDiscordWebhookTrigger.FailuresToDiscordWebhookTrigger, DaleGhent.NINA.GroundStation",
         "Parent": {
           "$ref": "1"
         },
         "TriggerRunner": {
-          "$id": "35",
+          "$id": "34",
           "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
           "Strategy": {
             "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
           },
           "Name": null,
           "Conditions": {
-            "$id": "36",
+            "$id": "35",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "IsExpanded": true,
           "Items": {
-            "$id": "37",
+            "$id": "36",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "Triggers": {
-            "$id": "38",
+            "$id": "37",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },

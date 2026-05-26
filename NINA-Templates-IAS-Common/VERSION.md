@@ -1,9 +1,9 @@
 # IAS Templates for Remote Telescopes @ Hakos
 
-Version 2.0 / 2026-05-06 / Martin Junius
+Version 2.0 / 2026-05-26 / Martin Junius
 
 Required plugins: 
-- 10 Micron Tools (remote2 only)
+- 10 Micron Tools (remote2 only) - Version 3.0.0.11 or later!
 - ASA Tools (remote3 only)
 - Sequencer Powerups
 - Ground Station
@@ -36,9 +36,7 @@ Base sequence variant for remote3, including Loop Objects NAUTICAL
 
 ## Start-up Templates
 
-*WARNING*: The pre-startup templates for Remote2 use the 10 Micron Tools plugin. Alas, there's currently a bug with the "Load Model" instructions in the saved templates, the model name can't be saved and is empty, the instruction will fail.
-
-Work-around: manually load the corresponding model "Main70" for the 10" Newtonian, "Epsilon70" for the Epsilon 130 on the "10u model" tab of the imaging screen during the "wait for safe" phase.
+The pre-startup templates for Remote2 use the 10 Micron Tools plugin, prior to version 3.0.0.11 the "Load Model" instruction wasn't saved/loaded properly!
 
 ### Pre-Startup Remote2
 
