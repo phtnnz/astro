@@ -109,7 +109,7 @@ Dito, special target template for variable stars observation, to be place inside
 
 ### Target L only
 
-Special target template for photometric observations, fixed number auf exposures with filter L.
+Special target template for photometric observations, fixed number of exposures with filter L.
 
 
 ## Misc Templates
