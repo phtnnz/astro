@@ -16,7 +16,7 @@
 
 # ChangeLog
 # Version 0.1 / 2023-07-07
-#       Added to repository asto
+#       Added to repository astro
 # Version 0.2 / 2023-10-10
 #       Allow VdS-style filename, new exposure time option
 # Version 0.3 / 2023-12-18
@@ -376,7 +376,7 @@ def print_filter_list(exp):
         if flatdarks:
             print(f"Flatdarks\n   {flatdarks}x {secs}")
         print("Settings")
-        for key in ("mode", "gain", "offset", "cooling"):
+        for key in ("binning", "mode", "gain", "offset", "cooling"):
             print(f"   {key}: {extra(key)}", end="")
         print()
 

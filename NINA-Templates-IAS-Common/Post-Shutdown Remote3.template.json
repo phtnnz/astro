@@ -18,7 +18,7 @@
       {
         "$id": "4",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "IAS remote telescopes - post-shutdown remote*2* (10u)",
+        "Text": "IAS remote telescopes - post-shutdown remote3 (ASA)",
         "Parent": {
           "$ref": "1"
         },
@@ -28,7 +28,7 @@
       {
         "$id": "5",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "REQUIRED plugins: Discord Alert, Connector, ASA Tools",
+        "Text": "Required plugins: ASA Tools, Ground Station",
         "Parent": {
           "$ref": "1"
         },
@@ -38,7 +38,7 @@
       {
         "$id": "6",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.6 / 2025-09-06 / Martin Junius",
+        "Text": "Version 2.0 / 2026-04-29 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -87,7 +87,7 @@
       {
         "$id": "11",
         "$type": "NINA.Sequencer.SequenceItem.Connect.DisconnectEquipment, NINA.Sequencer",
-        "SelectedDevice": "Telescope",
+        "SelectedDevice": "Mount",
         "Parent": {
           "$ref": "1"
         },
@@ -137,7 +137,7 @@
       {
         "$id": "16",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Output 1 = QHY 268 M, Output 3 = MFOC, USB 1 = QHY 268 M, USB 5 = MFOC, USB 6 = Lodestar X2",
+        "Text": "Switch 1-4 = Out 1-4, Switch 5-10 = USB 1-6",
         "Parent": {
           "$ref": "1"
         },
@@ -146,6 +146,16 @@
       },
       {
         "$id": "17",
+        "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
+        "Text": "Output 1 = QHY 268 M, Output 3 = MFOC, Output 4 = Fan, USB 1 = QHY 268 M, USB 5 = MFOC, USB 6 = ASI 174 MM",
+        "Parent": {
+          "$ref": "1"
+        },
+        "ErrorBehavior": 0,
+        "Attempts": 1
+      },
+      {
+        "$id": "18",
         "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
         "Value": 0.0,
         "SwitchIndex": 0,
@@ -156,7 +166,7 @@
         "Attempts": 1
       },
       {
-        "$id": "18",
+        "$id": "19",
         "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
         "Value": 1.0,
         "SwitchIndex": 2,
@@ -167,7 +177,7 @@
         "Attempts": 1
       },
       {
-        "$id": "19",
+        "$id": "20",
         "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
         "Value": 0.0,
         "SwitchIndex": 4,
@@ -178,7 +188,7 @@
         "Attempts": 1
       },
       {
-        "$id": "20",
+        "$id": "21",
         "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
         "Value": 1.0,
         "SwitchIndex": 8,
@@ -189,7 +199,7 @@
         "Attempts": 1
       },
       {
-        "$id": "21",
+        "$id": "22",
         "$type": "NINA.Sequencer.SequenceItem.Switch.SetSwitchValue, NINA.Sequencer",
         "Value": 0.0,
         "SwitchIndex": 9,
@@ -200,7 +210,7 @@
         "Attempts": 1
       },
       {
-        "$id": "22",
+        "$id": "23",
         "$type": "NINA.Sequencer.SequenceItem.Connect.DisconnectEquipment, NINA.Sequencer",
         "SelectedDevice": "Switch",
         "Parent": {
@@ -210,9 +220,12 @@
         "Attempts": 1
       },
       {
-        "$id": "23",
-        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-        "Text": "All devices disconnected and powered off",
+        "$id": "24",
+        "$type": "DaleGhent.NINA.GroundStation.DiscordWebhook.SendToDiscordWebhook, DaleGhent.NINA.GroundStation",
+        "Message": "All devices disconnected and powered off",
+        "EmbedTitle": "",
+        "EmbedText": "",
+        "EmbedEdgeColor": "#FF206694",
         "Parent": {
           "$ref": "1"
         },
@@ -222,36 +235,35 @@
     ]
   },
   "Triggers": {
-    "$id": "24",
+    "$id": "25",
     "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
     "$values": [
       {
-        "$id": "25",
-        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordAlertOnErrorTrigger, Discord Alert",
-        "Text": "@everyone ERROR in Post-Shutdown Remote3",
+        "$id": "26",
+        "$type": "DaleGhent.NINA.GroundStation.FailuresToDiscordWebhookTrigger.FailuresToDiscordWebhookTrigger, DaleGhent.NINA.GroundStation",
         "Parent": {
           "$ref": "1"
         },
         "TriggerRunner": {
-          "$id": "26",
+          "$id": "27",
           "$type": "NINA.Sequencer.Container.SequentialContainer, NINA.Sequencer",
           "Strategy": {
             "$type": "NINA.Sequencer.Container.ExecutionStrategy.SequentialStrategy, NINA.Sequencer"
           },
           "Name": null,
           "Conditions": {
-            "$id": "27",
+            "$id": "28",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Conditions.ISequenceCondition, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "IsExpanded": true,
           "Items": {
-            "$id": "28",
+            "$id": "29",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.SequenceItem.ISequenceItem, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },
           "Triggers": {
-            "$id": "29",
+            "$id": "30",
             "$type": "System.Collections.ObjectModel.ObservableCollection`1[[NINA.Sequencer.Trigger.ISequenceTrigger, NINA.Sequencer]], System.ObjectModel",
             "$values": []
           },

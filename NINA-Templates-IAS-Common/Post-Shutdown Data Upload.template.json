@@ -28,7 +28,7 @@
       {
         "$id": "5",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "REQUIRED plugins: Discord Alert",
+        "Text": "REQUIRED plugins: Ground Station",
         "Parent": {
           "$ref": "1"
         },
@@ -38,7 +38,7 @@
       {
         "$id": "6",
         "$type": "NINA.Sequencer.SequenceItem.Utility.Annotation, NINA.Sequencer",
-        "Text": "Version 1.6 / 2025-09-06 / Martin Junius",
+        "Text": "Version 2.0 / 2026-04-28 / Martin Junius",
         "Parent": {
           "$ref": "1"
         },
@@ -48,10 +48,10 @@
       {
         "$id": "7",
         "$type": "NINA.Sequencer.SequenceItem.Utility.WaitForTime, NINA.Sequencer",
-        "Hours": 7,
-        "Minutes": 59,
+        "Hours": 8,
+        "Minutes": 13,
         "MinutesOffset": 60,
-        "Seconds": 14,
+        "Seconds": 38,
         "SelectedProvider": {
           "$id": "8",
           "$type": "NINA.Sequencer.Utility.DateTimeProvider.SunriseProvider, NINA.Sequencer"
@@ -64,8 +64,11 @@
       },
       {
         "$id": "9",
-        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-        "Text": "Data upload started",
+        "$type": "DaleGhent.NINA.GroundStation.DiscordWebhook.SendToDiscordWebhook, DaleGhent.NINA.GroundStation",
+        "Message": "Data upload started",
+        "EmbedTitle": "",
+        "EmbedText": "",
+        "EmbedEdgeColor": "#FF206694",
         "Parent": {
           "$ref": "1"
         },
@@ -84,8 +87,11 @@
       },
       {
         "$id": "11",
-        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordMessageInstruction, Discord Alert",
-        "Text": "Data upload completed",
+        "$type": "DaleGhent.NINA.GroundStation.DiscordWebhook.SendToDiscordWebhook, DaleGhent.NINA.GroundStation",
+        "Message": "Data upload completed",
+        "EmbedTitle": "",
+        "EmbedText": "",
+        "EmbedEdgeColor": "#FF206694",
         "Parent": {
           "$ref": "1"
         },
@@ -100,8 +106,7 @@
     "$values": [
       {
         "$id": "13",
-        "$type": "NINA.DiscordAlert.DiscordAlertSequenceItems.DiscordAlertOnErrorTrigger, Discord Alert",
-        "Text": "@everyone ERROR in Post-Shutdown Data Upload",
+        "$type": "DaleGhent.NINA.GroundStation.FailuresToDiscordWebhookTrigger.FailuresToDiscordWebhookTrigger, DaleGhent.NINA.GroundStation",
         "Parent": {
           "$ref": "1"
         },
