@@ -1,0 +1,3 @@
+@echo off
+echo Downloading iasdata:remote-config/scripts/IAS-astro-python.7z ...
+rclone copy iasdata:remote-config/scripts/IAS-astro-python.7z . -v
