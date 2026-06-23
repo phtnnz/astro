@@ -552,16 +552,16 @@
                         },
                         {
                           "$id": "63",
-                          "$type": "WhenPlugin.When.CoolCamera, WhenPlugin",
+                          "$type": "NINA.Plugin.SequencerPlus.CoolCamera, NINA.Plugin.SequencerPlus",
                           "TempExpr": {
                             "$id": "64",
-                            "$type": "WhenPlugin.When.Expr, WhenPlugin",
+                            "$type": "NINA.Plugin.SequencerPlus.Expr, NINA.Plugin.SequencerPlus",
                             "Expression": "",
                             "Type": "Any"
                           },
                           "DurExpr": {
                             "$id": "65",
-                            "$type": "WhenPlugin.When.Expr, WhenPlugin",
+                            "$type": "NINA.Plugin.SequencerPlus.Expr, NINA.Plugin.SequencerPlus",
                             "Expression": "",
                             "Type": "Any"
                           },

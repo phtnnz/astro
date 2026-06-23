@@ -1,11 +1,11 @@
 # IAS Templates for Remote Telescopes @ Hakos
 
-Version 2.0 / 2026-05-26 / Martin Junius
+Version 2.1 / 2026-06-23 / Martin Junius
 
 Required plugins: 
 - 10 Micron Tools (remote2 only) - Version 3.0.0.11 or later!
 - ASA Tools (remote3 only)
-- Sequencer Powerups
+- Sequencer+
 - Ground Station
 
 All templates will send status messages to the corresponding Discord channel, which must be configured (webhook) in Ground Station setup.
