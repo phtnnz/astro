@@ -182,6 +182,56 @@
                 "180s": 30,
                 "300s": 30
             }
+        },
+
+        "asi2600mcduo-2026-1x1": {
+            "##": "Settings and number of calibration frames for ASI2600MC Duo, Namibia Apr 2026",
+            "settings": {
+                "mode": "n/a",
+                "gain": 100,
+                "offset": 50,
+                "binning": 1,
+                "cooling": -5,
+                "fnumber": 3.7,
+                "bortle": 1
+            },
+            "masterbias": { 
+                "*": 50 
+            },
+            "masterflat": {
+                "NoFilter": 30
+            },
+            "masterdark": {
+                "60s": 30,
+                "120s": 30,
+                "180s": 30,
+                "300s": 30
+            }
+        },
+
+        "asi2600mcduo-2026-2x2": {
+            "##": "Settings and number of calibration frames for ASI2600MC Duo, Namibia Apr 2026",
+            "settings": {
+                "mode": "n/a",
+                "gain": 100,
+                "offset": 50,
+                "binning": 2,
+                "cooling": -5,
+                "fnumber": 3.7,
+                "bortle": 1
+            },
+            "masterbias": { 
+                "*": 50 
+            },
+            "masterflat": {
+                "NoFilter": 30
+            },
+            "masterdark": {
+                "60s": 30,
+                "120s": 30,
+                "180s": 30,
+                "300s": 30
+            }
         }
 
     }
