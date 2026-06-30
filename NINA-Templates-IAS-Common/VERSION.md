@@ -11,6 +11,20 @@ Required plugins:
 All templates will send status messages to the corresponding Discord channel, which must be configured (webhook) in Ground Station setup.
 
 
+## Setup
+
+All templates require the Python scripts and .bat wrappers to be installed in
+```D:\Users\remote\Documents\Scripts\```
+e.g.
+
+```"D:\Users\remote\Documents\Scripts\test-hakos-roof.bat" -v --startup --discord```
+
+The JSON config files can be installed in
+```D:\Users\remote\Documents\Scripts\.config\```
+or
+```%LOCALAPPDATA%\astro-python\```
+
+
 ## Base Sequences
 
 ### Base Remote2 (NAUTICAL)

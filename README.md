@@ -59,7 +59,7 @@ Local modules:
 
 ## nina-create-sequence2
 
-There a newer version of this script and related modules in my [AstroPy-Workbench](https://github.com/phtnnz/astropy-workbench) repository!
+There is a newer version of this script and related modules in my [AstroPy-Workbench](https://github.com/phtnnz/astropy-workbench) repository!
 
 Improved version of nina-create-sequence, builds a complete N.I.N.A sequence for the observation night, using a base template and a target template (repeated for every single object in the target area), from a CSV list of targets.
 
