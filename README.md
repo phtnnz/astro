@@ -10,7 +10,7 @@ Python scripts for automation of NEO observations with N.I.N.A (and more)
 - Process MPC 1992 and ADES reports, retrieve observations from MPC WAMO
 - Send message to Discord channel
 
-Copyright 2023-2025 Martin Junius
+Copyright 2023-2026 Martin Junius
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -58,9 +58,12 @@ Local modules:
 
 
 ## nina-create-sequence2
+
+There a newer version of this script and related modules in my [AstroPy-Workbench](https://github.com/phtnnz/astropy-workbench) repository!
+
 Improved version of nina-create-sequence, builds a complete N.I.N.A sequence for the observation night, using a base template and a target template (repeated for every single object in the target area), from a CSV list of targets.
 
-The directories NINA-Templates-IAS/, NINA-Templates-IAS3/ and NINA-Templates-Common/ contain the necessary N.I.N.A templates.
+The directory NINA-Templates-IAS-Common/ contain the necessary N.I.N.A templates, tested with version 3.2.
 
 Currently used for the M49, the IAS Remote Telescopes at Hakos, Namibia
 
@@ -98,9 +101,9 @@ Config: nina-create-sequence.json
 For Hakos remote observatories roll-off roof control only, refactored status queries
 
 ```
-usage: test-hakos-roof [-h] [-v] [-d] [-P] [-U] [-O]
+usage: test-hakos-roof [-h] [-v] [-d] [-P] [-U] [-O] [-C] [-L] [--unlocked] [--startup] [-D]
 
-Test Hakos roof (shutter) status: returns exit code 0, if ok (open/parked/unparked), else 1
+Test Hakos roof (shutter) status: returns exit code 0, if test ok, else 1
 
 options:
   -h, --help      show this help message and exit
@@ -109,8 +112,13 @@ options:
   -P, --parked    test for "parked" status
   -U, --unparked  test for "unparked" status
   -O, --open      test for "open" status (default)
+  -C, --closed    test for "closed" status
+  -L, --locked    test for "locked" status
+  --unlocked      test for "unlocked" status
+  --startup       test for safe startup status (unlocked, parked)
+  -D, --discord   send status message to Discord
 
-Version 1.1 / 2024-07-17 / Martin Junius
+Version 1.3 / 2026-03-17 / Martin Junius
 ```
 
 Config file: hakosroof.json
