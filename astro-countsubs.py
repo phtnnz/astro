@@ -208,6 +208,7 @@ def walk_the_dir(dir):
                     if Options.match and not Options.match in fname:
                         continue
 
+                    ic(fname)
                     # Test for proper sub name ...
                     match = re.search(r'_(' + f + r')_(\d+)\.00s_', fname)
                     if not match:
@@ -221,6 +222,9 @@ def walk_the_dir(dir):
                         #    LIGHT_CG 8 and 9_2025-04-30_21-49-48__-5.10_G100_O50_300.00s_0015.fits
                         if f == FILTER[0]:
                             match = re.search(r'_()_.+_(\d+)\.00s_', fname)
+                            if not match:
+                                match = re.search(r'_()_(\d+)\.00s_', fname)
+
                     if match:
                         verbose("\t" + fname)
                         time = match.group(2) if match.group(2) else EXPOSURE
