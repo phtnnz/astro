@@ -268,6 +268,7 @@ def scan_data_dir_ready_mode(datadir, tmpdir, zipdir):
 
 
 def scan_data_dir_last_mode(datadir, tmpdir, zipdir, date):
+    dirs = list()
     # TARGET/YYYY-MM-DD directories
     dirs = [d for d in os.listdir(datadir) if os.path.isdir(os.path.join(datadir, d, date))]
     ic(dirs)
@@ -276,6 +277,12 @@ def scan_data_dir_last_mode(datadir, tmpdir, zipdir, date):
     # TARGET-YYYY-MM-DD directories
     dirs = [d.replace("-"+date, "").replace("_"+date, "") 
             for d in os.listdir(datadir) if d.endswith("-"+date) or d.endswith("_"+date)]
+    ic(dirs)
+    if dirs:
+        scan_targets(datadir, tmpdir, zipdir, dirs, date)
+    # YYYY-MM-DD/TARGET directories
+    if os.path.isdir(os.path.join(datadir, date)):
+        dirs = [d for d in os.listdir(os.path.join(datadir, date)) if os.path.isdir(os.path.join(datadir, date, d))]
     ic(dirs)
     if dirs:
         scan_targets(datadir, tmpdir, zipdir, dirs, date)
@@ -314,6 +321,11 @@ def scan_targets(datadir, tmpdir, zipdir, targets, date):
             elif os.path.isdir(os.path.join(datadir, target, date)):
                 verbose(f"{time_now()} archiving {target}/{date}")
                 create_zip_archive(os.path.join(target, date), datadir, zipfile)
+                upload_zip_archive(zipfile, zipdir, arcname)
+            # YYYY-MM-DD/TARGET/ directories
+            elif os.path.isdir(os.path.join(datadir, date, target)):
+                verbose(f"{time_now()} archiving {target}/{date}")
+                create_zip_archive(os.path.join(date, target), datadir, zipfile)
                 upload_zip_archive(zipfile, zipdir, arcname)
             # Unsupported
             else:
@@ -475,6 +487,7 @@ def main():
     arg.add_argument("--last", action="store_true", help=f"run in last night mode ({Options.date})")
     arg.add_argument("--date", help="run in archive data from DATE mode")
 
+    arg.add_argument("--datadir", help=f"search DATADIR for targets, default {Options.datadir}")
     arg.add_argument("--subdir", help="search SUBDIR_YYYY-MM-DD in data dir for ready targets (--ready)")
     arg.add_argument("--targets", help="archive TARGET[,TARGET] only (--last / --date)")
     arg.add_argument("--hostname", help=f"load settings for HOSTNAME (default {ZipConfig.hostname})")
@@ -512,6 +525,8 @@ def main():
         Options.zipsub    = date_subdir(args.date)
         Options.run_last  = True
         Options.run_ready = False
+    if args.datadir:
+        Options.datadir   = args.datadir
     if args.subdir:
         Options.subdir    = args.subdir
         Options.run_last  = False
