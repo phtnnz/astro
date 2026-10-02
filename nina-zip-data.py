@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023-2024 Martin Junius
+# Copyright 2023-2026 Martin Junius
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,6 +70,13 @@
 #       When --subdir is specified, upload to ZIPDIR/SUBDIR/ZIPSUB/SUBDIR_DATE
 # Version 1.7 / 2025-06-19
 #       If archive already exists in tmp dir and not at dest, retry upload
+# Version 1.8 / 2026-10-02
+#       Added --datadir option
+
+NAME        = "nina-zip-data"
+DESCRIPTION = "Zip (7z) target data and upload"
+VERSION     = "1.8 / 2026-10-02"
+AUTHOR      = "Martin Junius"
 
 import os
 import argparse
@@ -91,12 +98,6 @@ ic.disable()
 from verbose import verbose, warning, error
 from jsonconfig import JSONConfig
 
-
-
-NAME        = "nina-zip-data"
-DESCRIPTION = "Zip (7z) N.I.N.A data and upload"
-VERSION     = "1.7 / 2025-06-19"
-AUTHOR      = "Martin Junius"
 
 TIMER   = 60
 ZIP_SUB = "%Y/%m"
