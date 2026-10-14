@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Martin Junius
+# Copyright 2023-2026 Martin Junius
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,9 +27,11 @@
 #       Fixed -n --no-wamo-requests
 # Version 1.8 / 2025-01-22
 #       Implemented CSV output for MPC1992 and ADES reports
+# Version 1.9 / 2026-10-14
+#       Fixed matching of report data against WAMO
 
 NAME    = "mpc-retrieve-reports"
-VERSION = "1.8 / 2025-02-08"
+VERSION = "1.9 / 2026-10-14"
 AUTHOR  = "Martin Junius"
 
 import os
@@ -391,31 +393,44 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
             fields = fields_meta + fields_report + fields_wamo
         ic(ids)
         wamo = retrieve_from_wamo_json(ids)
-        ic(wamo)
+        # ic(wamo)
         if wamo:
             ades_obj["_wamo"] = wamo
-    
-            for r_obs, w_obs in zip(ades_obj["_observations"], ades_obj["_wamo"]):
+            ic(ades_obj)
+
+            # for r_obs, w_obs in zip(ades_obj["_observations"], ades_obj["_wamo"]):
+            for r_obs in ades_obj["_observations"]:
+                # Match WAMO entry using obsTime
+                w_obs1 = None
+                for w_obs1 in ades_obj["_wamo"]:
+                    if r_obs["obsTime"] == w_obs1["data"]["date"]:
+                        w_obs = w_obs1
+                        break
+
+                if not w_obs:
+                    warning(f"no matching obsTime={r_obs["obsTime"]} in WAMO data")
+                    continue
+
                 # r_obs: observation data from saved report
                 # w_obs: observation data returned from WAMO
                 # Check consistency!
-                if r_obs["provID"] != w_obs["data"]["provId"] or \
-                   r_obs["permID"] != w_obs["data"]["permId"] or \
-                   r_obs["obsTime"] != w_obs["data"]["date"]:
-                    warning(f"report/WAMO mismatch, enable --debug for details")
-                    ic("r_obs/w_obs mismath")
-                    ic(r_obs, w_obs)
-                    continue   
-    
+                # For NEOCP there's only trkSub data in the report, but WAMO will show provId
+                if r_obs["permID"] and not r_obs["permID"] != w_obs["data"]["permId"]:
+                    warning(f"report/WAMO mismatch")
+                    warning(f"permIds={r_obs['permID']}/{w_obs['data']['permId']}")
+                if r_obs["provID"] and not r_obs["provID"] != w_obs["data"]["provId"]:
+                    warning(f"report/WAMO mismatch")
+                    warning(f"provIds={r_obs['provID']}/{w_obs['data']['provId']}")
+
                 pub = w_obs["publication"]
                 if pub:
                     Publication.add(pub)
 
                 if Options.overview:
                     if Options.sort_by_date:
-                        OverviewOutput.add(w_obs["data"]["date_minus12"], w_obs["objId"], w_obs["data"]["data"])
+                        OverviewOutput.add(w_obs["data"]["date_minus12"], w_obs["objId"], f"{w_obs["data"]["data"]}    ({r_obs["trkSub"]})")
                     else:
-                        OverviewOutput.add(w_obs["objId"], w_obs["data"]["date_minus12"], w_obs["data"]["data"])
+                        OverviewOutput.add(w_obs["objId"], w_obs["data"]["date_minus12"], f"{w_obs["data"]["data"]}    ({r_obs["trkSub"]})")
 
                 if Options.csv:
                     data = meta.get_data() + [ convert_to_float(row[k]) for k in fields_report ] + get_wamo_data(w_obs)
