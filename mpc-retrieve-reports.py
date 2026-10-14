@@ -403,7 +403,7 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
                    r_obs["permID"] != w_obs["data"]["permId"] or \
                    r_obs["obsTime"] != w_obs["data"]["date"]:
                     warning(f"report/WAMO mismatch, enable --debug for details")
-                    ic("r_obs/w_objs mismath")
+                    ic("r_obs/w_obs mismath")
                     ic(r_obs, w_obs)
                     continue   
     
