@@ -172,7 +172,7 @@ def process_file(file: str) -> None:
                 obj = process_mpc1992(fh, line1)
 
         # New ADES (PSV) report format
-        elif line1 == "# version=2017":
+        elif line1 == "# version=2017" or line1 == "# version=2022":
             if Options.ades:
                 verbose("Processing ADES", file)
                 format = "ADES"
