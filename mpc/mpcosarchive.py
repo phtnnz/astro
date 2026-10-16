@@ -163,7 +163,8 @@ class Publication:
 
     def print(file=sys.stdout):
         if Publication._cache:
-            arc = MPCOSArchive()
+            ##TODO: 403 error, seems to be an anti-crawler measure
+            # arc = MPCOSArchive()
 
             print("\nPublished:", file=file)
             for id in Publication._cache.keys():
@@ -176,11 +177,12 @@ class Publication:
                     print("     or   :", PCCP_URL)
                     continue
 
-                r = arc.search_pub(id)
-                if r:
-                    print(f"{id}:", r["pdf"], file=file)
-                else:
-                    print(f"{id}: unknown", file=file)
+                # r = arc.search_pub(id)
+                # if r:
+                #     print(f"{id}:", r["pdf"], file=file)
+                # else:
+                #     print(f"{id}: unknown", file=file)
+                print(f"{id}", file=file)
 
 
     def _MPEC_link(id):
