@@ -415,10 +415,10 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
                 # w_obs: observation data returned from WAMO
                 # Check consistency!
                 # For NEOCP there's only trkSub data in the report, but WAMO will show provId
-                if r_obs["permID"] and not r_obs["permID"] != w_obs["data"]["permId"]:
+                if r_obs["permID"] and r_obs["permID"] != w_obs["data"]["permId"]:
                     warning(f"report/WAMO mismatch")
                     warning(f"permIds={r_obs['permID']}/{w_obs['data']['permId']}")
-                if r_obs["provID"] and not r_obs["provID"] != w_obs["data"]["provId"]:
+                if r_obs["provID"] and r_obs["provID"] != w_obs["data"]["provId"]:
                     warning(f"report/WAMO mismatch")
                     warning(f"provIds={r_obs['provID']}/{w_obs['data']['provId']}")
 
