@@ -401,7 +401,7 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
             # for r_obs, w_obs in zip(ades_obj["_observations"], ades_obj["_wamo"]):
             for r_obs in ades_obj["_observations"]:
                 # Match WAMO entry using obsTime
-                w_obs1 = None
+                w_obs = None
                 for w_obs1 in ades_obj["_wamo"]:
                     if r_obs["obsTime"] == w_obs1["data"]["date"]:
                         w_obs = w_obs1
@@ -409,6 +409,8 @@ def process_ades(fh: typing.TextIO, line1: str) -> dict:
 
                 if not w_obs:
                     warning(f"no matching obsTime={r_obs["obsTime"]} in WAMO data")
+                    # date_list = [ w_obs1["data"]["date"] for w_obs1 in ades_obj["_wamo"] ]
+                    # warning(f"WAMO obsTimes: {" ".join(date_list)}")
                     continue
 
                 # r_obs: observation data from saved report
